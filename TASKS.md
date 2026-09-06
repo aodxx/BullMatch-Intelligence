@@ -142,7 +142,7 @@ Core contract:
 ### BMI-P1-013 — Community Contribution Intake Foundation
 Status: IN PROGRESS
 Owner: Primary Maintainer (ChatGPT autonomous run)
-Current branch: `agent/bmi-p1-013-community-origin-contract`
+Current branch: `agent/bmi-p1-013-contribution-api`
 Contract: `docs/COMMUNITY-CONTRIBUTION-V1.md`
 
 Selected first V1 input:
@@ -156,18 +156,31 @@ V1 atomic field allowlist:
 
 This matches the existing guarded claim-promotion policy and keeps contributor intake useful without creating a new identity or direct canonical write.
 
-Production inspection at task start confirmed Schema v0.2 community origin is not yet applied:
-- `bullmatch_private.community_submissions` absent
-- contributor profile/reputation tables absent
-- `evidence.source_item_id` still NOT NULL
-- `claims.extraction_run_id` still NOT NULL
+Completed increments:
 
-Current implementation order:
-1. additive community-origin + contributor-profile migration
-2. rollback-only compatibility/security/idempotency tests
-3. controlled authenticated submission RPC/Edge operation
-4. contributor `MY_SUBMISSIONS` safe projection
-5. mobile contribution UI
+**Community-origin foundation — PR #59 / Production migrations `20260906232656` + `20260906232826`**
+- `bullmatch.contributor_profiles`
+- `bullmatch_private.community_submissions`
+- generalized evidence origin for community submissions while preserving source origin
+- generalized atomic claim origin for community/manual claims while preserving extraction origin
+- service-role-only storage, browser default-deny
+- rollback-only compatibility/access regression PASS
+- no retained fixture rows
+
+**Controlled correction submission API — current branch / Production migration `20260906234150_add_bullmatch_community_correction_submit` / Edge `bullmatch-api` v13**
+- authenticated actor ID derived from validated bearer token in Edge, never from payload
+- contributor does not require ADMIN/REVIEWER membership and gains no privileged role
+- target must be an existing VERIFIED, nonarchived Bull
+- request schema/version, field allowlist, value lengths and public HTTP(S) reference are validated
+- deterministic request/dedupe/value fingerprints
+- same contributor + client submission key is idempotent
+- changed payload with the same key is rejected as conflict
+- one successful request creates exactly one community submission, URL evidence, atomic REVIEW_REQUIRED claim and OPEN DATA_QUALITY review case
+- claim confidence remains null; no AI confidence is invented
+- canonical Bull row remains unchanged
+- RPC execute revoked from PUBLIC/anon/authenticated; service role only
+- rollback-only Production regression PASS with temporary Bull fixture rolled back
+- security advisor found no new browser-executable privileged function
 
 Required invariants:
 - authenticated actor ID derived server-side, never trusted from payload
@@ -180,8 +193,16 @@ Required invariants:
 - no AI auto-publish
 - no betting/wallet/settlement/payout fields or flow
 
+Validation limitation:
+- Production currently has no genuine VERIFIED/PUBLISHED Bull row suitable for retained end-to-end contribution testing.
+- Database behavior is therefore verified with rollback-only fixtures; no fake Bull/submission is retained merely to exercise HTTP UI states.
+- GitHub workflow Production API smoke remains the preferred external-network validation path because this execution runtime cannot resolve the Supabase hostname directly.
+
 Exact next slice:
-Implement the additive migration defined in `docs/COMMUNITY-CONTRIBUTION-V1.md`, then run rollback-only compatibility and access-control tests before exposing the submission route.
+1. merge the controlled contribution API after GitHub CI / Production smoke passes
+2. implement authenticated `MY_SUBMISSIONS` safe projection for the current contributor only
+3. expose only submission status, safe Bull identity, proposed field/value and high-level outcome; never reviewer-private notes/audit/other contributors
+4. then build the mobile contribution UI against the two server-mediated routes
 
 ---
 
