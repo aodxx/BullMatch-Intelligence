@@ -29,14 +29,16 @@ Phase 0 is complete only when all of the following are approved and consistent:
 
 ## Active Work
 
-| Task ID | Work | Owner | Status | Files/Area |
+| Task ID | Work | Owner | Status | Tracking |
 |---|---|---|---|---|
-| BMI-P0-001 | Repository and collaboration foundation | Primary Maintainer | IN PROGRESS | root docs, `.github/` |
-| BMI-P0-002 | Initial database model | Unassigned | READY | `docs/DATABASE-SCHEMA.md`, `supabase/` |
-| BMI-P0-003 | AI collection and verification architecture | Unassigned | READY | `docs/AI-AGENT-SPEC.md` |
-| BMI-P0-004 | Product requirements / MVP boundaries | Primary Maintainer | IN PROGRESS | `PRD.md` |
-| BMI-P0-005 | System architecture | Primary Maintainer | IN PROGRESS | `ARCHITECTURE.md` |
-| BMI-P0-006 | Source discovery and source registry specification | Unassigned | BLOCKED BY P0-002/P0-003 | docs/data model |
+| BMI-P0-001 | Repository and collaboration foundation | Primary Maintainer | DONE | root docs + `.github/` |
+| BMI-P0-002 | Initial database model | Unassigned | READY | Issue #1 |
+| BMI-P0-003 | AI collection and verification contracts | Unassigned | READY | Issue #2 |
+| BMI-P0-004 | Product requirements / MVP boundaries | Primary Maintainer | REVIEW | `PRD.md` v0.1 |
+| BMI-P0-005 | System architecture | Primary Maintainer | REVIEW | `ARCHITECTURE.md` v0.1 |
+| BMI-P0-006 | Source discovery and source registry specification | Unassigned | BLOCKED BY P0-002/P0-003 | planned |
+| BMI-P0-007 | Entity resolution strategy | Unassigned | READY | Issue #3 |
+| BMI-P0-008 | Human review queue UX specification | Unassigned | READY | Issue #4 |
 
 ## Decisions Locked
 
@@ -47,11 +49,25 @@ Phase 0 is complete only when all of the following are approved and consistent:
 5. Multiple contributors must use Task IDs and isolated branches.
 6. Raw evidence and provenance must survive extraction/review decisions.
 7. Entity resolution is a first-class subsystem, not a simple name match.
+8. Connector integrations must use shared normalized contracts instead of source-specific writes into verified business tables.
+
+## Collaboration Foundation
+
+Operational files now available:
+
+- `AGENTS.md`
+- `TASKS.md`
+- `docs/TEAM-WORKFLOW.md`
+- `.github/ISSUE_TEMPLATE/task.md`
+- `.github/pull_request_template.md`
+
+Google Drive also contains `06_Team-Handoffs` for non-code handoff artifacts when needed.
 
 ## Current Blockers
 
 - Supabase project has not yet been selected/created for this project.
-- Initial database schema is not yet committed.
+- Database schema draft exists but BMI-P0-002 must finalize it before production migrations.
+- AI agent draft exists but BMI-P0-003 must finalize shared contracts before collector implementation.
 - First real source connectors have not yet been selected and validated for access/compliance.
 
 ## Next Integration Gate
@@ -60,4 +76,4 @@ Do not start production scraping/collection code until `BMI-P0-002` and `BMI-P0-
 
 ## Handoff Rule
 
-When another agent joins, assign it an unowned Task ID from `TASKS.md`. It must not invent a new parallel architecture without first documenting why the existing architecture cannot support its task.
+When another agent joins, assign it an unowned Task ID from `TASKS.md` or the corresponding GitHub Issue. It must not invent a new parallel architecture without first documenting why the existing architecture cannot support its task.
