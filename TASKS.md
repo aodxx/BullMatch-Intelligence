@@ -112,9 +112,11 @@ Status: DONE — PR #31
 Status: DONE — PR #33
 
 ### BMI-APP-004 — Visual Design Rebaseline: Real Bull / Sports Intelligence / Motion
-Status: IN PROGRESS
+Status: IN PROGRESS — PRODUCTION INCREMENTS DEPLOYED
 Owner: Primary Maintainer (ChatGPT)
-Branch: `agent/bmi-app-004-visual-rebaseline`
+Latest merged work:
+- PR #41 — real-bull / sports-intelligence visual-system baseline
+- PR #42 — safe verified Bull Profile imagery from `primary_image_ref`
 
 Mandate:
 - real bull and real venue imagery where rights/source permit
@@ -127,16 +129,47 @@ Mandate:
 - reduced-motion and mobile-performance behavior required
 - flagship `Matchup Intelligence` visual experience
 
-Expected outcome:
-- reusable visual system rules
-- motion language
-- image-treatment rules
-- typography/data-visualization grammar
-- implemented production-facing components, not mockups only
+Implemented and deployed:
+- `docs/VISUAL-SYSTEM.md` reusable image/type/motion rules
+- additive `visual-system.css` layer so legacy UI behavior remains reversible
+- real licensed bull-fighting atmosphere Hero image; never used as canonical bull identity
+- BM typographic brand treatment rather than mascot identity
+- scoreboard statistic presentation
+- action rails replacing generic quick-card language
+- dark sports/broadcast Bull Profile stage
+- arena-style Match Detail + animated VS signal
+- generic bull portraits removed from bull-specific/participant missing-image states
+- explicit `ยังไม่มีภาพยืนยัน` / `NO VERIFIED PHOTO` fallbacks
+- `prefers-reduced-motion` and responsive/mobile safeguards
+- Bull Profile now renders the existing production `bull.primary_image_ref` only when it resolves to HTTP(S)
+- image-load errors fall back safely rather than substituting another bull
+- login product mark no longer uses the bull mascot glyph
+
+Validation completed:
+- PR #41 Web App CI PASS: typecheck/build + controlled Production API smoke
+- PR #41 main GitHub Pages deploy PASS
+- PR #42 Web App CI PASS: typecheck/build + controlled Production API smoke
+- PR #42 main GitHub Pages deploy PASS
+- no production bull/match data fabricated for visual testing
+- no Supabase migration/auth/API mutation introduced by PR #41 or #42
+
+Known limitation:
+- Production currently has no real Bull/Match rows, so verified bull photo rendering cannot be end-to-end visually demonstrated without fabricating data; do not add fake records just for screenshots.
+- Match participant API currently has no participant-specific verified image reference. Match Detail must keep explicit no-photo placeholders until that contract exists.
+- Dashboard atmosphere currently hotlinks a CC0 Wikimedia thumbnail; long-term approved assets should move to BullMatch-controlled storage.
+
+Exact next APP-004 work:
+1. define a participant-image read contract that exposes only verified/public image references without leaking private evidence
+2. add reusable evidence-strength / data-confidence visual primitives for future intelligence surfaces
+3. use those primitives on current verified/published data surfaces where meaningful
+4. refine React-level loading/reveal transitions only where CSS-only motion is insufficient
+5. perform browser/mobile visual verification when a supported browser-testing path is available; do not create fake production records
+6. keep Matchup Intelligence visual language ready for Phase 4 analytics rather than inventing prediction data now
 
 Allowed files/areas:
 - `apps/web/src/`
 - `apps/web/public/` for documented visual assets/attribution
+- controlled API read model only when required for verified public imagery
 - `docs/` visual-system documentation
 - `TASKS.md`
 - `PROJECT_STATUS.md`
@@ -182,7 +215,7 @@ Includes:
 
 Unless a production/security blocker is more urgent:
 
-1. BMI-APP-004 — Visual Design Rebaseline
+1. BMI-APP-004 — finish visual-system implementation gates above
 2. BMI-P1-008 — Review Backend Foundation, re-scoped
 3. Community contribution migration/API/UI implementation
 4. Automated collection pipeline
