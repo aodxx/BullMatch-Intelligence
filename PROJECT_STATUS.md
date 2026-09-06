@@ -8,9 +8,9 @@ Last structural update: 2026-09-07
 
 Repository: `aodxx/BullMatch-Intelligence`
 
-Current phase: **Phase 1 — Community / Domain Rebaseline on active production foundation**
+Current phase: **Phase 1 — Verified Database + Community Review Foundation**
 
-Overall status: **PRODUCTION API ACTIVE / PRODUCT v0.3 COMPLETE / DATABASE SCHEMA v0.2 COMPLETE / CONTRIBUTION & TRUST COMPLETE / VISUAL REBASELINE IN PROGRESS AND DEPLOYED**
+Overall status: **PRODUCTION API ACTIVE / PRODUCT v0.3 COMPLETE / DATABASE SCHEMA v0.2 COMPLETE / CONTRIBUTION & TRUST COMPLETE / VISUAL REBASELINE COMPLETE / REVIEW BACKEND NEXT**
 
 ## Product Direction
 
@@ -26,7 +26,7 @@ Canonical flow:
 
 Community contributors never directly overwrite canonical history.
 
-BullMatch remains a data/statistics/research/analytics platform, not a bet-taking, wallet, settlement or payout service.
+BullMatch remains a data/statistics/research/analytics platform, not a bet-taking, wallet, odds-settlement or payout service.
 
 ## Completed Gates
 
@@ -44,41 +44,15 @@ BullMatch remains a data/statistics/research/analytics platform, not a bet-takin
 - BMI-APP-001 Frontend Foundation — DONE via PR #26
 - BMI-APP-002 Supabase Auth Login UI — DONE via PR #31
 - BMI-APP-003 Production API Wiring — DONE via PR #33
-- BMI-APP-004 Visual Rebaseline increment 1 — DEPLOYED via PR #41
-- BMI-APP-004 Verified Bull Profile imagery — DEPLOYED via PR #42
+- BMI-APP-004 Visual Design Rebaseline — IMPLEMENTATION GATE COMPLETE via PR #41, #42, #46, #47, #48
 - BMI-OPS-002 First Production ADMIN Bootstrap — DONE
 - BMI-OPS-003 Autonomous Development Continuity — DONE
-
-## Contribution & Trust Architecture
-
-`docs/CONTRIBUTION-TRUST-ARCHITECTURE.md` defines how BullMatch scales data collection through the bullfighting community without uncontrolled crowdsourced CRUD.
-
-Key rules remain:
-
-- mobile-first task-oriented contribution flows
-- AI assists data entry but does not auto-publish
-- submission and atomic claim state machines are separate
-- identity/duplicate checks precede new bull creation
-- evidence quality is separate from contributor reputation
-- reputation is multidimensional/scoped and derives from verified outcomes
-- owner/camp/venue profile claims unlock scoped first-party tools but never erase verified adverse history
-- community review is risk-tiered, not majority-vote truth
-- Data Credit rewards verified useful contribution and is not money/betting balance/transferable value
-- contributor self-service remains server-mediated
-
-## Database Contract
-
-Schema v0.2 remains authoritative in:
-- `docs/DATABASE-SCHEMA.md`
-- `docs/DATABASE-SCHEMA-V0.2-MIGRATION-PLAN.md`
-
-The production API still reads existing canonical verified/published tables. No production DDL was introduced by P1-011/P1-012 or APP-004 PR #41/#42.
 
 ## Production Infrastructure
 
 Shared Supabase project: **`aodxx's Project`** (`kaanguobjhlusjvgbowt`).
 
-BullMatch-owned schemas only:
+BullMatch-owned schemas:
 - `bullmatch`
 - `bullmatch_private`
 
@@ -89,104 +63,132 @@ Production flow:
 Production URL:
 `https://aodxx.github.io/BullMatch-Intelligence/`
 
-No fake production Bull/Match records have been introduced.
+No fake Production Bull/Match records have been introduced.
 
-## Visual Rebaseline — Current Production State
+## BMI-APP-004 — Completed Visual Rebaseline
 
 Canonical visual contract:
 - `docs/VISUAL-SYSTEM.md`
 
-Merged/deployed work:
+### Delivered production system
 
-### PR #41 — Sports-intelligence visual-system baseline
-
-Implemented:
-- real bull-fighting atmosphere photo in Dashboard Hero using documented CC0 source
-- photograph used as atmosphere only, never as a canonical bull identity
-- BM typographic product mark rather than mascot brand treatment
-- scoreboard-style statistics
-- action rails instead of generic rounded quick-card tiles
+PR #41 established the sports-intelligence baseline:
+- documented real bull-fighting atmosphere image with rights/source attribution
+- atmosphere photography never presented as a canonical bull identity
+- BM product mark rather than mascot branding
+- scoreboard-style statistics and stronger typography
+- action rails rather than generic repeated rounded cards
 - dark verified Bull Profile stage
 - arena-style Match Detail / VS composition
-- explicit no-verified-photo participant placeholders rather than generic bull portraits
-- sports/broadcast navigation treatment
-- purposeful CSS reveal / hero drift / VS motion
-- `prefers-reduced-motion` + responsive/mobile rules
+- purposeful reveal / hero drift / VS motion
+- reduced-motion and mobile-responsive safeguards
 
-Validation:
-- PR Web App typecheck/build PASS
-- controlled Production API smoke PASS
-- main GitHub Pages build/deploy PASS
+PR #42 added canonical Bull Profile imagery:
+- `bull.primary_image_ref` rendering through an HTTP(S)-only safe image component
+- lazy loading / async decoding
+- broken/missing images fall back to explicit `ยังไม่มีภาพยืนยัน`
+- no substitute animal is used for a specific bull
 
-### PR #42 — Verified Bull Profile imagery
+PR #46 reconciled the verified/public Match participant-image contract:
+- canonical `public.bullmatch_api_public_query(...)` remains the single service-only read bridge
+- Match/MATCHES participant payloads include canonical `primary_image_ref`
+- duplicate concurrent v2 RPC was removed
+- `anon` / `authenticated` cannot execute the RPC directly; `service_role` can
+- repository migration history was reconciled to Production
+- pgTAP contract coverage added
 
-Implemented:
-- Bull Profile consumes existing `bull.primary_image_ref`
-- only HTTP(S) references render directly
-- image lazy loading + async decode
-- broken/missing images fall back to `ยังไม่มีภาพยืนยัน`
-- no generic bull photograph is substituted for a canonical bull
-- login identity mark changed from bull mascot glyph to BM monogram
+PR #47 connected Match Detail to verified participant imagery:
+- each participant renders its own `primary_image_ref`
+- missing/invalid/broken references keep an explicit no-verified-image state
+- match participant image treatment includes sports/arena crop, contrast, motion and reduced-motion handling
 
-Validation:
-- PR Web App typecheck/build PASS
-- controlled Production API smoke PASS
-- main GitHub Pages build/deploy PASS
+PR #48 added evidence-aware data coverage UI:
+- reusable `DataCoverageRail`
+- Bull Profile reports VERIFIED record state, published-history count, statistical sample size and primary-image availability
+- Match Detail reports VERIFIED/PUBLISHED state, participant snapshot count and usable image-reference coverage
+- no synthetic confidence percentage, odds or unexplained prediction score is created
 
-## Visual Integrity Rules
+### Validation
 
-Future UI work must continue to follow:
+For PR #41, #42, #46, #47 and #48:
+- relevant Web App typecheck/build passed
+- controlled Production API smoke passed
+- merged production-facing UI increments passed GitHub Pages build/deploy where applicable
 
-- real bull / real venue imagery where rights permit
-- never use another animal to stand in for a specific bull
+Supabase participant-image boundary was also verified directly:
+- canonical public RPC exists
+- duplicate v2 RPC is absent
+- `anon` EXECUTE = false
+- `authenticated` EXECUTE = false
+- `service_role` EXECUTE = true
+- canonical function contains participant `primary_image_ref`
+
+Supabase advisors were run after the contract reconciliation. No participant-image-specific security exposure was found. Existing RLS-with-no-policy INFO findings are on intentionally private `bullmatch_private` tables. Existing leaked-password-protection WARN is an Auth configuration item outside APP-004. Performance findings were unused-index INFO on the new/near-empty dataset; indexes were not removed merely to silence advisor output.
+
+## APP-004 Deferred Real-Data Visual QA
+
+APP-004 implementation is complete, but one QA item remains intentionally deferred rather than fabricating Production data:
+
+- Production currently has no real VERIFIED/PUBLISHED Bull/Match rows, so real-image Bull Profile / Match Detail states cannot be demonstrated end-to-end with canonical records yet.
+- The current execution environment did not provide a supported browser path for visual screenshot inspection of GitHub Pages.
+- Build, API smoke and Pages deployment validation passed.
+
+When the first real VERIFIED/PUBLISHED Bull/Match data exists, run a non-mutating mobile/desktop visual QA pass covering real image, missing image, long Thai bull names and Match VS composition. **Do not create fake canonical records solely for screenshots.**
+
+This deferred QA does not block the reusable visual-system implementation gate or the Review Backend.
+
+## Visual Integrity Rules Going Forward
+
+- use real bull / real venue imagery only where identity/source/rights are valid
+- never use another animal as a placeholder for a specific bull
 - no cute/cartoon bull identity
-- no generic repeated dashboard/card-template language as default
-- strong typography and numbers
-- sports-intelligence / broadcast-graphics energy
-- evidence/data quality visually distinct from model inference
-- purposeful motion only
-- reduced-motion accessibility and mobile performance protection
-- Matchup Intelligence remains flagship future visual language, but no prediction data is fabricated before verified analytics exist
+- avoid generic dashboard-card repetition
+- preserve strong sports-intelligence / broadcast hierarchy
+- distinguish verified data coverage from model inference
+- do not invent confidence percentages before a defined evidence model supports them
+- honor reduced-motion and mobile performance
+- Matchup Intelligence remains a future explainable analytics surface, not betting UI
 
-## Current Visual Limitations
+## Review Backend — Current Priority
 
-1. Production currently has no real Bull/Match records. Therefore `primary_image_ref` rendering cannot be demonstrated end-to-end with a real canonical bull without creating fake data; fake records remain prohibited.
-2. Match API participants currently do not expose participant-specific verified/public image references, so Match Detail correctly keeps explicit no-photo placeholders.
-3. Dashboard atmosphere currently depends on a Wikimedia thumbnail URL. Long-term production should copy approved assets into BullMatch-controlled storage after rights/source review.
-4. Browser/mobile screenshot verification has not yet been completed through an available automated browser path; build/API validation has passed.
+### BMI-P1-008 — Review Backend Foundation
 
-## Review Backend Status
+Status: **READY — HIGHEST PRIORITY NEXT TASK**
 
-BMI-P1-008 is **READY but ordered after completion of the current APP-004 implementation gate**, unless a backend integrity/security issue becomes more urgent.
-
-Its re-scoped implementation must use:
-- Schema v0.2 atomic claims/evidence
-- Contribution & Trust risk tiers
+It must implement the already-approved Schema v0.2 / Contribution & Trust contracts:
+- review-case API/domain operations
 - idempotent review commands
-- conflict/supersession handling
-- provenance/audit
-- identity merge/split safeguards
+- optimistic concurrency
+- reviewer evidence access through a controlled boundary
+- atomic claim accept/reject/conflict/supersede handling
+- contributor/community review context and risk tiers
+- claim promotion with provenance/audit
+- identity merge/split preview safeguards
+
+Canonical truth remains closed to direct community writes.
 
 ## Exact Next Autonomous Action
 
-Continue **BMI-APP-004** rather than restarting it.
+Start **BMI-P1-008 — Review Backend Foundation**.
 
-Next implementation sequence:
-
-1. define a verified/public participant-image read contract for Match Detail; do not expose private evidence/storage references
-2. add reusable evidence-strength / data-confidence visual primitives for later matchup/profile/report surfaces
-3. apply confidence/evidence primitives only where current API data can support them honestly
-4. refine React-level reveal/loading transitions where CSS-only behavior is insufficient
-5. perform supported browser/mobile visual verification when available without adding fake production records
-6. once the APP-004 reusable system is sufficiently complete, mark APP-004 DONE and move to **BMI-P1-008 Review Backend Foundation**
+Required startup sequence:
+1. inspect current review/claim/evidence tables, functions, migrations and tests
+2. claim a dedicated `agent/bmi-p1-008-...` branch
+3. define minimal server-mediated Review API contracts before UI changes
+4. enforce ACTIVE ADMIN/REVIEWER authorization at server/database boundaries
+5. make commands idempotent and concurrency-safe
+6. preserve source evidence/provenance and append-only audit behavior
+7. never promote unresolved/unverified submissions directly to canonical history
+8. run database tests, security advisors and controlled API validation
+9. document exact implemented operations and any remaining blockers
 
 ## Next Engineering Gates
 
-1. **BMI-APP-004 — finish verified imagery + evidence/confidence visual primitives** — IN PROGRESS
-2. **BMI-P1-008 — Review Backend Foundation, re-scoped** — READY after APP-004 gate
-3. Community contribution schema migration/API/UI implementation
-4. First permitted automated source connector/pipeline
-5. Intelligence products / Matchup Intelligence analytics
+1. **BMI-P1-008 — Review Backend Foundation** — READY / NEXT
+2. Community contribution schema migration/API/UI implementation
+3. First permitted automated source connector/pipeline
+4. Intelligence products / Matchup Intelligence analytics
+5. Deferred real-data APP-004 visual QA when canonical data becomes available
 
 ## Still Deferred
 
