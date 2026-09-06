@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bullmatch.local/contracts/normalized-ingestion-envelope/1.0.0",
+  "title": "NormalizedIngestionEnvelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "correlation_id",
+    "source_id",
+    "dedupe_key",
+    "retrieved_at",
+    "raw_metadata",
+    "evidence",
+    "connector"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "source_id": { "type": "string", "format": "uuid" },
+    "external_id": { "type": ["string", "null"], "minLength": 1 },
+    "canonical_url": { "type": ["string", "null"], "format": "uri" },
+    "dedupe_key": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "published_at": { "type": ["string", "null"], "format": "date-time" },
+    "retrieved_at": { "type": "string", "format": "date-time" },
+    "title": { "type": ["string", "null"] },
+    "normalized_text": { "type": ["string", "null"] },
+    "raw_metadata": { "type": "object", "additionalProperties": true },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_type", "metadata"],
+        "properties": {
+          "evidence_type": {
+            "enum": ["TEXT", "IMAGE", "VIDEO_SEGMENT", "AUDIO_SEGMENT", "PDF", "METADATA", "OPERATOR_NOTE", "OTHER"]
+          },
+          "storage_ref": { "type": ["string", "null"] },
+          "source_ref": { "type": ["string", "null"] },
+          "content_sha256": {
+            "type": ["string", "null"],
+            "pattern": "^[A-Fa-f0-9]{64}$"
+          },
+          "text_excerpt": { "type": ["string", "null"] },
+          "timestamp_start_seconds": { "type": ["number", "null"], "minimum": 0 },
+          "timestamp_end_seconds": { "type": ["number", "null"], "minimum": 0 },
+          "access_class": {
+            "enum": ["PUBLIC_REFERENCE", "INTERNAL", "RESTRICTED"]
+          },
+          "metadata": { "type": "object", "additionalProperties": true }
+        }
+      }
+    },
+    "connector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
