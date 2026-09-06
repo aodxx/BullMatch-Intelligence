@@ -32,23 +32,32 @@ Status: DONE — PR #24
 Status: DONE — PR #29
 
 ### BMI-P1-008 — Review Backend Foundation
-Status: READY — RE-SCOPED AGAINST COMMUNITY CONTRACTS
+Status: READY — HIGHEST PRIORITY NEXT TASK
 
-Dependencies satisfied after:
+Dependencies satisfied:
 - BMI-P1-011 DONE — PR #39
 - BMI-P1-012 DONE — PR #40
+- BMI-APP-004 implementation gate DONE — PR #41, #42, #46, #47, #48
 
 Target scope:
 - review case API/domain operations
 - idempotent review commands
 - optimistic concurrency
-- evidence access
-- claim-level accept/reject/conflict/supersede handling
+- controlled reviewer evidence access
+- atomic claim accept/reject/conflict/supersede handling
 - contributor/community review context and risk tiers
 - claim promotion with provenance/audit
 - merge/split preview foundation
 
-Execution order: after BMI-APP-004 unless a backend integrity/security need makes P1-008 more urgent.
+Required invariants:
+- canonical history remains closed to direct community writes
+- ACTIVE ADMIN/REVIEWER authorization is enforced server-side/database-side
+- review operations are idempotent and concurrency-safe
+- evidence/provenance/audit are preserved
+- no majority-vote canonical truth
+- no betting/wallet/settlement/payout capability
+
+Exact next branch: `agent/bmi-p1-008-...`
 
 ### BMI-P1-009 — Thai Bullfighting Domain Rebaseline
 Status: DONE — PR #36
@@ -66,35 +75,23 @@ Key deliverables:
 
 ### BMI-P1-012 — Contribution & Trust Architecture
 Status: DONE — PR #40
-Owner: Primary Maintainer (ChatGPT autonomous run)
-Branch: `agent/bmi-p1-012-contribution-trust-architecture`
 
 Deliverable:
 - `docs/CONTRIBUTION-TRUST-ARCHITECTURE.md`
 
-Result:
-- mobile/field-friendly contribution entry points for program/result/bull/comparison/correction/link inputs
-- AI used as form assistant with compact human confirmation
-- explicit submission + atomic claim state machines
+Key contract:
+- mobile/field-friendly contribution entry points
+- AI as form assistant, never auto-publisher
+- submission and atomic-claim state machines
 - identity/duplicate safeguards before new bull creation
-- evidence-quality model separate from contributor reputation
+- evidence quality separated from contributor reputation
 - reputation scoped by topic/venue/region and derived from verified outcomes
 - contributor feedback/public-profile boundaries
 - owner/camp/venue representation claims with restricted rights
 - venue data-partner workflow
-- anti-spam, duplicate flooding, evidence reuse and coordinated-manipulation signals
-- community review risk tiers; no majority-vote canonical truth
-- review queue routing factors
-- Data Credit / Contribute-to-Unlock boundaries without raw-volume rewards
-- contributor API/security/privacy boundaries
-- success metrics, failure modes and implementation sequence
-
-Validation:
-- architecture/documentation only
-- no production migration/API/runtime changes
-- no secrets or fabricated production data
-- canonical history remains closed to direct community writes
-- Data Credit is not money, a betting wallet or transferable gambling value
+- anti-spam / duplicate / coordinated-manipulation signals
+- community review risk tiers; no majority-vote truth
+- Data Credit only for verified useful outcomes; not money or betting value
 
 ---
 
@@ -112,67 +109,41 @@ Status: DONE — PR #31
 Status: DONE — PR #33
 
 ### BMI-APP-004 — Visual Design Rebaseline: Real Bull / Sports Intelligence / Motion
-Status: IN PROGRESS — PRODUCTION INCREMENTS DEPLOYED
+Status: DONE — IMPLEMENTATION GATE COMPLETE
 Owner: Primary Maintainer (ChatGPT)
-Latest merged work:
-- PR #41 — real-bull / sports-intelligence visual-system baseline
-- PR #42 — safe verified Bull Profile imagery from `primary_image_ref`
 
-Mandate:
-- real bull and real venue imagery where rights/source permit
-- no cute/cartoon bull identity
-- no generic repeated dashboard/card-template language
-- high-energy sports-intelligence / broadcast-graphics feel
-- real bull identity centered in profile and matchup experiences
-- strong typography, statistics, layered imagery and data visualization
-- purposeful transitions, stat reveals, matchup motion, timelines and micro-interactions
-- reduced-motion and mobile-performance behavior required
-- flagship `Matchup Intelligence` visual experience
+Merged production increments:
+- PR #41 — sports-intelligence visual-system baseline
+- PR #42 — safe canonical Bull Profile imagery
+- PR #46 — verified/public Match participant image contract + migration reconciliation
+- PR #47 — verified participant imagery in Match Detail
+- PR #48 — evidence-aware Data Coverage / Trust Signals
 
-Implemented and deployed:
-- `docs/VISUAL-SYSTEM.md` reusable image/type/motion rules
-- additive `visual-system.css` layer so legacy UI behavior remains reversible
-- real licensed bull-fighting atmosphere Hero image; never used as canonical bull identity
-- BM typographic brand treatment rather than mascot identity
-- scoreboard statistic presentation
-- action rails replacing generic quick-card language
-- dark sports/broadcast Bull Profile stage
-- arena-style Match Detail + animated VS signal
-- generic bull portraits removed from bull-specific/participant missing-image states
-- explicit `ยังไม่มีภาพยืนยัน` / `NO VERIFIED PHOTO` fallbacks
-- `prefers-reduced-motion` and responsive/mobile safeguards
-- Bull Profile now renders the existing production `bull.primary_image_ref` only when it resolves to HTTP(S)
-- image-load errors fall back safely rather than substituting another bull
-- login product mark no longer uses the bull mascot glyph
+Delivered:
+- reusable `docs/VISUAL-SYSTEM.md`
+- real licensed atmosphere imagery used only as atmosphere
+- no cartoon/cute bull identity
+- BM product mark rather than mascot branding
+- scoreboard statistics / action rails / arena VS composition
+- safe HTTP(S)-only `VerifiedBullImage`
+- explicit no-verified-image fallbacks; never substitute another bull
+- participant-specific canonical images via the service-only public read bridge
+- reduced-motion + mobile responsive safeguards
+- reusable Data Coverage rail based only on actual VERIFIED/PUBLISHED/sample/image state
+- no fabricated prediction confidence, odds, wallet or payout UI
 
-Validation completed:
-- PR #41 Web App CI PASS: typecheck/build + controlled Production API smoke
-- PR #41 main GitHub Pages deploy PASS
-- PR #42 Web App CI PASS: typecheck/build + controlled Production API smoke
-- PR #42 main GitHub Pages deploy PASS
-- no production bull/match data fabricated for visual testing
-- no Supabase migration/auth/API mutation introduced by PR #41 or #42
+Validation:
+- relevant PR typecheck/build PASS
+- controlled Production API smoke PASS
+- production-facing merged UI increments GitHub Pages deploy PASS
+- participant-image RPC ACL/security boundary directly verified
+- Supabase security/performance advisors run; no participant-image-specific security exposure found
+- no fake Production Bull/Match data introduced
 
-Known limitation:
-- Production currently has no real Bull/Match rows, so verified bull photo rendering cannot be end-to-end visually demonstrated without fabricating data; do not add fake records just for screenshots.
-- Match participant API currently has no participant-specific verified image reference. Match Detail must keep explicit no-photo placeholders until that contract exists.
-- Dashboard atmosphere currently hotlinks a CC0 Wikimedia thumbnail; long-term approved assets should move to BullMatch-controlled storage.
-
-Exact next APP-004 work:
-1. define a participant-image read contract that exposes only verified/public image references without leaking private evidence
-2. add reusable evidence-strength / data-confidence visual primitives for future intelligence surfaces
-3. use those primitives on current verified/published data surfaces where meaningful
-4. refine React-level loading/reveal transitions only where CSS-only motion is insufficient
-5. perform browser/mobile visual verification when a supported browser-testing path is available; do not create fake production records
-6. keep Matchup Intelligence visual language ready for Phase 4 analytics rather than inventing prediction data now
-
-Allowed files/areas:
-- `apps/web/src/`
-- `apps/web/public/` for documented visual assets/attribution
-- controlled API read model only when required for verified public imagery
-- `docs/` visual-system documentation
-- `TASKS.md`
-- `PROJECT_STATUS.md`
+Deferred QA — NOT A BLOCKER:
+- Production currently has no real VERIFIED/PUBLISHED Bull/Match rows, so canonical real-image states cannot yet be visually demonstrated end-to-end.
+- current execution environment has no supported automated browser path for GitHub Pages screenshot inspection.
+- when real canonical data exists, run non-mutating mobile/desktop visual QA; never create fake records only for screenshots.
 
 ---
 
@@ -215,11 +186,11 @@ Includes:
 
 Unless a production/security blocker is more urgent:
 
-1. BMI-APP-004 — finish visual-system implementation gates above
-2. BMI-P1-008 — Review Backend Foundation, re-scoped
-3. Community contribution migration/API/UI implementation
-4. Automated collection pipeline
-5. Intelligence products
+1. **BMI-P1-008 — Review Backend Foundation**
+2. Community contribution migration/API/UI implementation
+3. Automated collection pipeline
+4. Intelligence products
+5. deferred APP-004 real-data visual QA when canonical data exists
 
 Canonical autonomous instructions: `docs/AUTO-RUN-RUNBOOK.md`.
 
