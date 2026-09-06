@@ -17,7 +17,7 @@ Key tracking:
 
 ---
 
-## Phase 1 — Core Verified Database
+## Phase 1 — Core Verified Database / Community Rebaseline
 
 ### BMI-P1-001 — Shared Supabase Bootstrap
 Status: DONE — Issue #15 / PR #16
@@ -45,13 +45,24 @@ Status: DONE — Issue #23 / PR #24
 Status: DONE — Issue #28 / PR #29
 
 ### BMI-P1-008 — Review Backend Foundation
-Status: READY
+Status: BLOCKED / RE-SCOPED
 
-Scope:
+Reason:
+- the original operator-centric review assumptions are now too narrow
+- implementation must follow the Community Data Network + atomic-claim + contributor-trust redesign
+
+Resume after:
+- BMI-P1-010 Product Rebaseline v0.3
+- BMI-P1-011 Database Schema v0.2
+- BMI-P1-012 Contribution & Trust Architecture
+
+Target scope when resumed:
 - review case API/domain operations
 - idempotent review commands
 - optimistic concurrency
 - evidence access
+- claim-level accept/reject/conflict handling
+- contributor/community review context
 - merge/split preview foundation
 
 ### BMI-P1-009 — Thai Bullfighting Domain Rebaseline & Open Contribution Readiness
@@ -59,21 +70,62 @@ Status: DONE — PR #36
 Owner: Primary Maintainer (ChatGPT)
 Branch: `agent/bmi-p1-009-thai-bullfighting-domain-rebaseline`
 
-Scope:
-- research Thai bullfighting as a complete domain before broadening community contribution
-- document real-world lifecycle from breeding/acquisition and preparation through comparison day, pairing, program, match, result, recovery and historical record
-- document domain vocabulary, bull identity, physical traits, horn/fighting-style terminology, actors, venue/event structure, rule variation, evidence and legal/product boundaries
-- identify where the existing generic sports model is too shallow for Thai bullfighting
-- define the architecture implications for future open contribution, fact-level verification and provenance
-- do not change production schema or API in this task
-
 Deliverables:
 - `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md`
 - `docs/THAI-BULLFIGHTING-FIELD-VALIDATION.md`
 
-Dependencies / integration note:
-- findings inform the PRD/schema/review redesign before community write access is implemented
-- BMI-P1-008 remains READY but its community-review expansion should follow this domain rebaseline
+Result:
+- BullMatch is no longer modeled as only bull + match + winner
+- bull identity, temporal affiliations, comparison day, pairing, program versions, result reasons, local terminology and evidence uncertainty are first-class product concerns
+
+### BMI-P1-010 — Product Rebaseline v0.3: Community Big Data + Intelligence
+Status: READY — AUTONOMOUS PRIORITY 1
+
+Scope:
+- update PRD from operator-centric historical database to three-layer product model:
+  1. Community Data Network
+  2. Verified BullMatch Big Data
+  3. Intelligence Products
+- define contributor value exchange and `Contribute to Unlock` readiness
+- define product monetization lanes: Pro, reports, API, venue/camp/media tools, compatible sponsorship
+- preserve legal/product boundary: analytics/data platform, not bet-taking/wallet/settlement/payout service
+- incorporate the Thai bullfighting domain rebaseline
+- incorporate the visual/motion design mandate as a product requirement
+
+Primary files:
+- `PRD.md`
+- related architecture/product docs as required
+
+### BMI-P1-011 — Database Schema v0.2: Community Claims + Temporal Domain
+Status: BLOCKED — depends on BMI-P1-010
+Autonomous priority after P1-010.
+
+Scope:
+- additive schema plan for community submissions
+- atomic claims and claim evidence
+- temporal bull affiliations
+- physical/style observations
+- lineage claims
+- comparison sessions / pairing agreements / program versions
+- contributor reputation dimensions
+- anti-duplication / identity resolution compatibility
+- migration and backward-compatibility plan for current production schema
+
+No destructive rewrite of working production data without explicit migration/rollback design.
+
+### BMI-P1-012 — Contribution & Trust Architecture
+Status: BLOCKED — depends on BMI-P1-010 and BMI-P1-011
+Autonomous priority after P1-011.
+
+Scope:
+- community submission flow
+- AI-assisted contribution from photos/programs/links/text
+- moderation and review lifecycle
+- contributor reputation by topic/venue/region/evidence quality
+- owner/camp profile claims without control over canonical adverse history
+- anti-spam, abuse and duplicate-submission controls
+- verified-contribution credit model
+- `Contribute to Unlock` readiness
 
 ---
 
@@ -113,6 +165,23 @@ Key files:
 - `supabase/APP-003-VERIFICATION.md`
 - `apps/web/src/api.ts`
 
+### BMI-APP-004 — Visual Design Rebaseline: Real Bull / Sports Intelligence / Motion
+Status: BLOCKED — begins after BMI-P1-010 product requirements are updated
+Autonomous priority after BMI-P1-012 unless an independent design-only pass can proceed without contract conflict.
+
+Mandate:
+- real bull and real venue imagery where rights/source permit
+- no cute/cartoon bull identity
+- no generic repeated dashboard/card template language
+- high-energy sports-intelligence / broadcast-graphics feel
+- real bull identity centered in profile and matchup experiences
+- strong typography, statistics, layered imagery and data visualization
+- purposeful transitions, stat reveals, matchup motion, timelines and micro-interactions
+- reduced-motion and mobile-performance behavior required
+- flagship `Matchup Intelligence` visual experience
+
+Deliverables should include reusable visual system rules, motion language, image treatment, typography hierarchy and implemented production-facing components rather than mockups only.
+
 ---
 
 ## Operations
@@ -135,9 +204,28 @@ Verified:
 
 Runbook: `docs/FIRST-ADMIN-BOOTSTRAP.md`
 
+### BMI-OPS-003 — Autonomous Hourly Development Continuity
+Status: DONE
+
+Purpose:
+- allow scheduled runs to continue normal BullMatch development without requiring the owner to repeatedly type “continue”
+- make GitHub the durable source of next-step context instead of relying on chat memory alone
+
+Runbook:
+- `docs/AUTO-RUN-RUNBOOK.md`
+
+Rules:
+- autonomous runs read repository state before work
+- follow explicit priority order in the runbook
+- preserve Task ID/branch/test/handoff discipline
+- record blockers precisely and move to another safe task when possible
+- do not repeat the same unresolved external blocker every run
+
 ---
 
 ## Phase 2 — First Automated Collection Pipeline
+
+Status: PLANNED — follows stabilization of the community/domain contracts.
 
 Planned sequence:
 - select first permitted source
@@ -147,7 +235,7 @@ Planned sequence:
 - entity matching
 - duplicate detection
 - verification/review routing
-- scheduled daily run
+- scheduled collection run
 - operator report
 
 ## Phase 3 — Multi-Source Expansion
@@ -158,14 +246,32 @@ Planned sequence:
 - multi-source corroboration/conflicts
 - daily operations reporting
 
-## Phase 4 — Analytics
+## Phase 4 — Intelligence Products
 
-- rankings
-- head-to-head
-- form history
+- matchup intelligence
+- rankings and opponent-adjusted form
+- head-to-head / style-observation analysis
 - camp/venue analysis
 - historical trends
+- evidence completeness/confidence
+- advanced reports
+- API and B2B data surfaces
 - natural-language analysis over verified data
+
+## Autonomous Priority Reference
+
+Unless a production/security blocker is more urgent, use:
+
+1. BMI-P1-010 — Product Rebaseline v0.3
+2. BMI-P1-011 — Database Schema v0.2
+3. BMI-P1-012 — Contribution & Trust Architecture
+4. BMI-APP-004 — Visual Design Rebaseline
+5. BMI-P1-008 — Review Backend Foundation, re-scoped
+6. Community contribution implementation
+7. Automated collection pipeline
+8. Intelligence products
+
+Canonical autonomous operating instructions: `docs/AUTO-RUN-RUNBOOK.md`.
 
 ## Assignment Rule
 

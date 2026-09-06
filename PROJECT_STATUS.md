@@ -8,9 +8,25 @@ Last structural update: 2026-09-06
 
 Repository: `aodxx/BullMatch-Intelligence`
 
-Current phase: **Phase 1 — Core Verified Database + Frontend Integration**
+Current phase: **Phase 1 — Community / Domain Rebaseline on top of active production foundation**
 
-Overall status: **PRODUCTION API ACTIVE / FIRST REAL ADMIN ACTIVE**
+Overall status: **PRODUCTION API ACTIVE / FIRST REAL ADMIN ACTIVE / COMMUNITY BIG-DATA REBASELINE APPROVED / AUTONOMOUS HOURLY CONTINUATION ENABLED**
+
+## Product Direction
+
+BullMatch is now explicitly organized as three connected layers:
+
+1. **Community Data Network** — people in the Thai bullfighting ecosystem contribute observations, corrections, programs, results, identity evidence, lineage claims, photos/links and local knowledge.
+2. **Verified BullMatch Big Data** — evidence, AI assistance, entity resolution, contributor reputation and controlled review convert submissions into auditable facts.
+3. **Intelligence Products** — verified history supports bull profiles, matchup analysis, advanced statistics, reports, APIs and venue/camp/media tools.
+
+Core principle:
+
+`Open Contribution -> Evidence -> Atomic Claims -> Entity Resolution -> Corroboration/Review -> Verified Facts -> Published History -> Analytics`
+
+Community contributors do not directly overwrite canonical history.
+
+BullMatch remains a data/statistics/research/analytics product. It is not a bet-taking, wallet, odds-settlement or payout service.
 
 ## Completed Gates
 
@@ -21,10 +37,66 @@ Overall status: **PRODUCTION API ACTIVE / FIRST REAL ADMIN ACTIVE**
 - BMI-P1-005 Controlled Domain CRUD — DONE via PR #22
 - BMI-P1-006 Manual Match Entry & Verification — DONE via PR #24
 - BMI-P1-007 Bull Profile & Basic Statistics — DONE via PR #29
+- BMI-P1-009 Thai Bullfighting Domain Rebaseline — DONE via PR #36
 - BMI-APP-001 Frontend Foundation & First Screens — DONE via PR #26
 - BMI-APP-002 Supabase Auth Login UI — DONE via PR #31
 - BMI-APP-003 Controlled API + Production Data Wiring — DONE via PR #33
 - BMI-OPS-002 First Production ADMIN Bootstrap — DONE
+- BMI-OPS-003 Autonomous Hourly Development Continuity — DONE
+
+## Thai Bullfighting Domain Rebaseline
+
+The project must no longer model the domain as only `Bull + Match + Winner`.
+
+The approved domain baseline includes:
+
+- stable bull identity independent of name
+- historical aliases
+- physical/color/marking/horn observations
+- fighting-style / `ทางชน` observations with evidence
+- lineage claims with provenance
+- owner/camp/keeper relationships over time
+- comparison day / `วันเปรียบ`
+- proposed/rejected/accepted pairings
+- versioned match programs and amendments
+- actual match occurrence, result, duration and reason
+- venue/event rule versions
+- recovery/rest and subsequent history
+- evidence uncertainty and claim-level verification
+
+Canonical domain reference:
+- `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md`
+- `docs/THAI-BULLFIGHTING-FIELD-VALIDATION.md`
+
+## Visual / UX Mandate
+
+Future BullMatch UI must not default to cartoon bulls, cute iconography or repetitive generic dashboard templates.
+
+Approved direction:
+
+- real bull photography and real venue atmosphere where rights/source permit
+- bull identity centered on real animal imagery
+- high-energy sports-intelligence / broadcast-graphics presentation
+- strong typography, statistics and purpose-built indicators
+- layered imagery, motion, matchup transitions, stat reveals, timelines and animated data visualization where useful
+- `Matchup Intelligence` as a flagship visual experience
+- reusable motion language and image treatment rather than page-by-page gimmicks
+- reduced-motion accessibility and mobile-performance protection
+
+This requirement applies to the production application, not to generating decorative images in chat.
+
+## Autonomous Continuation
+
+An hourly scheduled development task is active for BullMatch Intelligence.
+
+The canonical continuity instructions are in:
+- `docs/AUTO-RUN-RUNBOOK.md`
+
+Each run must read repository state first, choose the next safe priority task, follow Task ID/branch/test/handoff rules, and leave an exact next action for the following run.
+
+The owner should not need to repeatedly type “ดำเนินการต่อ” for ordinary forward progress.
+
+## Production Infrastructure
 
 Selected shared Supabase host: **`aodxx's Project`** (`kaanguobjhlusjvgbowt`)
 
@@ -34,7 +106,7 @@ BullMatch owns only:
 
 `freshmart` remains outside BullMatch scope.
 
-## Production API Boundary
+### Production API Boundary
 
 Applied migration:
 `20260906092707_add_bullmatch_controlled_api_bridge`
@@ -46,7 +118,7 @@ Deployed Edge Function:
 
 Flow:
 
-`GitHub Pages React app → bullmatch-api Edge Function → service-only public RPC bridge → bullmatch/bullmatch_private domain`
+`GitHub Pages React app -> bullmatch-api Edge Function -> service-only public RPC bridge -> bullmatch/bullmatch_private domain`
 
 The browser never receives a service-role key and cannot execute the three bridge RPCs directly. `PUBLIC`, `anon`, and `authenticated` have no EXECUTE permission on them; only `service_role` does.
 
@@ -82,20 +154,20 @@ Current Production Bull/Match records intentionally remain empty. Visible zero/e
 
 ## First Production ADMIN
 
-The first intended real Supabase Auth account has now been bootstrapped as BullMatch `ADMIN / ACTIVE`.
+The first intended real Supabase Auth account has been bootstrapped as BullMatch `ADMIN / ACTIVE`.
 
 Verified:
 - Auth identity exists in project `kaanguobjhlusjvgbowt`
 - email is confirmed
 - exact Auth UUID is linked to `bullmatch.app_users`
-- `bullmatch_api_member` reports `member=true`, `role=ADMIN`, `status=ACTIVE`, `active=true`
-- an authenticated database role check reports ADMIN authorized
+- `bullmatch_api_member` reports member/ADMIN/ACTIVE
+- authenticated database role check reports ADMIN authorized
 
-For privacy and security, the public repository does not contain the owner's email, password, tokens, or Auth UUID.
+For privacy and security, the public repository does not contain the owner's email, password, tokens or Auth UUID.
 
 Runbook: `docs/FIRST-ADMIN-BOOTSTRAP.md`
 
-## Verification
+## Verification Baseline
 
 PR #33 passed its Web App CI on the merged head.
 
@@ -115,20 +187,24 @@ Database rollback tests also proved:
 - audit actor/entity linkage survives the bridge
 - no test fixtures remain
 
-Security Advisor: no WARN/ERROR introduced. Existing private-schema `RLS Enabled No Policy` INFO is intentional default deny.
-Reference: https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy
+## Next Autonomous Engineering Gates
 
-Performance Advisor: no actionable WARN introduced. Existing `unused_index` INFO is expected before real workload accumulates.
-Reference: https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index
+Unless a production/security blocker is more urgent, use this order:
 
-## Next Engineering Gates
+1. **BMI-P1-010 — Product Rebaseline v0.3: Community Big Data + Intelligence**
+2. **BMI-P1-011 — Database Schema v0.2: Community Claims + Temporal Domain**
+3. **BMI-P1-012 — Contribution & Trust Architecture**
+4. **BMI-APP-004 — Visual Design Rebaseline: Real Bull / Sports Intelligence / Motion**
+5. **BMI-P1-008 — Review Backend Foundation, re-scoped to the new contribution model**
+6. Community contribution implementation
+7. First permitted automated source connector/pipeline
+8. Intelligence products and advanced matchup analytics
 
-1. Verify owner sign-in shows `ADMIN / ACTIVE` in the production app
-2. Atomic operational form/command for real match entry without partial writes
-3. **BMI-P1-008 — Review Backend Foundation**
-4. Phase 2 first permitted automated source connector
+Detailed rules and blocking behavior: `docs/AUTO-RUN-RUNBOOK.md`.
 
-## Still Deferred
+## Still Deferred / Requires Later Resolution
 
 - AI provider selection
 - first production source selection/compliance approval
+- venue-specific field validation for uncertain terminology/rules
+- real community incentive pricing/credit economics until contribution behavior can be measured
