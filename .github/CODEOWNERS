@@ -1,0 +1,18 @@
+# BullMatch Intelligence code ownership
+# CODEOWNERS assists review routing. Enforcement additionally depends on repository branch/rules settings.
+
+* @aodxx
+
+# Integration-sensitive project control
+/AGENTS.md @aodxx
+/PROJECT_STATUS.md @aodxx
+/TASKS.md @aodxx
+/PRD.md @aodxx
+/ARCHITECTURE.md @aodxx
+
+# Database and contracts
+/supabase/ @aodxx
+/packages/contracts/ @aodxx
+
+# Workflow and automation
+/.github/ @aodxx
