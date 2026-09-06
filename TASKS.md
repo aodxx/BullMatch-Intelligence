@@ -55,7 +55,7 @@ Scope:
 - merge/split preview foundation
 
 ### BMI-P1-009 — Thai Bullfighting Domain Rebaseline & Open Contribution Readiness
-Status: REVIEW
+Status: DONE — PR #36
 Owner: Primary Maintainer (ChatGPT)
 Branch: `agent/bmi-p1-009-thai-bullfighting-domain-rebaseline`
 
