@@ -139,6 +139,12 @@ Deno.serve(async (req: Request) => {
         return respond(req,200,{data:result,request_id:requestId})
       }
 
+      if(operation==='review_edit_metadata') {
+        if(!isReviewMember(membership)) return respond(req,403,{error:'REVIEWER_REQUIRED',membership,request_id:requestId})
+        const result=await rpc('bullmatch_api_review_edit_metadata',{p_actor_id:user.id,p_command:payload ?? {}})
+        return respond(req,200,{data:result,request_id:requestId})
+      }
+
       if(operation==='review_create_entity') {
         if(!isAdminMember(membership)) return respond(req,403,{error:'ADMIN_REQUIRED',membership,request_id:requestId})
         const result=await rpc('bullmatch_api_review_create_entity',{p_actor_id:user.id,p_command:payload ?? {}})
