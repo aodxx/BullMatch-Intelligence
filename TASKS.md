@@ -18,8 +18,8 @@ Deliverables completed:
 
 ### BMI-P0-002 — Database Schema v0.1
 Owner: Primary Maintainer
-Status: REVIEW
-Tracking: Issue #1
+Status: DONE
+Tracking: Issue #1 / PR #5
 
 Deliverables completed:
 - canonical entities and relationships
@@ -39,8 +39,8 @@ Deliverables completed:
 No production migration has been applied yet.
 
 ### BMI-P0-003 — AI Agent & Verification Specification
-Owner: Unassigned
-Status: READY
+Owner: Primary Maintainer
+Status: IN PROGRESS
 Tracking: Issue #2
 
 Deliverables:
@@ -82,7 +82,7 @@ Deliverables drafted:
 ### BMI-P0-006 — Source Registry & Connector Contract
 Owner: Unassigned
 Status: BLOCKED
-Depends on: BMI-P0-002, BMI-P0-003
+Depends on: BMI-P0-003
 
 Deliverables:
 - source registry schema
