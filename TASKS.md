@@ -34,31 +34,42 @@ Status: DONE — PR #29
 ### BMI-P1-008 — Review Backend Foundation
 Status: IN PROGRESS
 Owner: Primary Maintainer (ChatGPT autonomous run)
-Branch: `agent/bmi-p1-008-review-backend-foundation`
+Current branch: `agent/bmi-p1-008-identity-impact-preview`
 
 Dependencies satisfied:
 - BMI-P1-011 DONE — PR #39
 - BMI-P1-012 DONE — PR #40
 - BMI-APP-004 implementation gate DONE — PR #41, #42, #46, #47, #48
 
-Active implementation slice:
+Completed/deployed slices:
+
+**Foundation — PR #50 / migration `20260906211732_add_bullmatch_review_backend_foundation`**
 - controlled REVIEWER/ADMIN queue + detail API
 - controlled reviewer evidence access
 - idempotent review commands using `command_id`
 - optimistic `case_version` / expected-status checks
 - claim decisions: VERIFIED / REJECTED / CONFLICT / SUPERSEDED without direct canonical publication
 - append-only review action + private audit records
-- merge/split remains preview-only until an explicit destructive-operation slice
+- MERGE/SPLIT execution blocked
 
-Target scope:
-- review case API/domain operations
-- idempotent review commands
-- optimistic concurrency
-- controlled reviewer evidence access
-- atomic claim accept/reject/conflict/supersede handling
-- contributor/community review context and risk tiers
-- claim promotion with provenance/audit
-- merge/split preview foundation
+**Identity impact preview — migration `20260906212825_add_bullmatch_identity_impact_preview` / Edge v7**
+- deterministic read-only `MERGE_SPLIT` preview for Bull identities
+- source/target Bull summaries
+- impact counts for aliases, match participation, published matches, source mappings, provenance and identity events
+- same-match distinct-Bull hard-conflict detection
+- unverified/archived source warnings
+- deterministic impact-preview fingerprint
+- `execution_enabled: false`
+- name similarity explicitly not accepted as merge authority
+- rollback-only Production validation passed and retained no fixtures
+- direct RPC ACL verified: anon/authenticated denied, service_role allowed
+- verification: `supabase/P1-008-IDENTITY-PREVIEW-VERIFICATION.md`
+
+Current target scope still remaining:
+- narrowly scoped verified-claim -> canonical promotion with provenance/audit
+- safe claim-action semantics for link/create/duplicate/edit operations
+- production Review Queue UI wiring
+- destructive merge/split only as a later separately confirmed slice after preview/provenance/reassignment safeguards
 
 Required invariants:
 - canonical history remains closed to direct community writes
@@ -66,7 +77,15 @@ Required invariants:
 - review operations are idempotent and concurrency-safe
 - evidence/provenance/audit are preserved
 - no majority-vote canonical truth
+- name similarity alone never proves Bull identity
+- unresolved/conflicted claims are not published
 - no betting/wallet/settlement/payout capability
+
+Exact next BMI-P1-008 implementation slice after the identity-preview PR merges:
+1. strict verified-claim -> canonical promotion allowlists with `fact_provenance`, review-action linkage and audit
+2. `LINK_ENTITY`, `CREATE_ENTITY`, `CONFIRM_DUPLICATE`, `MARK_NOT_DUPLICATE`, selected `EDIT`
+3. Review Queue UI wiring
+4. separately designed merge/split execution only after the above safeguards
 
 ### BMI-P1-009 — Thai Bullfighting Domain Rebaseline
 Status: DONE — PR #36
@@ -151,8 +170,7 @@ Validation:
 
 Deferred QA — NOT A BLOCKER:
 - Production currently has no real VERIFIED/PUBLISHED Bull/Match rows, so canonical real-image states cannot yet be visually demonstrated end-to-end.
-- current execution environment has no supported automated browser path for GitHub Pages screenshot inspection.
-- when real canonical data exists, run non-mutating mobile/desktop visual QA; never create fake records only for screenshots.
+- run non-mutating mobile/desktop visual QA when real canonical records exist; never create fake records only for screenshots.
 
 ---
 
