@@ -10,7 +10,25 @@ DECLARE
   v_evidence uuid;
   v_claim uuid;
   v_failed boolean;
+  v_count bigint;
 BEGIN
+  -- Existing source/extraction-origin rows, when present, must still satisfy the
+  -- generalized origin contract. This remains meaningful even on an empty
+  -- ingestion dataset because future Production runs can reuse the same test.
+  select count(*) into v_count
+  from bullmatch_private.evidence
+  where source_item_id is null and submission_id is null;
+  if v_count <> 0 then
+    raise exception 'found % evidence rows without any permitted origin', v_count;
+  end if;
+
+  select count(*) into v_count
+  from bullmatch_private.claims
+  where origin_type = 'SOURCE_EXTRACTION' and extraction_run_id is null;
+  if v_count <> 0 then
+    raise exception 'found % SOURCE_EXTRACTION claims without extraction_run_id', v_count;
+  end if;
+
   select id into v_user from auth.users order by created_at limit 1;
   if v_user is null then
     raise exception 'expected at least one auth user for rollback regression';
@@ -90,6 +108,7 @@ BEGIN
     raise exception 'community origin insert failed';
   end if;
 
+  -- Evidence cannot exist without either source or community submission origin.
   v_failed := false;
   begin
     insert into bullmatch_private.evidence(evidence_type, access_class, moderation_status)
@@ -101,6 +120,7 @@ BEGIN
     raise exception 'evidence without origin unexpectedly accepted';
   end if;
 
+  -- Community claims require both submission linkage and authenticated creator.
   v_failed := false;
   begin
     insert into bullmatch_private.claims(
@@ -133,6 +153,7 @@ BEGIN
     raise exception 'community claim without submission unexpectedly accepted';
   end if;
 
+  -- Browser roles remain closed; V1 self-service will be server mediated.
   if has_table_privilege('anon','bullmatch_private.community_submissions','select') then
     raise exception 'anon can read community_submissions';
   end if;
@@ -141,6 +162,9 @@ BEGIN
   end if;
   if has_table_privilege('authenticated','bullmatch.contributor_profiles','select') then
     raise exception 'authenticated can read contributor_profiles directly';
+  end if;
+  if not has_table_privilege('service_role','bullmatch_private.community_submissions','insert') then
+    raise exception 'service_role cannot insert community_submissions';
   end if;
 END $$;
 
