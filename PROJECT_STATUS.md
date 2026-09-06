@@ -10,132 +10,131 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 1 — Core Verified Database**
 
-Overall status: **SUPABASE BOOTSTRAP APPLIED / REVIEW READY**
+Overall status: **CORE DATABASE APPLIED / REVIEW READY**
 
-## Phase 0
+## Completed Gates
 
-Phase 0 — Foundation & Architecture is COMPLETE.
+- Phase 0 Foundation & Architecture — COMPLETE
+- BMI-P1-001 Shared Supabase Bootstrap — DONE via PR #16
 
-Key approved foundations:
-- `PRD.md` v0.2
-- `ARCHITECTURE.md` v0.2
-- database contract + shared-Supabase namespace overlay
-- AI/verification contracts
-- Source Registry/Connector contract
-- Entity Resolution strategy
-- Human Review Queue UX
-- multi-agent Task ID/branch/PR workflow
-
-## Current Work
-
-### BMI-P1-001 — Shared Supabase Bootstrap
-
-Status: **REVIEW**
-Tracking: Issue #15
-Branch: `agent/bmi-p1-001-supabase-bootstrap`
-
-Selected existing Supabase host:
+Selected shared Supabase host:
 
 **`aodxx's Project`**
 
-BullMatch continues to avoid creating a third Supabase project.
+BullMatch continues to use only:
+- `bullmatch`
+- `bullmatch_private`
 
-Existing `freshmart` remains outside BullMatch scope.
+`freshmart` remains outside BullMatch scope.
 
-## Applied Migration
+## Current Work — BMI-P1-002
 
-Migration version:
+Status: **REVIEW**
+Tracking: Issue #17
+Branch: `agent/bmi-p1-002-core-database`
 
-`20260906052726`
+### Applied migrations
 
-Migration name:
+- `20260906053239` — canonical entities
+- `20260906053302` — matches and results
+- `20260906053321` — review workflow
+- `20260906053347` — private ingestion/evidence/runtime
+- `20260906053422` — AI candidates/provenance/audit
+- `20260906053503` — publication/default hardening
+- `20260906053620` — missing FK indexes
 
-`bootstrap_bullmatch_shared_tenancy`
+Bootstrap dependency:
+- `20260906052726` — shared tenancy bootstrap
 
-Created:
-- schema `bullmatch`
-- schema `bullmatch_private`
-- table `bullmatch.app_users`
-- RLS policy `bullmatch_members_read_own_membership`
-- private-by-default schema/table/function/sequence privilege baseline
+## Database Inventory
 
-No bull/match/source tables have been created yet.
+`bullmatch`: **15 tables**
 
-## Verified Isolation Results
+Includes:
+- app_users
+- owners / aliases
+- camps / aliases
+- bulls / aliases
+- venues / aliases
+- events
+- matches / participants / results
+- review_cases / review_actions
 
-After DDL:
+`bullmatch_private`: **17 tables**
 
-- `bullmatch` schema exists: PASS
-- `bullmatch_private` schema exists: PASS
-- unrelated `public` application table count remains 0: PASS
-- RLS on `bullmatch.app_users`: PASS
-- authenticated role has `USAGE` on `bullmatch`: PASS
-- authenticated role has no `USAGE` on `bullmatch_private`: PASS
-- anon role has no `USAGE` on `bullmatch_private`: PASS
-- authenticated role may SELECT membership subject to RLS: PASS
-- authenticated role has no direct INSERT on membership: PASS
-- authenticated role has no direct UPDATE on membership: PASS
-- own-membership policy exists exactly once: PASS
+Includes:
+- private owner details
+- sources/runtime/source_items/evidence
+- agent/extraction runs
+- candidate groups/claims/evidence links
+- entity matching/source mappings
+- duplicate candidates/verification results
+- provenance/identity/audit history
 
-Supabase post-DDL advisors:
-- Security Advisor: no findings
-- Performance Advisor: no findings
+## Integrity Rules Now Enforced
 
-## Membership Boundary
+- canonical entities default to `UNVERIFIED`
+- winner participant must belong to the same match
+- published match must be VERIFIED
+- published match requires at least two participants
+- published match requires a result
+- event match numbers are unique when known
+- source `(source_id,dedupe_key)` is unique/idempotent
+- review cases include optimistic `case_version`
+- review actions use unique `command_id`
+- all BullMatch tables have RLS enabled
+- browser roles have no table access to `bullmatch_private`
+- browser roles have no domain-table access yet; only authenticated own-membership SELECT remains
 
-Shared `auth.users` provides project-wide identity only.
+## Verification
 
-BullMatch authorization is app-scoped through:
+Remote integration assertions passed against the actual Supabase database.
 
-`bullmatch.app_users`
+Temporary test records were removed. Key production rows remain:
+- bulls: 0
+- matches: 0
+- sources: 0
+- review_cases: 0
 
-A user does not receive BullMatch admin/reviewer/viewer membership merely by existing in shared Auth.
+Verification artifacts:
+- `supabase/tests/p1_002_core_integrity.sql`
+- `supabase/P1-002-VERIFICATION.md`
 
-Browser authenticated users cannot create or edit their own BullMatch role directly.
+## Advisor Review
 
-## Private Boundary
+### Security
 
-`bullmatch_private` is reserved for:
-- sources
-- source items
-- evidence metadata
-- AI/extraction claims
-- entity/duplicate/verification candidates
-- provenance
-- identity/audit history
-- connector/agent runtime state
+No WARN/ERROR security findings.
 
-`anon` and `authenticated` have no schema usage there.
+INFO `RLS Enabled No Policy` is expected for domain/private tables at this stage because:
+- RLS is enabled as defense in depth
+- browser grants are intentionally withheld
+- `bullmatch_private` has no browser schema usage
+- intentional application policies are deferred to Auth/API work
 
-## Repository Evidence
+### Performance
 
-- `supabase/migrations/20260906052726_bootstrap_bullmatch_shared_tenancy.sql`
-- `supabase/tests/p1_001_shared_tenancy_isolation.sql`
-- `supabase/P1-001-VERIFICATION.md`
+Actionable unindexed foreign-key findings were fixed in migration `20260906053620`.
+
+Remaining INFO findings are unused indexes, expected on a newly created empty database. Index removal is deferred until real workload/query statistics exist.
 
 ## Next Integration Gate
 
-Merge `BMI-P1-001`, then start:
+Merge BMI-P1-002, then two non-overlapping tasks become available:
 
-### BMI-P1-002 — Core Database Migrations
+1. **BMI-P1-003 Seed / Reference Data**
+2. **BMI-P1-004 Admin Authentication & Roles**
 
-It will create:
-- owners/camps/bulls/venues/events + aliases
-- matches/participants/results
-- review cases/actions with concurrency/idempotency support
-- source/evidence/agent/candidate/provenance/runtime tables
-- integrity/index/RLS policies and tests
+P1-004 is the critical dependency before domain CRUD, manual verified match entry, and review backend APIs.
 
-## Current Blockers
+## Current Deferred Decisions
 
-There is no blocker for core database migration work after BMI-P1-001 is merged.
-
-Still intentionally deferred:
-- production BullMatch users/seeds
-- final web framework/hosting
+- final frontend framework/hosting
 - AI provider selection
-- first production source selection/compliance validation
+- first production source selection/compliance approval
+
+None block database/auth foundation work.
 
 ## Handoff Rule
 
-Every new contributor must read the repository control/docs first, then claim one READY Task ID on an isolated branch. Shared Supabase migrations must remain strictly BullMatch-scoped.
+Every new contributor must read the project control/docs before taking one READY Task ID. Shared Supabase changes must remain strictly BullMatch-scoped.
