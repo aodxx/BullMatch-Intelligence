@@ -91,71 +91,89 @@ Deferred QA remains non-blocking: Production has no real VERIFIED/PUBLISHED Bull
 Status: **IN PROGRESS**
 
 Owner: Primary Maintainer (ChatGPT autonomous run)
-Branch: `agent/bmi-p1-008-review-backend-foundation`
+Current continuation branch: `agent/bmi-p1-008-identity-impact-preview`
 
-### Foundation slice now deployed
+### Foundation slice deployed
 
 Production migration:
 
 `20260906211732_add_bullmatch_review_backend_foundation`
 
-Production Edge Function:
-
-`bullmatch-api` version 6
-
 Implemented:
-- claim lifecycle now supports `VERIFIED`, `SUPERSEDED`, and `WITHDRAWN` while preserving proposal/corroboration/conflict/rejection states
+- claim lifecycle supports `VERIFIED`, `SUPERSEDED`, and `WITHDRAWN` while preserving proposal/corroboration/conflict/rejection states
 - explicit `review_case_claims` linkage between review cases and atomic claims
-- controlled reviewer queue API
-- controlled review-case detail API with claims, evidence, candidate matches/duplicates and append-only history
+- controlled reviewer queue and review-case detail APIs
 - reviewer evidence access remains service-mediated; restricted evidence content/storage references are not exposed
-- ACTIVE ADMIN/REVIEWER authorization enforced in both Edge/API and PostgreSQL boundary
+- ACTIVE ADMIN/REVIEWER authorization enforced in both Edge/API and PostgreSQL boundaries
 - review `command_id` idempotency
 - optimistic expected-status + `case_version` stale-write rejection
-- implemented commands: `CLAIM`, `UNCLAIM`, `COMMENT`, `APPROVE`, `REJECT`, `RESOLVE_CONFLICT`, `REOPEN`
+- commands: `CLAIM`, `UNCLAIM`, `COMMENT`, `APPROVE`, `REJECT`, `RESOLVE_CONFLICT`, `REOPEN`
 - successful commands append `review_actions` and private `audit_log`
-- `MERGE` / `SPLIT` execution explicitly blocked in this foundation slice
-- Edge API preserves existing public data reads and ADMIN mutation path
+- direct MERGE/SPLIT execution remains blocked
+
+Foundation verification:
+- `anon` and `authenticated` cannot execute reviewer RPCs directly
+- `service_role` can execute reviewer RPCs
+- rollback-only command tests passed and retained no test review data
+- regression coverage: `supabase/tests/p1_008_review_backend.sql`
+- verification record: `supabase/P1-008-VERIFICATION.md`
+
+### Identity merge/split impact preview deployed
+
+Production migration:
+
+`20260906212825_add_bullmatch_identity_impact_preview`
+
+Production Edge Function:
+
+`bullmatch-api` version 7
+
+Implemented read-only Bull identity preview:
+- accepts only `MERGE_SPLIT` review cases and currently supports `entity_type = BULL`
+- returns source/target Bull summaries without performing any mutation
+- reports affected aliases, match participants, distinct matches, VERIFIED/PUBLISHED matches, source mappings, fact provenance and prior identity events
+- detects the hard contradiction where two proposed source Bull identities appeared as distinct participants in the same match
+- reports unverified/archived source counts
+- returns deterministic `impact_preview_fingerprint`
+- always returns `execution_enabled: false`
+- explicitly states that name similarity is not merge authority
+- SPLIT remains assignment-plan-only at preview stage; no new canonical identity is created
+
+Identity-preview validation completed against Production:
+- `anon` EXECUTE = false
+- `authenticated` EXECUTE = false
+- `service_role` EXECUTE = true
+- RPC remains `SECURITY DEFINER` with fixed empty `search_path`
+- rollback-only fixture confirmed one affected match, one hard identity conflict, merge blocked, execution disabled and fingerprint present
+- rollback follow-up confirmed zero retained test Bulls and zero retained test review cases
+- current Production remains `bulls = 0`, `matches = 0`, `review_cases = 0`, `review_actions = 0`
+- verification record: `supabase/P1-008-IDENTITY-PREVIEW-VERIFICATION.md`
+
+Supabase advisors rerun after DDL:
+- no direct identity-preview RPC exposure reported
+- existing `bullmatch_private` RLS-enabled/no-policy INFO notices remain expected for intentionally service-only private tables
+- existing Auth leaked-password-protection WARN remains outside this task
+- unused-index INFO remains expected on the empty/nearly empty dataset; indexes were not removed merely to silence advisor output
 
 ### Canonical truth boundary
 
 `APPROVE` currently means **atomic claim verified**. It does not directly update canonical Bull/Match/Event/Owner/Camp/Venue history.
 
-Verified-claim promotion into canonical history remains a separate controlled operation requiring provenance/audit. This is intentional: community review does not become unrestricted canonical CRUD.
+The identity preview is advisory/read-only. It cannot merge or split identities, reassign match participants, archive Bulls, rewrite aliases, or publish claims.
 
-### Validation completed
-
-Direct Production checks passed:
-- `anon` cannot execute reviewer query/command RPCs
-- `authenticated` cannot execute reviewer query/command RPCs
-- `service_role` can execute reviewer query/command RPCs
-- `review_case_claims` has RLS enabled
-- rollback-only command test passed for CLAIM, version increment, idempotent replay, stale-write rejection and single audit/action record
-- rollback left Production with `review_cases = 0` and `review_actions = 0`
-- controlled reviewer queue returns an empty array normally on the current empty dataset
-
-Regression coverage:
-- `supabase/tests/p1_008_review_backend.sql`
-- verification record: `supabase/P1-008-VERIFICATION.md`
-
-Supabase advisors were run after DDL:
-- no direct reviewer-RPC browser exposure found
-- existing `bullmatch_private` RLS-enabled/no-policy INFO notices remain expected for service-only private tables
-- existing Auth leaked-password-protection WARN remains outside this task
-- unused-index INFO is expected on the nearly empty Production dataset; indexes were not removed merely to silence advisor output
+Verified-claim promotion into canonical history remains a separate controlled operation requiring strict fact/type allowlists, provenance and audit.
 
 ## Exact Next Autonomous Action
 
-Continue **BMI-P1-008** on the same Task/branch unless the current PR has already merged; after merge, create a new non-overlapping `agent/bmi-p1-008-...` continuation branch.
+Continue **BMI-P1-008** after the identity-preview PR is merged.
 
 Next implementation order:
-1. add controlled, deterministic **identity merge/split impact preview**; still no destructive execution
-2. define narrowly scoped verified-claim -> canonical promotion operations with `fact_provenance` + audit and strict field/type allowlists
-3. add safe semantics for `LINK_ENTITY`, `CREATE_ENTITY`, `CONFIRM_DUPLICATE`, `MARK_NOT_DUPLICATE`, and selected `EDIT`
-4. wire the production Review Queue UI to `REVIEW_QUEUE` / `REVIEW_CASE`
-5. only after impact preview + provenance rules are complete, design separately confirmed merge/split execution
+1. define narrowly scoped verified-claim -> canonical promotion operations with strict subject/field/type allowlists, `fact_provenance`, review-action linkage and private audit
+2. add safe semantics for `LINK_ENTITY`, `CREATE_ENTITY`, `CONFIRM_DUPLICATE`, `MARK_NOT_DUPLICATE`, and selected `EDIT`
+3. wire the production Review Queue UI to `REVIEW_QUEUE` / `REVIEW_CASE` and identity preview
+4. only after preview + promotion/provenance safeguards are complete, design separately confirmed merge/split execution that requires an unchanged preview fingerprint and explicit reassignment plan
 
-Do not implement merge/split as one-click AI or community actions. Do not publish unresolved/conflicted claims.
+Do not implement merge/split as one-click AI or community actions. Do not publish unresolved/conflicted claims. Do not infer Bull identity from name similarity alone.
 
 ## Next Engineering Gates
 
@@ -167,7 +185,7 @@ Do not implement merge/split as one-click AI or community actions. Do not publis
 
 ## Still Deferred
 
-- destructive identity merge/split execution until deterministic impact preview/provenance safeguards exist
+- destructive identity merge/split execution until deterministic preview, provenance and explicit reassignment safeguards exist
 - AI provider selection
 - first production source selection/compliance approval
 - venue-specific uncertain terminology/rules requiring field validation
