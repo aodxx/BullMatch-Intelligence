@@ -105,7 +105,9 @@ Validation:
 - checked against `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md` and autonomous runbook
 
 ### BMI-P1-011 — Database Schema v0.2: Community Claims + Temporal Domain
-Status: READY — AUTONOMOUS PRIORITY 1
+Status: IN PROGRESS
+Owner: Primary Maintainer (ChatGPT autonomous run)
+Branch: `agent/bmi-p1-011-database-schema-v0-2`
 
 Dependencies satisfied:
 - BMI-P1-009 DONE
@@ -121,6 +123,14 @@ Scope:
 - contributor reputation dimensions
 - anti-duplication / identity resolution compatibility
 - migration and backward-compatibility plan for current production schema
+
+Files/areas:
+- `docs/DATABASE-SCHEMA.md`
+- `docs/DATABASE-SCHEMA-NAMESPACE-OVERLAY.md`
+- `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md` (reference only unless a correction is required)
+- `supabase/migrations/` (inspection only in this contract-design task; no production migration unless separately justified)
+- `TASKS.md`
+- `PROJECT_STATUS.md`
 
 No destructive rewrite of working production data without explicit migration/rollback design.
 
@@ -148,10 +158,10 @@ Deployment: GitHub Pages ACTIVE
 URL: `https://aodxx.github.io/BullMatch-Intelligence/`
 
 ### BMI-APP-002 — Supabase Auth Login UI
-Status: DONE — Issue #30 / PR #31
+Status: DONE — PR #31
 
 ### BMI-APP-003 — Controlled API + Production Data Wiring
-Status: DONE — Issue #32 / PR #33
+Status: DONE — PR #33
 Deployment: GitHub Pages run #26 PASS
 
 Completed:
