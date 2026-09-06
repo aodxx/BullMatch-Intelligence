@@ -33,10 +33,10 @@ Phase 0 is complete only when all of the following are approved and consistent:
 |---|---|---|---|---|
 | BMI-P0-001 | Repository and collaboration foundation | Primary Maintainer | DONE | root docs + `.github/` |
 | BMI-P0-002 | Initial database model | Primary Maintainer | DONE | Issue #1 / PR #5 |
-| BMI-P0-003 | AI collection and verification contracts | Primary Maintainer | REVIEW | Issue #2 / contract branch |
+| BMI-P0-003 | AI collection and verification contracts | Primary Maintainer | DONE | Issue #2 / PR #6 |
 | BMI-P0-004 | Product requirements / MVP boundaries | Primary Maintainer | REVIEW | `PRD.md` v0.1 |
 | BMI-P0-005 | System architecture | Primary Maintainer | REVIEW | `ARCHITECTURE.md` v0.1 |
-| BMI-P0-006 | Source discovery and source registry specification | Unassigned | BLOCKED BY P0-003 | planned |
+| BMI-P0-006 | Source registry and connector contract | Primary Maintainer | IN PROGRESS | Issue #7 |
 | BMI-P0-007 | Entity resolution strategy | Unassigned | READY | Issue #3 |
 | BMI-P0-008 | Human review queue UX specification | Unassigned | READY | Issue #4 |
 
@@ -58,37 +58,35 @@ Phase 0 is complete only when all of the following are approved and consistent:
 14. External source content is untrusted data and cannot instruct agents to reveal secrets, bypass verification, or alter system configuration.
 15. Confidence values are advisory and task-specific; conflicts are preserved instead of averaged away.
 
-## Completed Gate — Database Schema
+## Completed Gates
 
-`BMI-P0-002` merged via PR #5.
+### Database Schema — BMI-P0-002
+Merged via PR #5.
 
-Key outputs:
-- `docs/DATABASE-SCHEMA.md`
-- `supabase/MIGRATION-PLAN.md`
+### AI Contracts — BMI-P0-003
+Merged via PR #6. Contract CI passed before merge.
 
-No production Supabase DDL has been applied.
+Key machine-readable contracts now exist under `packages/contracts/`.
 
-## Review Gate — AI Contracts
+## Current Work — Source Registry / Connector Contract
 
-`BMI-P0-003` is review-ready on `agent/bmi-p0-003-ai-contracts`.
-
-Key outputs:
-- `docs/AI-AGENT-SPEC.md`
-- `packages/contracts/README.md`
-- JSON Schemas for ingestion, extraction, entity matching, duplicate detection, verification, review references, agent runs, and errors
-- example payloads
-- `.github/workflows/contracts.yml`
-- `scripts/validate_contracts.py`
+`BMI-P0-006` defines the operational boundary for approved source configuration, polling, rate limits, cursor state, health, policy status, and the first production connector readiness checklist.
 
 ## Current Blockers
 
 - Supabase project has not yet been selected/created for this project.
-- `BMI-P0-003` must merge before `BMI-P0-006` starts.
 - First real source connectors have not yet been selected and validated for access/compliance.
+
+## Parallel-Ready Tasks
+
+- `BMI-P0-007` Entity Resolution Strategy can be assigned to another contributor.
+- `BMI-P0-008` Review Queue UX Specification can be assigned to another contributor.
+
+They must consume the merged schema/contracts rather than create competing payloads.
 
 ## Next Integration Gate
 
-Run contract CI and merge `BMI-P0-003`. Then `BMI-P0-006` becomes READY and `BMI-P0-007`/`BMI-P0-008` can consume stable shared contracts.
+Complete `BMI-P0-006`, then review/finalize P0-004/P0-005/P0-007/P0-008. Phase 1 begins only when these foundations agree.
 
 ## Handoff Rule
 
