@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { type AuthSession, restoreSession, signInWithPassword, signOutLocal } from './auth'
 import DataCoverageRail from './DataCoverageRail'
+import ReviewQueuePanel from './ReviewQueuePanel'
 import {
   type BullListItem,
   type BullProfileData,
@@ -129,9 +130,8 @@ function ManualEntry({session,me}:{session:AuthSession;me:MeData|null}){
   const isAdmin=Boolean(me?.membership.active&&me.membership.role==='ADMIN')
   return <><SectionTitle eyebrow="ADMIN WORKFLOW" title="บันทึกผลการแข่งขัน"/>{!isAdmin?<AccessGate title="บัญชีนี้ยังไม่มีสิทธิ์ ADMIN" body={me?.membership.member?'ต้องเป็น ACTIVE ADMIN จึงจะส่งคำสั่งแก้ข้อมูลได้':'บัญชี Auth นี้ยังไม่ได้ถูกเพิ่มใน BullMatch app_users'}/>:<><div className="notice-card success"><strong>ACTIVE ADMIN</strong><span>{session.user.email??session.user.id} • API dispatcher พร้อมใช้งานและตรวจสิทธิ์ซ้ำใน Database</span></div><div className="panel"><EmptyState title="Mutation boundary พร้อมแล้ว" body="การบันทึกคู่ชนแบบหลายขั้นจะเปิดเมื่อรวม Event → Match → Participants → Result เป็นคำสั่ง atomic เดียว เพื่อป้องกันข้อมูลค้างครึ่งทาง"/></div></>}</>
 }
-function ReviewQueue({me}:{me:MeData|null}){
-  const allowed=Boolean(me?.membership.active&&['ADMIN','REVIEWER'].includes(me.membership.role??''))
-  return <><SectionTitle eyebrow="HUMAN REVIEW" title="Review Queue"/>{!allowed?<AccessGate title="ไม่มีสิทธิ์ Review" body="ต้องเป็น ACTIVE ADMIN หรือ REVIEWER และ P1-008 จะเปิด Review API รายการจริง"/>:<><div className="notice-card success"><strong>{me?.membership.role}</strong><span>ยืนยันสิทธิ์จาก server แล้ว</span></div><div className="panel"><EmptyState title="Review backend ยังเป็นงาน P1-008" body="Auth และ role gate พร้อมแล้ว แต่ evidence/approve/reject/merge API ยังไม่เปิดใน APP-003"/></div></>}</>
+function ReviewQueue({session,me}:{session:AuthSession;me:MeData|null}){
+  return <ReviewQueuePanel session={session} me={me}/>
 }
 
 function Login({onSignedIn,go}:{onSignedIn:(s:AuthSession)=>void;go:(v:ViewId)=>void}){
@@ -167,7 +167,7 @@ function App(){
   else if(view==='matches')content=<Matches openMatch={openMatch} go={go} isAdmin={isAdmin}/>
   else if(view==='match-detail')content=<MatchDetail id={selectedMatchId} go={go}/>
   else if(view==='entry'&&session)content=<ManualEntry session={session} me={me}/>
-  else if(view==='review'&&session)content=<ReviewQueue me={me}/>
+  else if(view==='review'&&session)content=<ReviewQueue session={session} me={me}/>
   else if(view==='login')content=session?<Settings session={session} authLoading={false} me={me} meLoading={meLoading} meError={meError} onLogin={()=>go('login')} onLogout={handleLogout}/>:<Login onSignedIn={handleSignedIn} go={go}/>
   else content=<Settings session={session} authLoading={authLoading} me={me} meLoading={meLoading} meError={meError} onLogin={()=>go('login')} onLogout={handleLogout}/>
   const userLabel=session?.user.email?.trim().charAt(0).toUpperCase()||(session?'✓':'เข้า')
