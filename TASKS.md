@@ -44,15 +44,6 @@ Status: DONE — Issue #23 / PR #24
 ### BMI-P1-007 — Bull Profile & Basic Statistics
 Status: DONE — Issue #28 / PR #29
 
-Completed:
-- verified/published Bull match history
-- opponent/H2H-ready history
-- W/L/D/NO_RESULT/CANCELLED
-- win rate excludes NO_RESULT/CANCELLED
-- recent form latest five W/L/D
-- historical snapshots preserved
-- unverified Bulls excluded
-
 ### BMI-P1-008 — Review Backend Foundation
 Status: READY
 
@@ -75,34 +66,24 @@ URL: `https://aodxx.github.io/BullMatch-Intelligence/`
 ### BMI-APP-002 — Supabase Auth Login UI
 Status: DONE — Issue #30 / PR #31
 
-Completed:
-- Supabase email/password login for existing accounts
-- publishable-key-only Auth client
-- session restore/refresh/logout
-- public pages remain available signed out
-- protected shells require login
-- authenticated never implies ADMIN
-- no public Sign Up
-
 ### BMI-APP-003 — Controlled API + Production Data Wiring
-Owner: Primary Maintainer
-Status: REVIEW
-Tracking: Issue #32
+Status: DONE — Issue #32 / PR #33
+Deployment: GitHub Pages run #26 PASS
 
-Completed implementation:
+Completed:
 - migration `20260906092707_add_bullmatch_controlled_api_bridge`
 - service-role-only RPC bridge; browser roles have no EXECUTE
 - `bullmatch-api` Edge Function v1 ACTIVE
-- custom user token validation for protected routes
+- custom user-token validation for protected routes
 - public verified-data routes for Dashboard/Bulls/Bull/Matches/Match/Venues
 - `/me` server-owned BullMatch membership and role
-- ADMIN dispatcher derives actor from validated JWT
+- ADMIN dispatcher derives actor from validated Auth user
 - database ADMIN checks/audit remain authoritative
-- Dashboard/Bulls/Bull Profile/Matches/Match Detail wired to Production API
+- Dashboard/Bulls/Bull Profile/Matches/Match Detail read Production API
 - Manual Entry gated by ACTIVE ADMIN
 - Review shell gated by ACTIVE ADMIN/REVIEWER
-- GitHub Actions production API smoke test
-- no fake production data
+- production API smoke test in GitHub Actions
+- no fake production Bull/Match data
 
 Key files:
 - `supabase/migrations/20260906092707_add_bullmatch_controlled_api_bridge.sql`
@@ -111,8 +92,25 @@ Key files:
 - `supabase/APP-003-VERIFICATION.md`
 - `apps/web/src/api.ts`
 
+---
+
+## Operations
+
 ### BMI-OPS-001 — Enable GitHub Pages
 Status: DONE — Issue #27
+
+### BMI-OPS-002 — Bootstrap First Production ADMIN
+Status: WAITING FOR OWNER AUTH USER
+
+Safe sequence:
+1. owner creates the first real user in Supabase Authentication UI
+2. owner does not share the password
+3. maintainer confirms Auth user count/UUID in the database
+4. maintainer inserts that exact UUID into `bullmatch.app_users` as `ADMIN / ACTIVE`
+5. verify server `/me` membership and role
+6. owner refreshes/re-signs in and confirms ADMIN status in the app
+
+Runbook: `docs/FIRST-ADMIN-BOOTSTRAP.md`
 
 ---
 
