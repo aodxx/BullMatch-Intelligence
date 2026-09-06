@@ -54,6 +54,27 @@ Scope:
 - evidence access
 - merge/split preview foundation
 
+### BMI-P1-009 — Thai Bullfighting Domain Rebaseline & Open Contribution Readiness
+Status: DONE — PR #36
+Owner: Primary Maintainer (ChatGPT)
+Branch: `agent/bmi-p1-009-thai-bullfighting-domain-rebaseline`
+
+Scope:
+- research Thai bullfighting as a complete domain before broadening community contribution
+- document real-world lifecycle from breeding/acquisition and preparation through comparison day, pairing, program, match, result, recovery and historical record
+- document domain vocabulary, bull identity, physical traits, horn/fighting-style terminology, actors, venue/event structure, rule variation, evidence and legal/product boundaries
+- identify where the existing generic sports model is too shallow for Thai bullfighting
+- define the architecture implications for future open contribution, fact-level verification and provenance
+- do not change production schema or API in this task
+
+Deliverables:
+- `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md`
+- `docs/THAI-BULLFIGHTING-FIELD-VALIDATION.md`
+
+Dependencies / integration note:
+- findings inform the PRD/schema/review redesign before community write access is implemented
+- BMI-P1-008 remains READY but its community-review expansion should follow this domain rebaseline
+
 ---
 
 ## App / Frontend Track
