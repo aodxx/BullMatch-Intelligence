@@ -4,12 +4,26 @@ Task: `BMI-OPS-002`
 
 This runbook creates the first real BullMatch administrator without opening public sign-up or sharing a password with an agent/developer.
 
+## Status
+
+**COMPLETED — 2026-09-06**
+
+The intended real Supabase Auth identity in project `kaanguobjhlusjvgbowt` has been linked to `bullmatch.app_users` as `ADMIN / ACTIVE`.
+
+Verification completed:
+- Auth identity exists
+- email confirmation is complete
+- exact Auth UUID is linked to BullMatch membership
+- `bullmatch_api_member` returns `member=true`, `role=ADMIN`, `status=ACTIVE`, `active=true`
+- authenticated role check reports ADMIN authorized
+
+No email address, password, access token, refresh token, service-role key, or Auth UUID is recorded in this public repository.
+
 ## Preconditions
 
 - `BMI-APP-003` is deployed.
 - Supabase project: `aodxx's Project` (`kaanguobjhlusjvgbowt`).
 - `bullmatch-api` is ACTIVE.
-- Production Auth user count is 0 before the owner creates the first account.
 
 ## Owner action — create the Auth identity
 
@@ -31,13 +45,9 @@ Do not send or commit:
 - service-role key
 - any secret key
 
-The owner only needs to tell the maintainer: **สร้างแล้ว**.
-
 ## Maintainer action — bind the exact Auth UUID
 
-The maintainer must first verify that the intended newly created Auth user is unambiguous. For the first bootstrap, the expected production count is exactly 1.
-
-Then insert the exact `auth.users.id` into `bullmatch.app_users`:
+The maintainer must identify the intended Auth identity and use its exact `auth.users.id` UUID as the stable application membership key.
 
 ```sql
 insert into bullmatch.app_users (
@@ -58,7 +68,7 @@ set role = 'ADMIN',
     updated_at = now();
 ```
 
-Do not identify a user by email string when writing BullMatch foreign keys; the stable `auth.users.id` UUID is authoritative.
+Do not use an email string as a BullMatch foreign key. The stable `auth.users.id` UUID is authoritative.
 
 ## Verification
 
