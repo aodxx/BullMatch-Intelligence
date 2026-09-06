@@ -37,8 +37,8 @@ async function rpc(functionName: string, payload: Record<string, unknown>) {
   if (!response.ok) {
     const message = typeof data?.message === 'string' ? data.message : 'Database request failed'
     const code = typeof data?.code === 'string' ? data.code : ''
-    if (code === '42501' || /ACTIVE ADMIN|ACTIVE ADMIN or REVIEWER|permission denied/i.test(message)) throw new ApiError(403,message,data)
-    if (code === '40001' || /STALE_REVIEW_CASE|already assigned/i.test(message)) throw new ApiError(409,message,data)
+    if (code === '42501' || /ACTIVE ADMIN|ACTIVE ADMIN or REVIEWER|permission denied|CONTRIBUTOR_NOT_ACTIVE|AUTH_ACTOR_NOT_FOUND/i.test(message)) throw new ApiError(403,message,data)
+    if (code === '40001' || /STALE_REVIEW_CASE|already assigned|IDEMPOTENCY_CONFLICT/i.test(message)) throw new ApiError(409,message,data)
     if (code === 'P0002' || /not found/i.test(message)) throw new ApiError(404,message,data)
     throw new ApiError(400,message,data)
   }
@@ -126,6 +126,11 @@ Deno.serve(async (req: Request) => {
       const payload=(body as Record<string,unknown>).payload
       if(!operation) throw new ApiError(400,'operation is required')
       if(payload!==undefined&&(payload===null||typeof payload!=='object'||Array.isArray(payload))) throw new ApiError(400,'payload must be an object')
+
+      if(operation==='submit_bull_profile_correction') {
+        const result=await rpc('bullmatch_api_submit_bull_correction',{p_actor_id:user.id,p_payload:payload ?? {}})
+        return respond(req,200,{data:result,request_id:requestId})
+      }
 
       if(operation==='review_command') {
         if(!isReviewMember(membership)) return respond(req,403,{error:'REVIEWER_REQUIRED',membership,request_id:requestId})
