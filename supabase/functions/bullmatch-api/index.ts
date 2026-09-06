@@ -66,7 +66,7 @@ Deno.serve(async (req: Request) => {
       }
       if (!new Set(['DASHBOARD','BULLS','BULL','MATCHES','MATCH','VENUES']).has(resource)) throw new ApiError(400,'Unsupported public resource')
       const limitRaw=Number(url.searchParams.get('limit') ?? '50'), offsetRaw=Number(url.searchParams.get('offset') ?? '0')
-      const data = await rpc('bullmatch_api_public_query',{
+      const data = await rpc('bullmatch_api_public_query_v2',{
         p_resource:resource,
         p_id:parseUuidOrNull(url.searchParams.get('id')),
         p_search:url.searchParams.get('search'),
