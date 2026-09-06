@@ -42,39 +42,9 @@ Tracking: Issue #19 / PR #20
 Status: DONE
 Tracking: Issue #21 / PR #22
 
-Completed:
-- ADMIN-only Owner/Camp/Bull/Venue controlled CRUD
-- soft archive and explicit verification
-- alias management
-- Thai-safe normalization
-- audit trail
-- zero direct browser table writes
-- remote rollback-only security tests
-
 ### BMI-P1-006 — Manual Match Entry & Verification
 Status: DONE
 Tracking: Issue #23 / PR #24
-
-Completed:
-- Event create/update/verify/archive
-- Match create/update/archive
-- event/venue consistency
-- participant add/update/remove
-- match-time historical snapshots
-- result entry and deterministic participant result synchronization
-- explicit match verification
-- explicit publish/unpublish
-- hardened publication integrity
-- published facts require unpublish before edit
-- participant factual edits invalidate prior verification
-- same-match winner guard
-- rollback-only authorization/integrity tests
-
-Key files:
-- `supabase/migrations/20260906061040_add_bullmatch_admin_event_match_crud.sql`
-- `supabase/migrations/20260906062919_add_bullmatch_manual_participant_result_workflow.sql`
-- `supabase/tests/p1_006_manual_match.sql`
-- `supabase/P1-006-VERIFICATION.md`
 
 ### BMI-P1-007 — Bull Profile & Basic Statistics
 Status: READY
@@ -102,33 +72,36 @@ Scope:
 ## App / Frontend Track
 
 ### BMI-APP-001 — Frontend Foundation & First Screens
-Owner: Primary Maintainer
-Status: IN PROGRESS
-Tracking: Issue #25
-Branch: `agent/bmi-app-001-frontend-foundation`
+Status: DONE
+Tracking: Issue #25 / PR #26
+Deployment: GitHub Pages ACTIVE
+URL: `https://aodxx.github.io/BullMatch-Intelligence/`
 
-Scope:
-- React + TypeScript + Vite app under `apps/web`
+Completed:
 - mobile-first application shell
 - Dashboard
 - Bulls list/profile shell
 - Matches list/detail shell
 - Admin manual-entry shell
 - Review Queue shell
-- Profile/Settings shell
-- responsive desktop sidebar + mobile bottom navigation
-- loading/empty/error-friendly structure
-- PWA-ready manifest/icon
-- GitHub Actions build + Pages deployment workflow
+- Settings/Profile shell
+- responsive navigation
+- empty/loading/error-ready states
 - no fake production data
-- no secrets
-- secure API boundary; do not expose BullMatch mutation functions directly
+- PWA manifest + icon
+- locked dependency build
+- GitHub Pages deploy
+- secure API boundary preserved
 
 ### BMI-APP-002 — Supabase Auth Login UI
-Status: BLOCKED BY APP-001
+Status: READY
 
 ### BMI-APP-003 — Wire Domain Data & Admin Actions
-Status: BLOCKED BY APP-001 + API BOUNDARY DECISION
+Status: BLOCKED BY APP-002 + API BOUNDARY DECISION
+
+### BMI-OPS-001 — Enable GitHub Pages
+Status: DONE
+Tracking: Issue #27
 
 ---
 
