@@ -122,9 +122,12 @@ Validation:
 - shared-Supabase isolation preserved
 
 ### BMI-P1-012 — Contribution & Trust Architecture
-Status: READY — AUTONOMOUS PRIORITY 1
+Status: IN PROGRESS
+Owner: Primary Maintainer (ChatGPT autonomous run)
+Branch: `agent/bmi-p1-012-contribution-trust-architecture`
 
-Dependencies satisfied after P1-011 integration.
+Dependencies satisfied:
+- BMI-P1-011 DONE — PR #39
 
 Scope:
 - field-friendly community submission flow
@@ -139,7 +142,8 @@ Scope:
 
 Expected deliverable:
 - `docs/CONTRIBUTION-TRUST-ARCHITECTURE.md`
-- updates to review/API/domain contracts as needed, without implementing production migrations unless a separate task explicitly owns them
+- updates to `PROJECT_STATUS.md` / `TASKS.md`
+- no production migrations/API runtime changes in this architecture task
 
 ---
 
