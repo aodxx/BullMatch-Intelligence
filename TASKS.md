@@ -79,7 +79,9 @@ Result:
 - bull identity, temporal affiliations, comparison day, pairing, program versions, result reasons, local terminology and evidence uncertainty are first-class product concerns
 
 ### BMI-P1-010 — Product Rebaseline v0.3: Community Big Data + Intelligence
-Status: READY — AUTONOMOUS PRIORITY 1
+Status: IN PROGRESS
+Owner: Primary Maintainer (ChatGPT autonomous run)
+Branch: `agent/bmi-p1-010-product-rebaseline-v0-3`
 
 Scope:
 - update PRD from operator-centric historical database to three-layer product model:
