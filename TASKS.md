@@ -85,8 +85,8 @@ Deliverables drafted:
 
 ### BMI-P0-006 — Source Registry & Connector Contract
 Owner: Primary Maintainer
-Status: REVIEW
-Tracking: Issue #7
+Status: DONE
+Tracking: Issue #7 / PR #8
 
 Deliverables completed:
 - source registry schema and policy/health separation
@@ -104,17 +104,19 @@ Deliverables completed:
 - source registry example fixture and contract validation coverage
 
 ### BMI-P0-007 — Entity Resolution Strategy
-Owner: Unassigned
-Status: READY
+Owner: Primary Maintainer
+Status: IN PROGRESS
 Tracking: Issue #3
 
 Deliverables:
 - bull identity candidate scoring
-- aliases
+- Thai name/alias normalization rules
 - camp/owner/venue disambiguation
-- auto-match thresholds
+- auto-link and review thresholds
+- negative/conflict signals
 - human review thresholds
-- merge/split audit strategy
+- merge/split audit and rollback strategy
+- calibration/test-fixture plan
 
 ### BMI-P0-008 — Review Queue UX Specification
 Owner: Unassigned
