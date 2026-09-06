@@ -1,0 +1,29 @@
+.data-list { display: grid; gap: 10px; }
+.data-card {
+  width: 100%; min-height: 76px; border: 1px solid var(--line); border-radius: 17px;
+  background: var(--surface); color: var(--ink); padding: 14px 15px; text-align: left;
+  display: flex; justify-content: space-between; align-items: center; gap: 14px;
+  box-shadow: 0 4px 15px rgba(57,36,29,.03);
+}
+.data-card:hover { border-color: #cbb9aa; transform: translateY(-1px); }
+.data-card > div:first-child { min-width: 0; }
+.data-card strong { display: block; font-size: 15px; overflow-wrap: anywhere; }
+.data-card span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+.record-stats { flex: 0 0 auto; text-align: right; }
+.record-stats span { margin: 0; white-space: nowrap; }
+.record-stats b { display: block; margin-top: 4px; color: var(--brand); font-size: 13px; }
+.history-card { display: flex; justify-content: space-between; gap: 18px; align-items: center; }
+.history-card strong, .history-card b { display: block; color: var(--brand); }
+.history-card span { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+.history-card > div:last-child { text-align: right; }
+.match-card .versus { position: relative; grid-template-columns: 1fr 1fr; gap: 34px; }
+.match-card .versus::after {
+  content: 'VS'; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  color: var(--accent); font-size: 13px; font-weight: 900; background: var(--surface); padding: 5px;
+}
+@media (max-width: 520px) {
+  .data-card, .history-card { align-items: flex-start; }
+  .record-stats { max-width: 42%; }
+  .history-card { flex-direction: column; }
+  .history-card > div:last-child { text-align: left; }
+}

@@ -20,53 +20,38 @@ Key tracking:
 ## Phase 1 — Core Verified Database
 
 ### BMI-P1-001 — Shared Supabase Bootstrap
-Status: DONE
-Tracking: Issue #15 / PR #16
+Status: DONE — Issue #15 / PR #16
 
 ### BMI-P1-002 — Core Database Migrations
-Status: DONE
-Tracking: Issue #17 / PR #18
+Status: DONE — Issue #17 / PR #18
 
 ### BMI-P1-003 — Seed / Reference Data
 Status: DEFERRED — NO REQUIRED MVP SEED YET
 
 Rules:
-- do not fabricate bull/match/source records
-- add only stable reference/config data when a real implementation dependency exists
+- do not fabricate Bull/Match/source records
+- add only stable reference/config data when a real dependency exists
 
 ### BMI-P1-004 — Admin Authentication & Roles
-Status: DONE
-Tracking: Issue #19 / PR #20
+Status: DONE — Issue #19 / PR #20
 
 ### BMI-P1-005 — Bull/Camp/Owner/Venue CRUD
-Status: DONE
-Tracking: Issue #21 / PR #22
+Status: DONE — Issue #21 / PR #22
 
 ### BMI-P1-006 — Manual Match Entry & Verification
-Status: DONE
-Tracking: Issue #23 / PR #24
+Status: DONE — Issue #23 / PR #24
 
 ### BMI-P1-007 — Bull Profile & Basic Statistics
-Status: DONE
-Tracking: Issue #28 / PR #29
+Status: DONE — Issue #28 / PR #29
 
 Completed:
-- verified/published Bull match-history read model
-- normalized opponent history for future H2H
-- published/statistical match counts
-- W/L/D/NO_RESULT/CANCELLED counts
+- verified/published Bull match history
+- opponent/H2H-ready history
+- W/L/D/NO_RESULT/CANCELLED
 - win rate excludes NO_RESULT/CANCELLED
-- recent form latest five W/L/D only
-- historical participant snapshots preserved
+- recent form latest five W/L/D
+- historical snapshots preserved
 - unverified Bulls excluded
-- service-role-only read access for current API boundary
-- rollback-only regression test on shared Supabase
-- no leaked fixture data
-
-Key files:
-- `supabase/migrations/20260906084340_add_bullmatch_verified_profile_statistics.sql`
-- `supabase/tests/p1_007_bull_stats.sql`
-- `supabase/P1-007-VERIFICATION.md`
 
 ### BMI-P1-008 — Review Backend Foundation
 Status: READY
@@ -83,36 +68,51 @@ Scope:
 ## App / Frontend Track
 
 ### BMI-APP-001 — Frontend Foundation & First Screens
-Status: DONE
-Tracking: Issue #25 / PR #26
+Status: DONE — Issue #25 / PR #26
 Deployment: GitHub Pages ACTIVE
 URL: `https://aodxx.github.io/BullMatch-Intelligence/`
 
 ### BMI-APP-002 — Supabase Auth Login UI
-Owner: Primary Maintainer
-Status: REVIEW
-Tracking: Issue #30
+Status: DONE — Issue #30 / PR #31
 
 Completed:
 - Supabase email/password login for existing accounts
-- publishable-key-only browser Auth client
-- session persistence, validation and refresh
-- local logout
-- public Dashboard/Bulls/Matches remain accessible signed out
-- Manual Entry/Review Queue require authentication
-- intended protected route resumes after sign-in
-- no public sign-up UI
-- authenticated user is never assumed to be ADMIN
-- BullMatch role resolution deferred to APP-003 controlled API
-- no service-role/secret key in frontend
-- production TypeScript/Vite build passes
+- publishable-key-only Auth client
+- session restore/refresh/logout
+- public pages remain available signed out
+- protected shells require login
+- authenticated never implies ADMIN
+- no public Sign Up
 
-### BMI-APP-003 — Wire Domain Data & Admin Actions
-Status: BLOCKED BY APP-002 MERGE + API BOUNDARY IMPLEMENTATION
+### BMI-APP-003 — Controlled API + Production Data Wiring
+Owner: Primary Maintainer
+Status: REVIEW
+Tracking: Issue #32
+
+Completed implementation:
+- migration `20260906092707_add_bullmatch_controlled_api_bridge`
+- service-role-only RPC bridge; browser roles have no EXECUTE
+- `bullmatch-api` Edge Function v1 ACTIVE
+- custom user token validation for protected routes
+- public verified-data routes for Dashboard/Bulls/Bull/Matches/Match/Venues
+- `/me` server-owned BullMatch membership and role
+- ADMIN dispatcher derives actor from validated JWT
+- database ADMIN checks/audit remain authoritative
+- Dashboard/Bulls/Bull Profile/Matches/Match Detail wired to Production API
+- Manual Entry gated by ACTIVE ADMIN
+- Review shell gated by ACTIVE ADMIN/REVIEWER
+- GitHub Actions production API smoke test
+- no fake production data
+
+Key files:
+- `supabase/migrations/20260906092707_add_bullmatch_controlled_api_bridge.sql`
+- `supabase/functions/bullmatch-api/index.ts`
+- `supabase/tests/app_003_api_bridge.sql`
+- `supabase/APP-003-VERIFICATION.md`
+- `apps/web/src/api.ts`
 
 ### BMI-OPS-001 — Enable GitHub Pages
-Status: DONE
-Tracking: Issue #27
+Status: DONE — Issue #27
 
 ---
 

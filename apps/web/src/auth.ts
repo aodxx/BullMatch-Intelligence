@@ -1,6 +1,6 @@
-const SUPABASE_URL = 'https://kaanguobjhlusjvgbowt.supabase.co'
+export const SUPABASE_URL = 'https://kaanguobjhlusjvgbowt.supabase.co'
 // Publishable keys are intentionally safe for browser use. Never replace this with a secret/service-role key.
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_8PGBe264vc1Y4LHNn9HvHQ_f1gZTfNG'
+export const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_8PGBe264vc1Y4LHNn9HvHQ_f1gZTfNG'
 const STORAGE_KEY = 'bullmatch.auth.session.v1'
 const EXPIRY_SKEW_SECONDS = 60
 
