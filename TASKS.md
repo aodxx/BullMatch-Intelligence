@@ -38,55 +38,56 @@ Rules:
 Status: DONE
 Tracking: Issue #19 / PR #20
 
-Completed:
-- app-scoped ADMIN / REVIEWER / VIEWER authorization
-- database-backed active role lookup
-- SELECT-only browser grants + RLS
-- no self-elevation
-- first-admin trusted bootstrap runbook
-- authorization tests/advisors
-
 ### BMI-P1-005 — Bull/Camp/Owner/Venue CRUD
-Owner: Primary Maintainer
-Status: REVIEW
-Tracking: Issue #21
+Status: DONE
+Tracking: Issue #21 / PR #22
 
 Completed:
-- ADMIN-only Owner create/update
-- ADMIN-only Camp create/update
-- ADMIN-only Bull create/update
-- ADMIN-only Venue create/update
-- soft archive for Owner/Camp/Bull/Venue
-- explicit entity verification-state command
-- alias upsert + alias verification command
-- Thai-safe whitespace/case normalization
-- allowlisted JSON patch validation
-- reference checks for active Owner/Camp links
-- every mutation audited in `bullmatch_private.audit_log`
-- no direct browser table writes
-- rollback-only ADMIN/REVIEWER/VIEWER/non-member integration tests
-- no leaked test users/data
-
-Key files:
-- `supabase/migrations/20260906055912_add_bullmatch_admin_owner_camp_crud.sql`
-- `supabase/migrations/20260906060030_add_bullmatch_admin_bull_venue_alias_crud.sql`
-- `supabase/tests/p1_005_domain_crud.sql`
-- `supabase/P1-005-VERIFICATION.md`
+- ADMIN-only Owner/Camp/Bull/Venue controlled CRUD
+- soft archive and explicit verification
+- alias management
+- Thai-safe normalization
+- audit trail
+- zero direct browser table writes
+- remote rollback-only security tests
 
 ### BMI-P1-006 — Manual Match Entry & Verification
-Status: READY AFTER P1-005 MERGE
+Owner: Primary Maintainer
+Status: REVIEW
+Tracking: Issue #23
 
-Scope:
-- controlled ADMIN match/event creation and updates
-- participant snapshots
-- result entry
-- explicit verification and publication transition
-- audit every state change
-- preserve same-match winner/publication guards
-- no unrestricted browser writes
+Completed:
+- Event create/update/verify/archive
+- Match create/update/archive
+- event/venue consistency
+- participant add/update/remove
+- match-time historical snapshots
+- result entry and deterministic participant result synchronization
+- explicit match verification
+- explicit publish/unpublish
+- publication hardening: verified known result + >=2 participants + verified result + synchronized participant states
+- published facts cannot be edited until unpublish
+- factual participant edits invalidate prior verification
+- same-match winner guard preserved
+- rollback-only ADMIN/REVIEWER/VIEWER/non-member tests
+- no leaked test data
+
+Key files:
+- `supabase/migrations/20260906061040_add_bullmatch_admin_event_match_crud.sql`
+- `supabase/migrations/20260906062919_add_bullmatch_manual_participant_result_workflow.sql`
+- `supabase/tests/p1_006_manual_match.sql`
+- `supabase/P1-006-VERIFICATION.md`
 
 ### BMI-P1-007 — Bull Profile & Basic Statistics
-Status: BLOCKED BY P1-006
+Status: READY AFTER P1-006 MERGE
+
+Scope:
+- published/verified match history by Bull
+- matches / wins / losses / draws / no-result counts
+- win rate with explicit denominator rule
+- recent form
+- head-to-head-ready query foundation
+- no unverified/private facts in public statistics
 
 ### BMI-P1-008 — Review Backend Foundation
 Status: READY
@@ -97,6 +98,31 @@ Scope:
 - optimistic concurrency
 - evidence access
 - merge/split preview foundation
+
+---
+
+## App / Frontend Track
+
+### BMI-APP-001 — Frontend Foundation & First Screens
+Status: READY AFTER P1-006 MERGE
+
+Scope:
+- mobile-first application shell
+- Dashboard
+- Bulls list/profile shell
+- Matches list/detail shell
+- Admin manual-entry shell
+- Review Queue shell
+- responsive navigation
+- empty/loading/error states
+- no fake production data
+- secure API boundary; do not expose BullMatch mutation functions directly
+
+### BMI-APP-002 — Supabase Auth Login UI
+Status: BLOCKED BY APP-001
+
+### BMI-APP-003 — Wire Domain Data & Admin Actions
+Status: BLOCKED BY APP-001 + API BOUNDARY DECISION
 
 ---
 
