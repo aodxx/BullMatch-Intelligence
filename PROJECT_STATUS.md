@@ -10,13 +10,14 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 1 — Core Verified Database**
 
-Overall status: **AUTHORIZATION FOUNDATION APPLIED / REVIEW READY**
+Overall status: **CONTROLLED DOMAIN CRUD APPLIED / REVIEW READY**
 
 ## Completed Gates
 
 - Phase 0 Foundation & Architecture — COMPLETE
 - BMI-P1-001 Shared Supabase Bootstrap — DONE via PR #16
 - BMI-P1-002 Core Database — DONE via PR #18
+- BMI-P1-004 Authorization Foundation — DONE via PR #20
 
 Selected shared Supabase host:
 
@@ -28,90 +29,116 @@ BullMatch owns only:
 
 `freshmart` remains outside BullMatch scope.
 
-## Database Baseline
-
-- `bullmatch`: 15 tables
-- `bullmatch_private`: 17 tables
-- production bull/match/source/review datasets remain intentionally empty
-- canonical facts default unverified
-- publication guard requires verified match + participants + result
-- source ingestion has deterministic idempotency boundary
-- review workflow supports version/idempotent command fields
-
-## Current Work — BMI-P1-004
+## Current Work — BMI-P1-005
 
 Status: **REVIEW**
-Tracking: Issue #19
-Branch: `agent/bmi-p1-004-auth-roles`
+Tracking: Issue #21
+Branch: `agent/bmi-p1-005-domain-crud`
 
 ### Applied migrations
 
-- `20260906054956` — BullMatch role authorization/read policies
-- `20260906055150` — consolidate read policies after advisor finding
+- `20260906055912` — Owner/Camp CRUD + security/validation/audit helpers
+- `20260906060030` — Bull/Venue CRUD + archive/verification/alias operations
 
-## Authorization Model
+## Controlled Mutation Model
 
-Identity:
-- Supabase `auth.users` is shared project identity only
+Browser roles still have **zero direct table write grants** in `bullmatch`.
 
-BullMatch membership source of truth:
-- `bullmatch.app_users`
+State changes occur only through ADMIN mutation functions.
 
-Roles:
-- `ADMIN`
-- `REVIEWER`
-- `VIEWER`
+Each exposed mutation:
+- is `SECURITY DEFINER`
+- uses `search_path = ''`
+- immediately verifies current `auth.uid()` through internal `bullmatch.require_admin()`
+- requires ACTIVE ADMIN membership in `bullmatch.app_users`
+- validates allowed input fields
+- writes an audit event to `bullmatch_private.audit_log`
 
-Status:
-- `ACTIVE`
-- `SUSPENDED`
+Internal helpers are not executable by browser roles.
 
-`bullmatch.has_active_role(text[])`:
-- uses current `auth.uid()`
-- reads current BullMatch membership
-- requires ACTIVE status
-- is `SECURITY INVOKER`
-- does not use `user_metadata`
+## Domain Operations Available
 
-## Browser Access Boundary
+### Owner
+- create
+- update
+- archive
+- verification state
+- alias upsert / alias verification
 
-Authenticated browser grants on `bullmatch` are SELECT-only.
+### Camp
+- create
+- update
+- archive
+- verification state
+- alias upsert / alias verification
 
-RLS behavior:
-- ADMIN / REVIEWER: canonical + Review Queue read access
-- VIEWER: verified/non-archived entities and verified/published matches only
-- non-member: no BullMatch domain/review rows
-- suspended member: no role access
+### Bull
+- create
+- update
+- archive
+- verification state
+- alias upsert / alias verification
 
-No browser role can directly INSERT/UPDATE/DELETE canonical/review data.
+### Venue
+- create
+- update
+- archive
+- verification state
+- alias upsert / alias verification
 
-`bullmatch_private` remains unavailable to `anon` and `authenticated` at the schema boundary.
+New canonical entities start `UNVERIFIED`. An ADMIN must explicitly choose a verification transition.
 
-## First Administrator
+## Normalization
 
-At implementation time, shared Auth had no real user accounts and `bullmatch.app_users` remains empty.
+`bullmatch.normalize_entity_name` preserves Thai semantic marks.
 
-No administrator was fabricated and no “first signup becomes admin” path exists.
+It only:
+- trims outer whitespace
+- collapses repeated whitespace
+- applies lowercase/case folding where applicable
 
-The trusted bootstrap process is documented in:
-- `docs/AUTHORIZATION-RUNBOOK.md`
+Displayed canonical names remain unchanged except for explicit ADMIN edits.
 
-Once a real Auth account exists, a trusted operator verifies its exact UUID and adds the ADMIN membership from a trusted server/database context.
+## Audit
+
+All successful mutations write private audit records containing:
+- Auth actor UUID
+- action
+- entity type / entity ID
+- before/after or operation metadata
+
+The browser cannot read `bullmatch_private.audit_log` directly.
 
 ## Verification
 
-Remote authorization assertions passed:
-- authenticated has no BullMatch non-SELECT table grants
-- helper is SECURITY INVOKER
-- anon cannot execute role helper
-- browser roles cannot use `bullmatch_private`
-- no policy references user-editable metadata
-- non-member simulated JWT resolves to no role/membership
-- canonical domain tables use one authenticated SELECT policy each
+Remote rollback-only integration tests passed on the actual shared Supabase database.
+
+Verified:
+- ADMIN creates Owner/Camp/Bull/Venue
+- Owner/Camp references validate active linked records
+- new entity defaults UNVERIFIED
+- Thai whitespace normalization works
+- update works
+- explicit entity verification works
+- alias create/verification works
+- soft archive works
+- audit events are created
+- REVIEWER mutation rejected
+- VIEWER mutation rejected
+- non-member mutation rejected
+- private audit read blocked while impersonating browser role
+- trusted context can inspect audit trail
+- rollback leaves no test users/memberships/domain rows
+
+Post-test:
+- leaked temporary Auth users: 0
+- leaked temporary memberships: 0
+- browser direct write grants: 0
+- authenticated private-schema usage: false
 
 Artifacts:
-- `supabase/tests/p1_004_authorization.sql`
-- `supabase/P1-004-VERIFICATION.md`
+- `supabase/tests/p1_005_domain_crud.sql`
+- `supabase/P1-005-VERIFICATION.md`
 
 ## Advisor Review
 
@@ -119,35 +146,35 @@ Artifacts:
 
 No WARN/ERROR security findings introduced.
 
-Remaining private-schema `RLS Enabled No Policy` INFO findings are intentional because the schema has no browser usage/grants.
+Private-schema `RLS Enabled No Policy` INFO remains intentional because `bullmatch_private` has no browser schema access/grants.
 
 ### Performance
 
-Initial role migration generated `multiple_permissive_policies` WARN findings. These were fixed by migration `20260906055150`.
+No new actionable WARN findings.
 
-Current remaining findings are unused-index INFO on the empty database. Do not remove indexes before real query/workload evidence exists.
+Remaining `unused_index` INFO is expected on the empty/new database; defer removal until real query statistics exist.
 
-## Data API
+## Production Data
 
-This task does not alter Supabase Data API exposed-schema settings.
+No production BullMatch entities or users were added.
 
-If direct browser queries are selected later, `bullmatch` exposure must be intentional and tested. `bullmatch_private` must not be browser-exposed.
+This project intentionally avoids fabricated seed data. Real records should originate from trusted manual entry or later verified collection.
 
 ## Next Integration Gate
 
-Merge BMI-P1-004, then begin **BMI-P1-005 — Bull/Camp/Owner/Venue CRUD**.
+Merge BMI-P1-005, then start:
 
-P1-005 should implement controlled ADMIN domain operations rather than grant unrestricted table writes to browser clients.
+### BMI-P1-006 — Manual Match Entry & Verification
 
-Parallel after P1-004:
-- BMI-P1-006 Manual Match Entry & Verification
-- BMI-P1-008 Review Backend Foundation
+This will provide controlled event/match creation, participant historical snapshots, result entry, verification and publication operations while preserving existing database integrity guards.
 
-## Deferred
+After P1-006, **BMI-P1-007 Bull Profile & Basic Statistics** can use real verified match structure.
+
+## Still Deferred
 
 - actual first ADMIN activation (requires a real Auth account)
-- final frontend framework/hosting
+- frontend/login UI and hosting choice
 - AI provider selection
 - first production source selection/compliance approval
 
-These do not block server/domain operation implementation.
+These do not block the database/domain workflow implementation.
