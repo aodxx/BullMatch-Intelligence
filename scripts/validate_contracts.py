@@ -17,6 +17,7 @@ EXAMPLE_SCHEMA_MAP = {
     "normalized-ingestion-envelope.json": "normalized-ingestion-envelope.schema.json",
     "extraction-result.json": "extraction-result.schema.json",
     "verification-result.json": "verification-result.schema.json",
+    "entity-resolution-policy.json": "entity-resolution-policy.schema.json",
 }
 
 

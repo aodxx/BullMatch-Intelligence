@@ -37,7 +37,7 @@ Phase 0 is complete only when all of the following are approved and consistent:
 | BMI-P0-004 | Product requirements / MVP boundaries | Primary Maintainer | REVIEW | `PRD.md` v0.1 |
 | BMI-P0-005 | System architecture | Primary Maintainer | REVIEW | `ARCHITECTURE.md` v0.1 |
 | BMI-P0-006 | Source registry and connector contract | Primary Maintainer | DONE | Issue #7 / PR #8 |
-| BMI-P0-007 | Entity resolution strategy | Primary Maintainer | IN PROGRESS | Issue #3 |
+| BMI-P0-007 | Entity resolution strategy | Primary Maintainer | REVIEW | Issue #3 / entity-resolution branch |
 | BMI-P0-008 | Human review queue UX specification | Unassigned | READY | Issue #4 |
 
 ## Decisions Locked
@@ -61,6 +61,9 @@ Phase 0 is complete only when all of the following are approved and consistent:
 17. Connector runtime cursor advances only after a safe ingestion checkpoint is committed.
 18. Connectors own deterministic source-native dedupe keys; AI extraction never defines source item identity.
 19. Connector credentials are resolved at runtime from secret storage and are never persisted in source registry payloads.
+20. Thai name normalization is a candidate-search aid, not identity proof; semantic Thai marks are preserved by default.
+21. Bull auto-link requires more than name similarity: strong context, multiple independent signal groups, no hard conflict, and adequate top-candidate margin.
+22. Canonical entity merge/split is never automatic and must be reviewed, audited, and reversible.
 
 ## Completed Gates
 
@@ -68,9 +71,16 @@ Phase 0 is complete only when all of the following are approved and consistent:
 - `BMI-P0-003` AI Contracts — PR #6, contract CI passed
 - `BMI-P0-006` Source Registry / Connector Contract — PR #8, contract CI passed
 
-## Current Work — Entity Resolution
+## Review Gate — Entity Resolution
 
-`BMI-P0-007` defines how Thai names, alternate spellings, camps, owners, locations, opponents, event context, and negative signals combine to propose a canonical identity without silently merging different bulls.
+`BMI-P0-007` is review-ready on `agent/bmi-p0-007-entity-resolution`.
+
+Key outputs:
+- `docs/ENTITY-RESOLUTION-STRATEGY.md`
+- `entity-resolution-policy.schema.json`
+- conservative policy fixture with per-entity thresholds
+- updated contract validator
+- calibration, golden-fixture, merge/split and reviewer requirements
 
 ## Current Blockers
 
@@ -79,11 +89,11 @@ Phase 0 is complete only when all of the following are approved and consistent:
 
 ## Parallel-Ready Task
 
-`BMI-P0-008` Review Queue UX Specification remains available for another contributor and must consume the merged review/entity contracts.
+`BMI-P0-008` Review Queue UX Specification remains available for another contributor and should use the entity-resolution reviewer requirements from this task.
 
 ## Next Integration Gate
 
-Complete `BMI-P0-007`, then finalize the Review Queue UX and reconcile PRD/Architecture before Phase 1.
+Run contract CI and merge `BMI-P0-007`, then complete the Review Queue UX and reconcile PRD/Architecture before Phase 1.
 
 ## Handoff Rule
 

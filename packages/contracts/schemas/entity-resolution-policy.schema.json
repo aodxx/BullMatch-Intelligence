@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bullmatch.local/contracts/entity-resolution-policy/1.0.0",
+  "title": "EntityResolutionPolicy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "policy_version", "entities", "hard_conflict_behavior"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "policy_version": { "type": "string", "minLength": 1 },
+    "entities": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "BULL": { "$ref": "#/$defs/entityPolicy" },
+        "CAMP": { "$ref": "#/$defs/entityPolicy" },
+        "OWNER": { "$ref": "#/$defs/entityPolicy" },
+        "VENUE": { "$ref": "#/$defs/entityPolicy" },
+        "EVENT": { "$ref": "#/$defs/entityPolicy" }
+      }
+    },
+    "hard_conflict_behavior": { "const": "FORCE_REVIEW_OR_NO_MATCH" }
+  },
+  "$defs": {
+    "entityPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_floor",
+        "review_floor",
+        "auto_link_threshold",
+        "minimum_candidate_margin",
+        "minimum_independent_positive_signal_groups",
+        "require_strong_signal_for_auto_link"
+      ],
+      "properties": {
+        "candidate_floor": { "type": "number", "minimum": 0, "maximum": 1 },
+        "review_floor": { "type": "number", "minimum": 0, "maximum": 1 },
+        "auto_link_threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+        "minimum_candidate_margin": { "type": "number", "minimum": 0, "maximum": 1 },
+        "minimum_independent_positive_signal_groups": { "type": "integer", "minimum": 1 },
+        "require_strong_signal_for_auto_link": { "type": "boolean" }
+      }
+    }
+  }
+}
