@@ -1,178 +1,223 @@
 # Task Registry
 
-This file defines the initial backlog. GitHub Issues are used for execution tracking; this file remains the high-level project map.
+This file is the high-level project map. GitHub Issues/PRs track execution.
 
-## Phase 0 — Foundation & Architecture
+## Phase 0 — Foundation & Architecture — COMPLETE
 
 ### BMI-P0-001 — Repository & Collaboration Foundation
 Owner: Primary Maintainer
 Status: DONE
 
-Deliverables completed:
+Completed:
 - repository structure
-- multi-agent rules
-- task/branch conventions
-- issue and PR templates
-- shared project status
-- Drive handoff folder
+- `AGENTS.md`
+- multi-agent Task ID/branch/PR rules
+- issue/PR templates
+- shared status/handoff workflow
+- Google Drive handoff structure
 
 ### BMI-P0-002 — Database Schema v0.1
 Owner: Primary Maintainer
 Status: DONE
 Tracking: Issue #1 / PR #5
 
-Deliverables completed:
-- canonical entities and relationships
-- public/private trust boundary
-- source/evidence tables
-- claim-level provenance
-- review/audit tables
+Completed:
+- canonical domain model
+- source/evidence/candidate/review/provenance model
 - historical match snapshots
-- result model without cyclic winner FK
+- result integrity model
 - source idempotency strategy
-- indexes and uniqueness strategy
-- RLS/Data API assumptions
-- archive/retention policy
+- indexes/constraints/RLS assumptions
 - merge/split identity history
-- Supabase migration plan
+- migration plan
 
-No production migration has been applied yet.
-
-### BMI-P0-003 — AI Agent & Verification Specification
+### BMI-P0-003 — AI Agent & Verification Contracts
 Owner: Primary Maintainer
 Status: DONE
 Tracking: Issue #2 / PR #6
 
-Deliverables completed:
-- Source Discovery Agent contract
-- normalized Source Monitoring / ingestion envelope
-- atomic Extraction Result contract
-- Entity Match Result contract
-- Duplicate Detection Result contract
-- Verification Result contract
-- Review Subject reference contract
-- Agent Run + Error contracts
+Completed:
+- normalized ingestion contract
+- extraction/claim contract
+- entity-match contract
+- duplicate-detection contract
+- verification contract
+- review subject reference
+- agent run/error contracts
+- provider abstraction
 - retry/idempotency/conflict rules
-- provider abstraction and prompt-injection boundary
-- JSON Schema package with example payloads
-- automated contract validation workflow
+- contract CI
 
-### BMI-P0-004 — PRD v0.1
+### BMI-P0-004 — PRD v0.2
 Owner: Primary Maintainer
-Status: REVIEW
+Status: DONE
 
-Deliverables drafted:
-- product goals
-- users and roles
-- MVP scope
+Completed:
+- product goals/users
 - core workflows
-- functional requirements
-- non-functional requirements
+- MVP boundary
+- functional/non-functional requirements
+- automation requirements
+- shared Supabase requirements
 - success measures
+- phase plan
 
-### BMI-P0-005 — Architecture v0.1
+### BMI-P0-005 — Architecture v0.2
 Owner: Primary Maintainer
-Status: REVIEW
+Status: DONE
 
-Deliverables drafted:
-- component boundaries
-- data flow
-- trust boundaries
-- scheduler strategy
-- storage strategy
-- API boundaries
-- deployment approach
+Completed:
+- component/data-flow boundaries
+- trust zones
+- API/worker boundaries
+- scheduler/storage strategy
+- shared contract architecture
+- shared Supabase tenancy and isolation model
 
 ### BMI-P0-006 — Source Registry & Connector Contract
 Owner: Primary Maintainer
 Status: DONE
 Tracking: Issue #7 / PR #8
 
-Deliverables completed:
-- source registry schema and policy/health separation
-- connector interface and shared poll request/result contracts
-- source policy/access metadata
-- polling schedule and cursor model
+Completed:
+- source policy vs health state
+- polling/cursor model
 - transactional cursor commit rule
 - rate-limit/backoff metadata
-- source health states
-- secret requirement boundary
-- deterministic connector-owned dedupe strategy
-- operator-upload and search-discovery boundaries
-- source runtime-state database addition plan
-- first connector selection/readiness checklist
-- source registry example fixture and contract validation coverage
+- secret boundary
+- deterministic connector dedupe ownership
+- operator-upload/search-discovery boundaries
+- first-connector readiness checklist
 
 ### BMI-P0-007 — Entity Resolution Strategy
 Owner: Primary Maintainer
 Status: DONE
 Tracking: Issue #3 / PR #9
 
-Deliverables completed:
-- Thai-safe normalization rules
-- candidate generation and bounded top-N strategy
-- positive/negative/hard-conflict signal model
-- entity-specific context rules
+Completed:
+- Thai-safe normalization
+- candidate generation
+- positive/negative/hard-conflict signals
 - conservative auto-link/review/no-match policy
-- candidate margin and independent-signal requirements
-- stable source-native mapping strategy
-- alias lifecycle guidance
-- human-controlled reversible merge/split strategy
-- reviewer UX requirements
-- calibration/evaluation metrics and golden fixture plan
-- machine-readable entity-resolution policy schema + fixture
-- contract validation coverage
+- source-native identity mapping
+- alias lifecycle
+- human-controlled reversible merge/split
+- calibration/golden fixture plan
 
 ### BMI-P0-008 — Review Queue UX Specification
 Owner: Primary Maintainer
-Status: IN PROGRESS
-Tracking: Issue #4
+Status: DONE
+Tracking: Issue #4 / PR #12
+
+Completed:
+- queue/detail information architecture
+- evidence viewer
+- new match/entity review
+- entity-match/duplicate/conflict review
+- data-quality review
+- merge/split impact flows
+- idempotent review commands
+- optimistic concurrency
+- audit/reopen behavior
+- mobile/accessibility requirements
+
+### BMI-P0-009 — Shared Supabase Tenancy Adaptation
+Owner: Primary Maintainer
+Status: DONE
+Tracking: Issue #10 / PR #11
+
+Completed:
+- selected existing `aodxx's Project` as BullMatch shared host
+- kept `freshmart` outside BullMatch scope
+- `bullmatch` / `bullmatch_private` namespace isolation
+- shared `auth.users` + app-scoped BullMatch membership
+- Data API/RLS/isolation rules
+- namespace overlay for original database schema
+- host inventory/advisor checks
+
+### BMI-P0-010 — Phase 0 Sign-off
+Owner: Primary Maintainer
+Status: REVIEW
+Tracking: Issue #13
 
 Deliverables:
-- review information architecture and queue filters
-- new match/entity review
-- entity-match review
-- possible duplicate review
-- conflict review
-- evidence viewer requirements
-- approve/reject/edit/link/create actions
-- merge/split destructive workflows
-- optimistic concurrency/idempotent command rules
-- audit/history requirements
-- accessibility and mobile-review requirements
+- final PRD/status/task reconciliation
+- Phase 0 exit confirmation
+- Phase 1 handoff
+
+---
 
 ## Phase 1 — Core Verified Database
 
-Planned after Phase 0:
+### BMI-P1-001 — Shared Supabase Bootstrap
+Status: READY AFTER P0-010 MERGE
 
-- BMI-P1-001 Supabase project/bootstrap
-- BMI-P1-002 Database migrations
-- BMI-P1-003 Seed/reference data
-- BMI-P1-004 Admin authentication and roles
-- BMI-P1-005 Bull/camp/venue CRUD
-- BMI-P1-006 Match entry and result workflow
-- BMI-P1-007 Bull profile and basic statistics
+Scope:
+- re-check shared host inventory
+- create `bullmatch` and `bullmatch_private` schemas through migration
+- create minimal app membership foundation
+- establish grants/RLS baseline
+- add isolation tests
+- run security/performance advisors
+
+### BMI-P1-002 — Core Database Migrations
+Status: BLOCKED BY P1-001
+
+Scope:
+- owners/camps/bulls/venues/events + aliases
+- matches/participants/results
+- review workflow
+- source/evidence/agent/candidate/provenance/runtime tables
+- indexes/integrity helpers
+
+### BMI-P1-003 — Seed / Reference Data
+Status: BLOCKED BY P1-002
+
+### BMI-P1-004 — Admin Authentication & Roles
+Status: BLOCKED BY P1-001/P1-002
+
+### BMI-P1-005 — Bull/Camp/Owner/Venue CRUD
+Status: BLOCKED BY P1-002/P1-004
+
+### BMI-P1-006 — Manual Match Entry & Verification
+Status: BLOCKED BY P1-002/P1-004
+
+### BMI-P1-007 — Bull Profile & Basic Statistics
+Status: BLOCKED BY P1-005/P1-006
+
+### BMI-P1-008 — Review Backend Foundation
+Status: BLOCKED BY P1-002/P1-004
+
+Scope:
+- review case APIs/domain operations
+- idempotent review commands
+- optimistic concurrency
+- evidence access
+- merge/split preview foundation
+
+---
 
 ## Phase 2 — First Automated Collection Pipeline
 
-Planned after verified manual workflow works:
-
-- first permitted web/RSS connector
-- raw source-item ingestion
+Planned sequence:
+- select first permitted source
+- implement connector
+- raw source item/evidence persistence
 - AI structured extraction
-- candidate entity matching
+- entity matching
 - duplicate detection
-- review queue integration
-- scheduled daily runs
+- verification/review routing
+- scheduled daily run
+- operator report
 
 ## Phase 3 — Multi-Source Expansion
 
-- YouTube metadata/transcript connector where permitted
-- additional official/public source connectors
+- additional approved connectors
+- YouTube metadata/transcripts where permitted
 - discovery engine
-- multi-source confidence model
+- multi-source confidence/corroboration
 - conflict detection
-- daily operator report
+- daily operations reporting
 
 ## Phase 4 — Analytics
 
@@ -181,15 +226,16 @@ Planned after verified manual workflow works:
 - form history
 - camp/venue analysis
 - historical trends
-- natural-language analytics over verified data
+- natural-language analysis over verified data
 
 ## Assignment Rule
 
-A contributor may claim only one READY task at a time unless the primary maintainer explicitly coordinates multiple non-overlapping tasks.
+A contributor may claim only one READY Task ID at a time unless the primary maintainer explicitly coordinates non-overlapping work.
 
 When a task starts:
-1. assign/record owner
+1. record owner
 2. change status to IN PROGRESS
 3. create `agent/<task-id>-...` branch
-4. keep changes inside declared scope
-5. submit handoff/PR
+4. stay inside declared scope
+5. run required checks/tests
+6. submit PR/handoff
