@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "command_id": "99999999-9999-4999-8999-999999999999",
+  "review_case_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "action": "LINK_ENTITY",
+  "expected_case_status": "IN_REVIEW",
+  "expected_case_version": 3,
+  "payload": {
+    "entity_type": "BULL",
+    "candidate_key": "bull-a",
+    "canonical_entity_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    "verify_alias": true
+  },
+  "note": "Name and camp context match the verified historical identity.",
+  "impact_preview_fingerprint": null
+}

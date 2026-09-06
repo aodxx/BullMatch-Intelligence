@@ -18,6 +18,7 @@ EXAMPLE_SCHEMA_MAP = {
     "extraction-result.json": "extraction-result.schema.json",
     "verification-result.json": "verification-result.schema.json",
     "entity-resolution-policy.json": "entity-resolution-policy.schema.json",
+    "review-command.json": "review-command.schema.json",
 }
 
 
