@@ -1,6 +1,6 @@
 # Project Status
 
-Last structural update: 2026-09-06
+Last structural update: 2026-09-07
 
 ## Project
 
@@ -10,11 +10,11 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 1 — Community / Domain Rebaseline on top of active production foundation**
 
-Overall status: **PRODUCTION API ACTIVE / FIRST REAL ADMIN ACTIVE / COMMUNITY BIG-DATA REBASELINE APPROVED / AUTONOMOUS HOURLY CONTINUATION ENABLED**
+Overall status: **PRODUCTION API ACTIVE / FIRST REAL ADMIN ACTIVE / COMMUNITY BIG-DATA PRODUCT CONTRACT v0.3 COMPLETE / DATABASE SCHEMA v0.2 NEXT**
 
 ## Product Direction
 
-BullMatch is now explicitly organized as three connected layers:
+BullMatch is explicitly organized as three connected layers:
 
 1. **Community Data Network** — people in the Thai bullfighting ecosystem contribute observations, corrections, programs, results, identity evidence, lineage claims, photos/links and local knowledge.
 2. **Verified BullMatch Big Data** — evidence, AI assistance, entity resolution, contributor reputation and controlled review convert submissions into auditable facts.
@@ -38,15 +38,37 @@ BullMatch remains a data/statistics/research/analytics product. It is not a bet-
 - BMI-P1-006 Manual Match Entry & Verification — DONE via PR #24
 - BMI-P1-007 Bull Profile & Basic Statistics — DONE via PR #29
 - BMI-P1-009 Thai Bullfighting Domain Rebaseline — DONE via PR #36
+- BMI-P1-010 Product Rebaseline v0.3 — DONE via PR #38
 - BMI-APP-001 Frontend Foundation & First Screens — DONE via PR #26
 - BMI-APP-002 Supabase Auth Login UI — DONE via PR #31
 - BMI-APP-003 Controlled API + Production Data Wiring — DONE via PR #33
 - BMI-OPS-002 First Production ADMIN Bootstrap — DONE
-- BMI-OPS-003 Autonomous Hourly Development Continuity — DONE
+- BMI-OPS-003 Autonomous Development Continuity — DONE
+
+## Product Contract v0.3 Result
+
+`PRD.md` is now the approved Community Big Data + Intelligence contract.
+
+It defines:
+
+- three-layer product architecture: Community Data Network / Verified Big Data / Intelligence Products
+- open contribution with closed canonical truth
+- atomic claims and evidence-first verification
+- Thai bullfighting temporal/domain lifecycle requirements
+- contributor roles, feedback and multidimensional reputation
+- `Contribute to Unlock` readiness without rewarding raw submission volume
+- monetization lanes: Pro, reports, API, venue/camp/media tools and compatible sponsorship
+- legal boundary excluding bet-taking, wallet, settlement and payout functions
+- Matchup Intelligence as explainable evidence-aware analytics rather than guaranteed picks
+- real-bull / real-venue sports-intelligence visual and motion requirements
+- security, scalability, free-plan and accessibility requirements
+- explicit next contract for additive Database Schema v0.2
+
+P1-010 changed no production schema, API, runtime code, secrets or production data.
 
 ## Thai Bullfighting Domain Rebaseline
 
-The project must no longer model the domain as only `Bull + Match + Winner`.
+The project must not model the domain as only `Bull + Match + Winner`.
 
 The approved domain baseline includes:
 
@@ -64,7 +86,7 @@ The approved domain baseline includes:
 - recovery/rest and subsequent history
 - evidence uncertainty and claim-level verification
 
-Canonical domain reference:
+Canonical domain references:
 - `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md`
 - `docs/THAI-BULLFIGHTING-FIELD-VALIDATION.md`
 
@@ -84,17 +106,6 @@ Approved direction:
 - reduced-motion accessibility and mobile-performance protection
 
 This requirement applies to the production application, not to generating decorative images in chat.
-
-## Autonomous Continuation
-
-An hourly scheduled development task is active for BullMatch Intelligence.
-
-The canonical continuity instructions are in:
-- `docs/AUTO-RUN-RUNBOOK.md`
-
-Each run must read repository state first, choose the next safe priority task, follow Task ID/branch/test/handoff rules, and leave an exact next action for the following run.
-
-The owner should not need to repeatedly type “ดำเนินการต่อ” for ordinary forward progress.
 
 ## Production Infrastructure
 
@@ -156,49 +167,49 @@ Current Production Bull/Match records intentionally remain empty. Visible zero/e
 
 The first intended real Supabase Auth account has been bootstrapped as BullMatch `ADMIN / ACTIVE`.
 
-Verified:
-- Auth identity exists in project `kaanguobjhlusjvgbowt`
-- email is confirmed
-- exact Auth UUID is linked to `bullmatch.app_users`
-- `bullmatch_api_member` reports member/ADMIN/ACTIVE
-- authenticated database role check reports ADMIN authorized
-
 For privacy and security, the public repository does not contain the owner's email, password, tokens or Auth UUID.
 
 Runbook: `docs/FIRST-ADMIN-BOOTSTRAP.md`
 
 ## Verification Baseline
 
-PR #33 passed its Web App CI on the merged head.
+BMI-P1-010 was documentation/product-contract only.
 
-Main GitHub Actions run #26 passed:
-- locked dependency install — PASS
-- TypeScript/Vite production build — PASS
-- Production Dashboard API smoke test — PASS (HTTP 200)
-- `/me` without user token — PASS (HTTP 401)
-- Configure Pages — PASS
-- Upload Pages artifact — PASS
-- Deploy GitHub Pages — PASS
+Checks completed:
 
-Database rollback tests also proved:
-- browser roles cannot invoke service bridge RPCs
-- ACTIVE ADMIN command succeeds
-- REVIEWER mutation is rejected
-- audit actor/entity linkage survives the bridge
-- no test fixtures remain
+- mandatory repository collaboration/status/runbook documents read before work
+- no conflicting P1-010 branch existed before claim
+- PRD v0.3 checked against the approved Thai bullfighting domain baseline and autonomous product direction
+- branch compared to main; only `PRD.md`, `PROJECT_STATUS.md` and `TASKS.md` changed
+- no migration/API/runtime change introduced
+- no production records fabricated
+- no secrets or personal credentials added
+- PR #38 confirmed mergeable before integration
+
+Existing production runtime remains on the previously verified API/web baseline.
+
+## Exact Next Autonomous Action
+
+Start **BMI-P1-011 — Database Schema v0.2: Community Claims + Temporal Domain**.
+
+Required startup actions:
+
+1. read current `docs/DATABASE-SCHEMA.md` and namespace overlay
+2. inspect existing production migrations/tables to avoid conflicting assumptions
+3. claim `BMI-P1-011` on a dedicated branch
+4. design an additive/backward-compatible schema contract before writing a production migration
+5. cover community submissions, atomic claims/evidence, temporal affiliations, physical/style observations, lineage claims, comparison sessions, pairings, program versions and reputation dimensions
+6. document migration/rollback and compatibility with the active production API
 
 ## Next Autonomous Engineering Gates
 
-Unless a production/security blocker is more urgent, use this order:
-
-1. **BMI-P1-010 — Product Rebaseline v0.3: Community Big Data + Intelligence**
-2. **BMI-P1-011 — Database Schema v0.2: Community Claims + Temporal Domain**
-3. **BMI-P1-012 — Contribution & Trust Architecture**
-4. **BMI-APP-004 — Visual Design Rebaseline: Real Bull / Sports Intelligence / Motion**
-5. **BMI-P1-008 — Review Backend Foundation, re-scoped to the new contribution model**
-6. Community contribution implementation
-7. First permitted automated source connector/pipeline
-8. Intelligence products and advanced matchup analytics
+1. **BMI-P1-011 — Database Schema v0.2: Community Claims + Temporal Domain** — READY
+2. **BMI-P1-012 — Contribution & Trust Architecture**
+3. **BMI-APP-004 — Visual Design Rebaseline: Real Bull / Sports Intelligence / Motion**
+4. **BMI-P1-008 — Review Backend Foundation, re-scoped to the new contribution model**
+5. Community contribution implementation
+6. First permitted automated source connector/pipeline
+7. Intelligence products and advanced matchup analytics
 
 Detailed rules and blocking behavior: `docs/AUTO-RUN-RUNBOOK.md`.
 

@@ -79,26 +79,37 @@ Result:
 - bull identity, temporal affiliations, comparison day, pairing, program versions, result reasons, local terminology and evidence uncertainty are first-class product concerns
 
 ### BMI-P1-010 — Product Rebaseline v0.3: Community Big Data + Intelligence
-Status: READY — AUTONOMOUS PRIORITY 1
+Status: DONE — PR #38
+Owner: Primary Maintainer (ChatGPT autonomous run)
+Branch: `agent/bmi-p1-010-product-rebaseline-v0-3`
 
-Scope:
-- update PRD from operator-centric historical database to three-layer product model:
-  1. Community Data Network
-  2. Verified BullMatch Big Data
-  3. Intelligence Products
-- define contributor value exchange and `Contribute to Unlock` readiness
-- define product monetization lanes: Pro, reports, API, venue/camp/media tools, compatible sponsorship
-- preserve legal/product boundary: analytics/data platform, not bet-taking/wallet/settlement/payout service
-- incorporate the Thai bullfighting domain rebaseline
-- incorporate the visual/motion design mandate as a product requirement
+Result:
+- PRD v0.3 defines the three-layer product model: Community Data Network / Verified BullMatch Big Data / Intelligence Products
+- incorporates Thai bullfighting temporal/domain lifecycle and evidence-first atomic claims
+- defines contributor value exchange, multidimensional trust and `Contribute to Unlock` readiness
+- defines monetization lanes: Pro, reports, API, venue/camp/media tools and compatible sponsorship
+- preserves legal/product boundary: analytics/data platform, not bet-taking/wallet/settlement/payout service
+- defines Matchup Intelligence as explainable, evidence-aware analytics rather than guaranteed picks
+- makes real-bull / real-venue sports-intelligence imagery and purposeful motion a product requirement
+- defines BMI-P1-011 as the next additive schema contract
 
-Primary files:
+Files:
 - `PRD.md`
-- related architecture/product docs as required
+- `PROJECT_STATUS.md`
+- `TASKS.md`
+
+Validation:
+- documentation/product-contract only; no migration/API/runtime code changed
+- no production data fabricated
+- no secrets/personal credentials introduced
+- checked against `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md` and autonomous runbook
 
 ### BMI-P1-011 — Database Schema v0.2: Community Claims + Temporal Domain
-Status: BLOCKED — depends on BMI-P1-010
-Autonomous priority after P1-010.
+Status: READY — AUTONOMOUS PRIORITY 1
+
+Dependencies satisfied:
+- BMI-P1-009 DONE
+- BMI-P1-010 DONE
 
 Scope:
 - additive schema plan for community submissions
@@ -114,7 +125,7 @@ Scope:
 No destructive rewrite of working production data without explicit migration/rollback design.
 
 ### BMI-P1-012 — Contribution & Trust Architecture
-Status: BLOCKED — depends on BMI-P1-010 and BMI-P1-011
+Status: BLOCKED — depends on BMI-P1-011
 Autonomous priority after P1-011.
 
 Scope:
@@ -166,8 +177,7 @@ Key files:
 - `apps/web/src/api.ts`
 
 ### BMI-APP-004 — Visual Design Rebaseline: Real Bull / Sports Intelligence / Motion
-Status: BLOCKED — begins after BMI-P1-010 product requirements are updated
-Autonomous priority after BMI-P1-012 unless an independent design-only pass can proceed without contract conflict.
+Status: BLOCKED — product requirement dependency BMI-P1-010 is satisfied; execution order remains after BMI-P1-012 unless independent design-system work is explicitly prioritized.
 
 Mandate:
 - real bull and real venue imagery where rights/source permit
@@ -262,14 +272,13 @@ Planned sequence:
 
 Unless a production/security blocker is more urgent, use:
 
-1. BMI-P1-010 — Product Rebaseline v0.3
-2. BMI-P1-011 — Database Schema v0.2
-3. BMI-P1-012 — Contribution & Trust Architecture
-4. BMI-APP-004 — Visual Design Rebaseline
-5. BMI-P1-008 — Review Backend Foundation, re-scoped
-6. Community contribution implementation
-7. Automated collection pipeline
-8. Intelligence products
+1. BMI-P1-011 — Database Schema v0.2
+2. BMI-P1-012 — Contribution & Trust Architecture
+3. BMI-APP-004 — Visual Design Rebaseline
+4. BMI-P1-008 — Review Backend Foundation, re-scoped
+5. Community contribution implementation
+6. Automated collection pipeline
+7. Intelligence products
 
 Canonical autonomous operating instructions: `docs/AUTO-RUN-RUNBOOK.md`.
 
