@@ -84,6 +84,18 @@ Deno.serve(async (req: Request) => {
       const pLimit=Number.isFinite(limitRaw)?Math.max(1,Math.min(Math.trunc(limitRaw),100)):50
       const pOffset=Number.isFinite(offsetRaw)?Math.max(0,Math.trunc(offsetRaw)):0
 
+      if (resource === 'MY_SUBMISSIONS') {
+        const user=await authenticatedUser(req)
+        if(!user) return respond(req,401,{error:'AUTH_REQUIRED',request_id:requestId})
+        const data=await rpc('bullmatch_api_contributor_query',{
+          p_actor_id:user.id,
+          p_resource:'MY_SUBMISSIONS',
+          p_limit:pLimit,
+          p_offset:pOffset,
+        })
+        return respond(req,200,{data,request_id:requestId})
+      }
+
       if (REVIEW_RESOURCES.has(resource)) {
         const user=await authenticatedUser(req)
         if(!user) return respond(req,401,{error:'AUTH_REQUIRED',request_id:requestId})
