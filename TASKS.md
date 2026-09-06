@@ -79,28 +79,34 @@ Result:
 - bull identity, temporal affiliations, comparison day, pairing, program versions, result reasons, local terminology and evidence uncertainty are first-class product concerns
 
 ### BMI-P1-010 — Product Rebaseline v0.3: Community Big Data + Intelligence
-Status: IN PROGRESS
+Status: REVIEW
 Owner: Primary Maintainer (ChatGPT autonomous run)
 Branch: `agent/bmi-p1-010-product-rebaseline-v0-3`
 
-Scope:
-- update PRD from operator-centric historical database to three-layer product model:
-  1. Community Data Network
-  2. Verified BullMatch Big Data
-  3. Intelligence Products
-- define contributor value exchange and `Contribute to Unlock` readiness
-- define product monetization lanes: Pro, reports, API, venue/camp/media tools, compatible sponsorship
-- preserve legal/product boundary: analytics/data platform, not bet-taking/wallet/settlement/payout service
-- incorporate the Thai bullfighting domain rebaseline
-- incorporate the visual/motion design mandate as a product requirement
+Scope completed:
+- PRD v0.3 now defines the three-layer product model: Community Data Network / Verified BullMatch Big Data / Intelligence Products
+- incorporates Thai bullfighting temporal/domain lifecycle and evidence-first atomic claims
+- defines contributor value exchange, multidimensional trust and `Contribute to Unlock` readiness
+- defines monetization lanes: Pro, reports, API, venue/camp/media tools and compatible sponsorship
+- preserves legal/product boundary: analytics/data platform, not bet-taking/wallet/settlement/payout service
+- defines Matchup Intelligence as explainable, evidence-aware analytics rather than guaranteed picks
+- makes real-bull / real-venue sports-intelligence imagery and purposeful motion a product requirement
+- defines BMI-P1-011 as the next additive schema contract
 
-Primary files:
+Files:
 - `PRD.md`
-- related architecture/product docs as required
+- `PROJECT_STATUS.md`
+- `TASKS.md`
+
+Validation:
+- documentation/product-contract only; no migration/API/runtime code changed
+- no production data fabricated
+- no secrets/personal credentials introduced
+- checked against `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md` and autonomous runbook
 
 ### BMI-P1-011 — Database Schema v0.2: Community Claims + Temporal Domain
-Status: BLOCKED — depends on BMI-P1-010
-Autonomous priority after P1-010.
+Status: BLOCKED — depends on merged BMI-P1-010
+Autonomous priority immediately after P1-010 integration.
 
 Scope:
 - additive schema plan for community submissions
