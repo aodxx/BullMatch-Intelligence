@@ -84,7 +84,7 @@ Delivered:
 - CLAIM / UNCLAIM / COMMENT / APPROVE / REJECT controls use fresh command IDs and optimistic case status/version
 - APPROVE is clearly separated from canonical promotion
 - read-only MERGE/SPLIT impact preview; no destructive identity controls
-- responsive sports-intelligence UI and valid empty-Production state without fabricated fixtures
+- responsive sports-intelligence UI and valid empty-Production state without fake fixtures
 - Web CI + controlled Production API smoke + GitHub Pages deployment passed
 
 **Safe review metadata EDIT — PR #56 / migration `20260906225757_add_bullmatch_review_metadata_edit` / Edge v12**
@@ -142,7 +142,7 @@ Core contract:
 ### BMI-P1-013 — Community Contribution Intake Foundation
 Status: IN PROGRESS
 Owner: Primary Maintainer (ChatGPT autonomous run)
-Current branch: `agent/bmi-p1-013-contribution-api`
+Current branch: `agent/bmi-p1-013-my-submissions`
 Contract: `docs/COMMUNITY-CONTRIBUTION-V1.md`
 
 Selected first V1 input:
@@ -154,33 +154,35 @@ V1 atomic field allowlist:
 - `color_description`
 - `breed_description`
 
-This matches the existing guarded claim-promotion policy and keeps contributor intake useful without creating a new identity or direct canonical write.
-
 Completed increments:
 
 **Community-origin foundation — PR #59 / Production migrations `20260906232656` + `20260906232826`**
-- `bullmatch.contributor_profiles`
-- `bullmatch_private.community_submissions`
-- generalized evidence origin for community submissions while preserving source origin
-- generalized atomic claim origin for community/manual claims while preserving extraction origin
-- service-role-only storage, browser default-deny
+- contributor profiles and private community submissions
+- generalized evidence/claim origin while preserving source-extraction compatibility
+- service-role-only storage and browser default-deny
 - rollback-only compatibility/access regression PASS
 - no retained fixture rows
 
-**Controlled correction submission API — current branch / Production migration `20260906234150_add_bullmatch_community_correction_submit` / Edge `bullmatch-api` v13**
-- authenticated actor ID derived from validated bearer token in Edge, never from payload
-- contributor does not require ADMIN/REVIEWER membership and gains no privileged role
-- target must be an existing VERIFIED, nonarchived Bull
-- request schema/version, field allowlist, value lengths and public HTTP(S) reference are validated
-- deterministic request/dedupe/value fingerprints
-- same contributor + client submission key is idempotent
-- changed payload with the same key is rejected as conflict
-- one successful request creates exactly one community submission, URL evidence, atomic REVIEW_REQUIRED claim and OPEN DATA_QUALITY review case
-- claim confidence remains null; no AI confidence is invented
-- canonical Bull row remains unchanged
-- RPC execute revoked from PUBLIC/anon/authenticated; service role only
-- rollback-only Production regression PASS with temporary Bull fixture rolled back
-- security advisor found no new browser-executable privileged function
+**Controlled correction submission API — PR #60 / Production migration `20260906234150` / Edge v13**
+- actor derived from validated bearer token, never payload
+- existing VERIFIED/nonarchived Bull required
+- four-field V1 allowlist and public HTTP(S) evidence reference
+- deterministic idempotency/dedupe/value fingerprints
+- creates submission + evidence + atomic REVIEW_REQUIRED claim + OPEN DATA_QUALITY review case
+- claim confidence NULL; no AI auto-publish
+- canonical Bull unchanged in rollback regression
+- direct RPC execution revoked from PUBLIC/anon/authenticated
+- GitHub Typecheck/Build + controlled Production API smoke PASS
+
+**Contributor `MY_SUBMISSIONS` safe projection — current branch / Production migration `20260906235014_add_bullmatch_my_submissions_query` / Edge v14**
+- authenticated GET resource `MY_SUBMISSIONS`; actor derived from bearer token
+- service-role-only database query uses security invoker
+- scoped explicitly to `submitter_user_id = actor`
+- returns only submission type/status/timestamps, safe public Bull id/name, proposed field/value and high-level outcome
+- maps VERIFIED claim -> ACCEPTED; REJECTED/CONFLICT/SUPERSEDED/WITHDRAWN remain explicit; other states -> PENDING_REVIEW
+- does not expose source URL, contributor note, reviewer identity, reviewer notes, review-case internals, moderation metadata, audit history or other contributors
+- rollback-only projection regression PASS; private sentinel strings did not leak
+- no retained fixture rows
 
 Required invariants:
 - authenticated actor ID derived server-side, never trusted from payload
@@ -190,19 +192,22 @@ Required invariants:
 - existing source-ingestion evidence/claims remain valid and retain IDs
 - idempotency key retry cannot create duplicate submission/evidence/claim/review case
 - canonical Bull row must remain unchanged after contribution
+- contributor self-service is own-record-only and never leaks private reviewer/audit data
 - no AI auto-publish
 - no betting/wallet/settlement/payout fields or flow
 
 Validation limitation:
-- Production currently has no genuine VERIFIED/PUBLISHED Bull row suitable for retained end-to-end contribution testing.
-- Database behavior is therefore verified with rollback-only fixtures; no fake Bull/submission is retained merely to exercise HTTP UI states.
-- GitHub workflow Production API smoke remains the preferred external-network validation path because this execution runtime cannot resolve the Supabase hostname directly.
+- Production currently has no genuine VERIFIED/PUBLISHED Bull row suitable for retained success-path contribution testing.
+- Database behavior is verified with rollback-only temporary Bulls/submissions; no fake canonical or community record is retained merely for UI screenshots.
+- GitHub workflow Production API smoke is the authoritative external-network validation path because this execution runtime cannot resolve the Supabase hostname directly.
 
 Exact next slice:
-1. merge the controlled contribution API after GitHub CI / Production smoke passes
-2. implement authenticated `MY_SUBMISSIONS` safe projection for the current contributor only
-3. expose only submission status, safe Bull identity, proposed field/value and high-level outcome; never reviewer-private notes/audit/other contributors
-4. then build the mobile contribution UI against the two server-mediated routes
+1. merge `MY_SUBMISSIONS` after GitHub CI / Production API smoke passes
+2. implement the mobile V1 contribution UI using existing authenticated routes
+3. UI must force selection of an existing VERIFIED Bull, show the four allowed fact types, require public source URL and explain that submission enters review rather than changing the profile immediately
+4. add “การส่งข้อมูลของฉัน” status view from `MY_SUBMISSIONS`
+5. preserve real-bull sports-intelligence visual language, empty/loading/error states and no fake production data
+6. after UI deployment/validation, assess whether BMI-P1-013 V1 implementation gate can close before starting broader contribution types
 
 ---
 
