@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bullmatch.local/contracts/connector-poll-result/1.0.0",
+  "title": "ConnectorPollResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "correlation_id",
+    "run_id",
+    "source_id",
+    "items",
+    "next_cursor",
+    "has_more",
+    "health",
+    "rate_limit_state",
+    "metrics",
+    "errors"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "run_id": { "type": "string", "format": "uuid" },
+    "source_id": { "type": "string", "format": "uuid" },
+    "items": {
+      "type": "array",
+      "items": { "$ref": "normalized-ingestion-envelope.schema.json" }
+    },
+    "next_cursor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy", "value", "checkpoint_safe"],
+      "properties": {
+        "strategy": { "enum": ["NONE", "TIMESTAMP", "EXTERNAL_ID", "PAGE_TOKEN", "ETAG", "CUSTOM"] },
+        "value": {},
+        "checkpoint_safe": { "type": "boolean" }
+      }
+    },
+    "has_more": { "type": "boolean" },
+    "health": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason_codes", "operator_action"],
+      "properties": {
+        "status": { "enum": ["HEALTHY", "DEGRADED", "RATE_LIMITED", "AUTH_REQUIRED", "POLICY_BLOCKED", "ERROR", "PAUSED"] },
+        "reason_codes": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "operator_action": { "type": ["string", "null"] }
+      }
+    },
+    "rate_limit_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requests_used", "retry_after_seconds", "cooldown_until"],
+      "properties": {
+        "requests_used": { "type": "integer", "minimum": 0 },
+        "retry_after_seconds": { "type": ["integer", "null"], "minimum": 0 },
+        "cooldown_until": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "metrics": { "type": "object", "additionalProperties": true },
+    "errors": {
+      "type": "array",
+      "items": { "$ref": "agent-error.schema.json" }
+    }
+  }
+}
