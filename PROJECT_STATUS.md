@@ -10,131 +10,144 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 1 — Core Verified Database**
 
-Overall status: **CORE DATABASE APPLIED / REVIEW READY**
+Overall status: **AUTHORIZATION FOUNDATION APPLIED / REVIEW READY**
 
 ## Completed Gates
 
 - Phase 0 Foundation & Architecture — COMPLETE
 - BMI-P1-001 Shared Supabase Bootstrap — DONE via PR #16
+- BMI-P1-002 Core Database — DONE via PR #18
 
 Selected shared Supabase host:
 
 **`aodxx's Project`**
 
-BullMatch continues to use only:
+BullMatch owns only:
 - `bullmatch`
 - `bullmatch_private`
 
 `freshmart` remains outside BullMatch scope.
 
-## Current Work — BMI-P1-002
+## Database Baseline
+
+- `bullmatch`: 15 tables
+- `bullmatch_private`: 17 tables
+- production bull/match/source/review datasets remain intentionally empty
+- canonical facts default unverified
+- publication guard requires verified match + participants + result
+- source ingestion has deterministic idempotency boundary
+- review workflow supports version/idempotent command fields
+
+## Current Work — BMI-P1-004
 
 Status: **REVIEW**
-Tracking: Issue #17
-Branch: `agent/bmi-p1-002-core-database`
+Tracking: Issue #19
+Branch: `agent/bmi-p1-004-auth-roles`
 
 ### Applied migrations
 
-- `20260906053239` — canonical entities
-- `20260906053302` — matches and results
-- `20260906053321` — review workflow
-- `20260906053347` — private ingestion/evidence/runtime
-- `20260906053422` — AI candidates/provenance/audit
-- `20260906053503` — publication/default hardening
-- `20260906053620` — missing FK indexes
+- `20260906054956` — BullMatch role authorization/read policies
+- `20260906055150` — consolidate read policies after advisor finding
 
-Bootstrap dependency:
-- `20260906052726` — shared tenancy bootstrap
+## Authorization Model
 
-## Database Inventory
+Identity:
+- Supabase `auth.users` is shared project identity only
 
-`bullmatch`: **15 tables**
+BullMatch membership source of truth:
+- `bullmatch.app_users`
 
-Includes:
-- app_users
-- owners / aliases
-- camps / aliases
-- bulls / aliases
-- venues / aliases
-- events
-- matches / participants / results
-- review_cases / review_actions
+Roles:
+- `ADMIN`
+- `REVIEWER`
+- `VIEWER`
 
-`bullmatch_private`: **17 tables**
+Status:
+- `ACTIVE`
+- `SUSPENDED`
 
-Includes:
-- private owner details
-- sources/runtime/source_items/evidence
-- agent/extraction runs
-- candidate groups/claims/evidence links
-- entity matching/source mappings
-- duplicate candidates/verification results
-- provenance/identity/audit history
+`bullmatch.has_active_role(text[])`:
+- uses current `auth.uid()`
+- reads current BullMatch membership
+- requires ACTIVE status
+- is `SECURITY INVOKER`
+- does not use `user_metadata`
 
-## Integrity Rules Now Enforced
+## Browser Access Boundary
 
-- canonical entities default to `UNVERIFIED`
-- winner participant must belong to the same match
-- published match must be VERIFIED
-- published match requires at least two participants
-- published match requires a result
-- event match numbers are unique when known
-- source `(source_id,dedupe_key)` is unique/idempotent
-- review cases include optimistic `case_version`
-- review actions use unique `command_id`
-- all BullMatch tables have RLS enabled
-- browser roles have no table access to `bullmatch_private`
-- browser roles have no domain-table access yet; only authenticated own-membership SELECT remains
+Authenticated browser grants on `bullmatch` are SELECT-only.
+
+RLS behavior:
+- ADMIN / REVIEWER: canonical + Review Queue read access
+- VIEWER: verified/non-archived entities and verified/published matches only
+- non-member: no BullMatch domain/review rows
+- suspended member: no role access
+
+No browser role can directly INSERT/UPDATE/DELETE canonical/review data.
+
+`bullmatch_private` remains unavailable to `anon` and `authenticated` at the schema boundary.
+
+## First Administrator
+
+At implementation time, shared Auth had no real user accounts and `bullmatch.app_users` remains empty.
+
+No administrator was fabricated and no “first signup becomes admin” path exists.
+
+The trusted bootstrap process is documented in:
+- `docs/AUTHORIZATION-RUNBOOK.md`
+
+Once a real Auth account exists, a trusted operator verifies its exact UUID and adds the ADMIN membership from a trusted server/database context.
 
 ## Verification
 
-Remote integration assertions passed against the actual Supabase database.
+Remote authorization assertions passed:
+- authenticated has no BullMatch non-SELECT table grants
+- helper is SECURITY INVOKER
+- anon cannot execute role helper
+- browser roles cannot use `bullmatch_private`
+- no policy references user-editable metadata
+- non-member simulated JWT resolves to no role/membership
+- canonical domain tables use one authenticated SELECT policy each
 
-Temporary test records were removed. Key production rows remain:
-- bulls: 0
-- matches: 0
-- sources: 0
-- review_cases: 0
-
-Verification artifacts:
-- `supabase/tests/p1_002_core_integrity.sql`
-- `supabase/P1-002-VERIFICATION.md`
+Artifacts:
+- `supabase/tests/p1_004_authorization.sql`
+- `supabase/P1-004-VERIFICATION.md`
 
 ## Advisor Review
 
 ### Security
 
-No WARN/ERROR security findings.
+No WARN/ERROR security findings introduced.
 
-INFO `RLS Enabled No Policy` is expected for domain/private tables at this stage because:
-- RLS is enabled as defense in depth
-- browser grants are intentionally withheld
-- `bullmatch_private` has no browser schema usage
-- intentional application policies are deferred to Auth/API work
+Remaining private-schema `RLS Enabled No Policy` INFO findings are intentional because the schema has no browser usage/grants.
 
 ### Performance
 
-Actionable unindexed foreign-key findings were fixed in migration `20260906053620`.
+Initial role migration generated `multiple_permissive_policies` WARN findings. These were fixed by migration `20260906055150`.
 
-Remaining INFO findings are unused indexes, expected on a newly created empty database. Index removal is deferred until real workload/query statistics exist.
+Current remaining findings are unused-index INFO on the empty database. Do not remove indexes before real query/workload evidence exists.
+
+## Data API
+
+This task does not alter Supabase Data API exposed-schema settings.
+
+If direct browser queries are selected later, `bullmatch` exposure must be intentional and tested. `bullmatch_private` must not be browser-exposed.
 
 ## Next Integration Gate
 
-Merge BMI-P1-002, then two non-overlapping tasks become available:
+Merge BMI-P1-004, then begin **BMI-P1-005 — Bull/Camp/Owner/Venue CRUD**.
 
-1. **BMI-P1-003 Seed / Reference Data**
-2. **BMI-P1-004 Admin Authentication & Roles**
+P1-005 should implement controlled ADMIN domain operations rather than grant unrestricted table writes to browser clients.
 
-P1-004 is the critical dependency before domain CRUD, manual verified match entry, and review backend APIs.
+Parallel after P1-004:
+- BMI-P1-006 Manual Match Entry & Verification
+- BMI-P1-008 Review Backend Foundation
 
-## Current Deferred Decisions
+## Deferred
 
+- actual first ADMIN activation (requires a real Auth account)
 - final frontend framework/hosting
 - AI provider selection
 - first production source selection/compliance approval
 
-None block database/auth foundation work.
-
-## Handoff Rule
-
-Every new contributor must read the project control/docs before taking one READY Task ID. Shared Supabase changes must remain strictly BullMatch-scoped.
+These do not block server/domain operation implementation.
