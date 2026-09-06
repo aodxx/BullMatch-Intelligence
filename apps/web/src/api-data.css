@@ -16,6 +16,11 @@
 .history-card strong, .history-card b { display: block; color: var(--brand); }
 .history-card span { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
 .history-card > div:last-child { text-align: right; }
+.match-card .versus { position: relative; grid-template-columns: 1fr 1fr; gap: 34px; }
+.match-card .versus::after {
+  content: 'VS'; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  color: var(--accent); font-size: 13px; font-weight: 900; background: var(--surface); padding: 5px;
+}
 @media (max-width: 520px) {
   .data-card, .history-card { align-items: flex-start; }
   .record-stats { max-width: 42%; }
