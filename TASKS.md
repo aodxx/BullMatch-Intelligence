@@ -4,52 +4,16 @@ This file is the high-level project map. GitHub Issues/PRs track execution.
 
 ## Phase 0 — Foundation & Architecture — COMPLETE
 
-### BMI-P0-001 — Repository & Collaboration Foundation
-Owner: Primary Maintainer
-Status: DONE
+BMI-P0-001 through BMI-P0-010: **DONE**.
 
-### BMI-P0-002 — Database Schema v0.1
-Owner: Primary Maintainer
-Status: DONE
-Tracking: Issue #1 / PR #5
-
-### BMI-P0-003 — AI Agent & Verification Contracts
-Owner: Primary Maintainer
-Status: DONE
-Tracking: Issue #2 / PR #6
-
-### BMI-P0-004 — PRD v0.2
-Owner: Primary Maintainer
-Status: DONE
-
-### BMI-P0-005 — Architecture v0.2
-Owner: Primary Maintainer
-Status: DONE
-
-### BMI-P0-006 — Source Registry & Connector Contract
-Owner: Primary Maintainer
-Status: DONE
-Tracking: Issue #7 / PR #8
-
-### BMI-P0-007 — Entity Resolution Strategy
-Owner: Primary Maintainer
-Status: DONE
-Tracking: Issue #3 / PR #9
-
-### BMI-P0-008 — Review Queue UX Specification
-Owner: Primary Maintainer
-Status: DONE
-Tracking: Issue #4 / PR #12
-
-### BMI-P0-009 — Shared Supabase Tenancy Adaptation
-Owner: Primary Maintainer
-Status: DONE
-Tracking: Issue #10 / PR #11
-
-### BMI-P0-010 — Phase 0 Sign-off
-Owner: Primary Maintainer
-Status: DONE
-Tracking: Issue #13 / PR #14
+Key tracking:
+- Database Schema — Issue #1 / PR #5
+- AI Contracts — Issue #2 / PR #6
+- Source Registry — Issue #7 / PR #8
+- Entity Resolution — Issue #3 / PR #9
+- Review Queue UX — Issue #4 / PR #12
+- Shared Supabase Tenancy — Issue #10 / PR #11
+- Phase 0 Sign-off — Issue #13 / PR #14
 
 ---
 
@@ -57,61 +21,75 @@ Tracking: Issue #13 / PR #14
 
 ### BMI-P1-001 — Shared Supabase Bootstrap
 Owner: Primary Maintainer
-Status: REVIEW
-Tracking: Issue #15
+Status: DONE
+Tracking: Issue #15 / PR #16
 
 Completed:
-- selected/rechecked shared host `aodxx's Project`
-- created `bullmatch` and `bullmatch_private` schemas through migration
-- created `bullmatch.app_users` linked to shared `auth.users`
-- enabled RLS on membership table
-- authenticated users can read only their own membership row through RLS
-- authenticated browser role has no direct membership write privileges
-- `anon`/`authenticated` have no usage on `bullmatch_private`
-- future default privileges are private-by-default and service-role accessible
-- isolation checks passed
-- Supabase Security Advisor passed with no findings
-- Supabase Performance Advisor passed with no findings
-- migration version recorded: `20260906052726`
-
-Key files:
-- `supabase/migrations/20260906052726_bootstrap_bullmatch_shared_tenancy.sql`
-- `supabase/tests/p1_001_shared_tenancy_isolation.sql`
-- `supabase/P1-001-VERIFICATION.md`
+- shared host bootstrap
+- `bullmatch` / `bullmatch_private`
+- `bullmatch.app_users`
+- initial RLS/grant boundary
+- isolation tests/advisors
 
 ### BMI-P1-002 — Core Database Migrations
-Status: READY AFTER P1-001 MERGE
+Owner: Primary Maintainer
+Status: REVIEW
+Tracking: Issue #17
 
-Scope:
-- owners/camps/bulls/venues/events + aliases in `bullmatch`
-- matches/participants/results in `bullmatch`
-- review cases/actions including concurrency/idempotency fields
-- source/evidence/agent/candidate/provenance/runtime tables in `bullmatch_private`
-- indexes and integrity helpers
-- explicit grants/RLS policies
-- migration/isolation/integrity tests
-- advisors after DDL
+Completed:
+- canonical owners/camps/bulls/venues/events + aliases
+- match participants/results with historical snapshots
+- same-match winner integrity trigger
+- verified-only publication guard
+- review cases/actions with `case_version` and unique `command_id`
+- source registry/runtime/items/evidence
+- agent/extraction/candidate/claim/verification layer
+- source-native entity mapping
+- provenance/identity/audit layer
+- private owner details
+- RLS enabled on all BullMatch tables
+- browser grants withheld from domain/private tables
+- source `(source_id,dedupe_key)` idempotency
+- missing foreign-key indexes fixed
+- integration assertions passed
+- production data remains empty
+
+Key files:
+- migrations `20260906053239` through `20260906053620`
+- `supabase/tests/p1_002_core_integrity.sql`
+- `supabase/P1-002-VERIFICATION.md`
 
 ### BMI-P1-003 — Seed / Reference Data
-Status: BLOCKED BY P1-002
+Status: READY AFTER P1-002 MERGE
+
+Scope:
+- only stable reference/config data needed by MVP
+- no fabricated bull/match records
+- no production source activation without review
 
 ### BMI-P1-004 — Admin Authentication & Roles
-Status: BLOCKED BY P1-001/P1-002
+Status: READY AFTER P1-002 MERGE
+
+Scope:
+- admin/reviewer membership operations
+- intentional BullMatch RLS/API policies
+- no self-elevation
+- server-mediated privileged operations
 
 ### BMI-P1-005 — Bull/Camp/Owner/Venue CRUD
-Status: BLOCKED BY P1-002/P1-004
+Status: BLOCKED BY P1-004
 
 ### BMI-P1-006 — Manual Match Entry & Verification
-Status: BLOCKED BY P1-002/P1-004
+Status: BLOCKED BY P1-004
 
 ### BMI-P1-007 — Bull Profile & Basic Statistics
 Status: BLOCKED BY P1-005/P1-006
 
 ### BMI-P1-008 — Review Backend Foundation
-Status: BLOCKED BY P1-002/P1-004
+Status: BLOCKED BY P1-004
 
 Scope:
-- review case APIs/domain operations
+- review case API/domain operations
 - idempotent review commands
 - optimistic concurrency
 - evidence access
@@ -137,8 +115,7 @@ Planned sequence:
 - additional approved connectors
 - YouTube metadata/transcripts where permitted
 - discovery engine
-- multi-source confidence/corroboration
-- conflict detection
+- multi-source corroboration/conflicts
 - daily operations reporting
 
 ## Phase 4 — Analytics
@@ -156,8 +133,8 @@ A contributor may claim only one READY Task ID at a time unless the primary main
 
 When a task starts:
 1. record owner
-2. change status to IN PROGRESS
+2. mark IN PROGRESS
 3. create `agent/<task-id>-...` branch
-4. stay inside declared scope
-5. run required checks/tests
+4. stay inside scope
+5. run checks/tests
 6. submit PR/handoff
