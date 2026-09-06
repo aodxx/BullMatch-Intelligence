@@ -32,11 +32,12 @@ Status: DONE — PR #24
 Status: DONE — PR #29
 
 ### BMI-P1-008 — Review Backend Foundation
-Status: READY — RE-SCOPED AGAINST COMMUNITY CONTRACTS
+Status: READY — AUTONOMOUS PRIORITY 1
 
 Dependencies satisfied after:
 - BMI-P1-011 DONE — PR #39
 - BMI-P1-012 DONE — PR #40
+- BMI-APP-004 DONE — PR #41
 
 Target scope:
 - review case API/domain operations
@@ -47,8 +48,6 @@ Target scope:
 - contributor/community review context and risk tiers
 - claim promotion with provenance/audit
 - merge/split preview foundation
-
-Execution order: after BMI-APP-004 unless a backend integrity/security need makes P1-008 more urgent.
 
 ### BMI-P1-009 — Thai Bullfighting Domain Rebaseline
 Status: DONE — PR #36
@@ -112,34 +111,43 @@ Status: DONE — PR #31
 Status: DONE — PR #33
 
 ### BMI-APP-004 — Visual Design Rebaseline: Real Bull / Sports Intelligence / Motion
-Status: IN PROGRESS
+Status: DONE — PR #41
 Owner: Primary Maintainer (ChatGPT)
 Branch: `agent/bmi-app-004-visual-rebaseline`
 
-Mandate:
-- real bull and real venue imagery where rights/source permit
-- no cute/cartoon bull identity
-- no generic repeated dashboard/card-template language
-- high-energy sports-intelligence / broadcast-graphics feel
-- real bull identity centered in profile and matchup experiences
-- strong typography, statistics, layered imagery and data visualization
-- purposeful transitions, stat reveals, matchup motion, timelines and micro-interactions
-- reduced-motion and mobile-performance behavior required
-- flagship `Matchup Intelligence` visual experience
+Delivered:
+- reusable `visual-system.css` loaded after legacy styles for reversible rollout
+- real bull-fighting atmosphere photography in Dashboard hero with documented CC0 source and non-identity usage rule
+- typographic BM brand treatment instead of bull mascot identity
+- scoreboard-style statistics and action-rail layout instead of repeated generic cards
+- sports/broadcast typography, navigation and data-surface language
+- Bull Profile identity stage that does not pretend a generic bull icon is the real animal
+- Match Detail arena / VS composition without generic bull identity glyphs
+- motion grammar for hero, score reveals and matchup presentation
+- `prefers-reduced-motion` handling and mobile adaptations
+- `docs/VISUAL-SYSTEM.md` defining image, typography, motion and identity rules
 
-Expected outcome:
-- reusable visual system rules
-- motion language
-- image-treatment rules
-- typography/data-visualization grammar
-- implemented production-facing components, not mockups only
+Validation:
+- Web App workflow run #32 passed
+- Typecheck and build passed
+- controlled production API smoke test passed
+- no API/auth/database logic changed
+- no fabricated production bull identity image introduced
 
-Allowed files/areas:
-- `apps/web/src/`
-- `apps/web/public/` for documented visual assets/attribution
-- `docs/` visual-system documentation
-- `TASKS.md`
-- `PROJECT_STATUS.md`
+Important boundary:
+- APP-004 establishes the production visual language and honest no-image states.
+- Rendering a canonical bull's real `primary_image_ref` and participant-specific matchup images requires React/API binding work and is tracked separately as BMI-APP-005 rather than being hidden inside this visual-system task.
+
+### BMI-APP-005 — Verified Bull Identity Image Binding
+Status: PLANNED — AFTER REVIEW BACKEND OR WHEN UI/API WORK IS NEXT
+
+Scope:
+- render `bull.primary_image_ref` safely in Bull Profile when present
+- keep explicit `ยังไม่มีภาพยืนยัน` fallback when absent or invalid
+- define allowed/signed media URL handling and broken-image behavior
+- extend public Match participant view model/API before showing participant-specific matchup images
+- never substitute atmosphere photography as canonical bull identity
+- verify mobile, accessibility, image loading and performance behavior
 
 ---
 
@@ -182,9 +190,9 @@ Includes:
 
 Unless a production/security blocker is more urgent:
 
-1. BMI-APP-004 — Visual Design Rebaseline
-2. BMI-P1-008 — Review Backend Foundation, re-scoped
-3. Community contribution migration/API/UI implementation
+1. BMI-P1-008 — Review Backend Foundation, re-scoped
+2. Community contribution migration/API/UI implementation
+3. BMI-APP-005 — Verified Bull Identity Image Binding when UI/API track is active
 4. Automated collection pipeline
 5. Intelligence products
 
