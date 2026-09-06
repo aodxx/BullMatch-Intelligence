@@ -47,15 +47,27 @@ Status: DONE
 Tracking: Issue #23 / PR #24
 
 ### BMI-P1-007 — Bull Profile & Basic Statistics
-Status: READY
+Owner: Primary Maintainer
+Status: REVIEW
+Tracking: Issue #28
 
-Scope:
-- published/verified match history by Bull
-- matches / wins / losses / draws / no-result counts
-- win rate with explicit denominator rule
-- recent form
-- head-to-head-ready query foundation
-- no unverified/private facts in public statistics
+Completed:
+- verified/published Bull match-history read model
+- normalized opponent history for future H2H
+- published/statistical match counts
+- W/L/D/NO_RESULT/CANCELLED counts
+- win rate excludes NO_RESULT/CANCELLED
+- recent form latest five W/L/D only
+- historical participant snapshots preserved
+- unverified Bulls excluded
+- service-role-only read access for current API boundary
+- rollback-only regression test on shared Supabase
+- no leaked fixture data
+
+Key files:
+- `supabase/migrations/20260906084340_add_bullmatch_verified_profile_statistics.sql`
+- `supabase/tests/p1_007_bull_stats.sql`
+- `supabase/P1-007-VERIFICATION.md`
 
 ### BMI-P1-008 — Review Backend Foundation
 Status: READY
