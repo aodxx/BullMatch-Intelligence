@@ -6,7 +6,7 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY || !ANON_KEY) throw new Error('Required S
 
 const ALLOWED_ORIGINS = new Set(['https://aodxx.github.io','http://localhost:5173','http://127.0.0.1:5173'])
 const PUBLIC_RESOURCES = new Set(['DASHBOARD','BULLS','BULL','MATCHES','MATCH','VENUES'])
-const REVIEW_RESOURCES = new Set(['REVIEW_QUEUE','REVIEW_CASE'])
+const REVIEW_RESOURCES = new Set(['REVIEW_QUEUE','REVIEW_CASE','IDENTITY_IMPACT_PREVIEW'])
 class ApiError extends Error { constructor(public status: number, message: string, public details?: unknown) { super(message) } }
 
 function corsHeaders(req: Request) {
@@ -86,13 +86,16 @@ Deno.serve(async (req: Request) => {
         if(!user) return respond(req,401,{error:'AUTH_REQUIRED',request_id:requestId})
         const membership=await rpc('bullmatch_api_member',{p_user_id:user.id})
         if(!isReviewMember(membership)) return respond(req,403,{error:'REVIEWER_REQUIRED',membership,request_id:requestId})
-        const data=await rpc('bullmatch_api_review_query',{
-          p_actor_id:user.id,
-          p_resource:resource,
-          p_id:parseUuidOrNull(url.searchParams.get('id')),
-          p_limit:pLimit,
-          p_offset:pOffset,
-        })
+        const id=parseUuidOrNull(url.searchParams.get('id'))
+        const data=resource==='IDENTITY_IMPACT_PREVIEW'
+          ? await rpc('bullmatch_api_identity_impact_preview',{p_actor_id:user.id,p_review_case_id:id})
+          : await rpc('bullmatch_api_review_query',{
+              p_actor_id:user.id,
+              p_resource:resource,
+              p_id:id,
+              p_limit:pLimit,
+              p_offset:pOffset,
+            })
         return respond(req,200,{data,request_id:requestId})
       }
 
