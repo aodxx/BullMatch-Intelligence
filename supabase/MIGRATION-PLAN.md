@@ -1,11 +1,11 @@
 # Supabase Migration Plan — Phase 1
 
-Task dependency: `BMI-P0-002`
+Task dependencies: `BMI-P0-002`, `BMI-P0-006`
 Status: design only; no Supabase project has been modified.
 
 ## Goal
 
-Turn `docs/DATABASE-SCHEMA.md` into reproducible, reviewable migrations after the BullMatch Intelligence Supabase project is selected/created.
+Turn `docs/DATABASE-SCHEMA.md` plus the source-runtime requirements in `docs/SOURCE-REGISTRY-CONTRACT.md` into reproducible, reviewable migrations after the BullMatch Intelligence Supabase project is selected/created.
 
 ## Migration sequence
 
@@ -14,13 +14,36 @@ Turn `docs/DATABASE-SCHEMA.md` into reproducible, reviewable migrations after th
 3. canonical owner/camp/bull/venue/event tables + aliases
 4. matches + participants + results
 5. review workflow
-6. private source/evidence ingestion
-7. private agent/extraction/claim layer
-8. matching/duplicate/verification layer
-9. provenance/identity/audit layer
-10. indexes and cross-table integrity helpers
-11. explicit grants and RLS
-12. database policy/integrity tests
+6. private source registry/evidence ingestion
+7. `private.source_runtime_state` for connector cursor/health/cooldown state
+8. private agent/extraction/claim layer
+9. matching/duplicate/verification layer
+10. provenance/identity/audit layer
+11. indexes and cross-table integrity helpers
+12. explicit grants and RLS
+13. database policy/integrity tests
+
+## Source Runtime State Addition
+
+`BMI-P0-006` established that rapidly changing connector cursor/health data should be separated from source policy/configuration.
+
+Recommended table:
+
+`private.source_runtime_state`
+
+- `source_id uuid primary key references private.sources(id)`
+- `cursor_strategy text not null default 'NONE'`
+- `cursor jsonb null`
+- `last_attempt_at timestamptz null`
+- `last_success_at timestamptz null`
+- `consecutive_failures integer not null default 0`
+- `cooldown_until timestamptz null`
+- `last_health text null`
+- `last_error_code text null`
+- `state jsonb not null default '{}'::jsonb`
+- `updated_at timestamptz not null default now()`
+
+Critical transaction rule: a connector-proposed cursor is persisted only after the corresponding source item/evidence ingestion reaches a safe committed checkpoint.
 
 ## Required Supabase checks before first DDL
 
@@ -39,19 +62,22 @@ Turn `docs/DATABASE-SCHEMA.md` into reproducible, reviewable migrations after th
 - service-role/secret credentials remain backend-only
 - reviewer/admin authority is derived from server-controlled role data, never user-editable metadata
 - exposed views use `security_invoker = true` when used
+- source runtime state and connector credentials are not exposed to public clients
 
 ## Test baseline
 
 Create SQL tests under `supabase/tests/` for at least:
 
 - anon cannot write canonical tables
-- anon cannot reach private ingestion/evidence tables
+- anon cannot reach private ingestion/evidence/runtime-state tables
 - public statistics cannot include unverified/conflict matches
 - reviewer cannot arbitrarily update canonical matches
 - admin/reviewer actions are constrained by intended role
 - winner participant must belong to the same match
 - duplicate ingestion key is idempotent
 - source evidence survives candidate rejection
+- connector cursor does not advance on failed ingestion transaction/checkpoint
+- repeated poll with the same `(source_id, dedupe_key)` does not create duplicate source items
 
 Run security and performance advisors after DDL and resolve actionable findings before release.
 

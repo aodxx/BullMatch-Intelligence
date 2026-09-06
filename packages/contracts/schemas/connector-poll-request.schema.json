@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bullmatch.local/contracts/connector-poll-request/1.0.0",
+  "title": "ConnectorPollRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "correlation_id", "run_id", "source", "cursor", "window", "limits"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "run_id": { "type": "string", "format": "uuid" },
+    "source": { "$ref": "source-registry-entry.schema.json" },
+    "cursor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy", "value"],
+      "properties": {
+        "strategy": { "enum": ["NONE", "TIMESTAMP", "EXTERNAL_ID", "PAGE_TOKEN", "ETAG", "CUSTOM"] },
+        "value": {}
+      }
+    },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "type": ["string", "null"], "format": "date-time" },
+        "to": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_items", "max_requests", "deadline_at"],
+      "properties": {
+        "max_items": { "type": "integer", "minimum": 1 },
+        "max_requests": { "type": "integer", "minimum": 1 },
+        "deadline_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    }
+  }
+}

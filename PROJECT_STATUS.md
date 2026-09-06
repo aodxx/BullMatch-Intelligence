@@ -36,7 +36,7 @@ Phase 0 is complete only when all of the following are approved and consistent:
 | BMI-P0-003 | AI collection and verification contracts | Primary Maintainer | DONE | Issue #2 / PR #6 |
 | BMI-P0-004 | Product requirements / MVP boundaries | Primary Maintainer | REVIEW | `PRD.md` v0.1 |
 | BMI-P0-005 | System architecture | Primary Maintainer | REVIEW | `ARCHITECTURE.md` v0.1 |
-| BMI-P0-006 | Source registry and connector contract | Primary Maintainer | IN PROGRESS | Issue #7 |
+| BMI-P0-006 | Source registry and connector contract | Primary Maintainer | REVIEW | Issue #7 / source-registry branch |
 | BMI-P0-007 | Entity resolution strategy | Unassigned | READY | Issue #3 |
 | BMI-P0-008 | Human review queue UX specification | Unassigned | READY | Issue #4 |
 
@@ -57,6 +57,10 @@ Phase 0 is complete only when all of the following are approved and consistent:
 13. Shared agent payloads are versioned JSON contracts under `packages/contracts/`.
 14. External source content is untrusted data and cannot instruct agents to reveal secrets, bypass verification, or alter system configuration.
 15. Confidence values are advisory and task-specific; conflicts are preserved instead of averaged away.
+16. Source policy approval and operational health are separate states.
+17. Connector runtime cursor advances only after a safe ingestion checkpoint is committed.
+18. Connectors own deterministic source-native dedupe keys; AI extraction never defines source item identity.
+19. Connector credentials are resolved at runtime from secret storage and are never persisted in source registry payloads.
 
 ## Completed Gates
 
@@ -66,16 +70,24 @@ Merged via PR #5.
 ### AI Contracts — BMI-P0-003
 Merged via PR #6. Contract CI passed before merge.
 
-Key machine-readable contracts now exist under `packages/contracts/`.
+Key machine-readable contracts exist under `packages/contracts/`.
 
-## Current Work — Source Registry / Connector Contract
+## Review Gate — Source Registry / Connector Contract
 
-`BMI-P0-006` defines the operational boundary for approved source configuration, polling, rate limits, cursor state, health, policy status, and the first production connector readiness checklist.
+`BMI-P0-006` is review-ready on `agent/bmi-p0-006-source-registry`.
+
+Key outputs:
+- `docs/SOURCE-REGISTRY-CONTRACT.md`
+- source registry JSON Schema
+- connector poll request/result JSON Schemas
+- source registry example fixture
+- updated shared-contract README/validator
+- updated Supabase migration plan with `private.source_runtime_state`
 
 ## Current Blockers
 
 - Supabase project has not yet been selected/created for this project.
-- First real source connectors have not yet been selected and validated for access/compliance.
+- The first real production source has not yet been selected and validated for access/compliance.
 
 ## Parallel-Ready Tasks
 
@@ -86,7 +98,7 @@ They must consume the merged schema/contracts rather than create competing paylo
 
 ## Next Integration Gate
 
-Complete `BMI-P0-006`, then review/finalize P0-004/P0-005/P0-007/P0-008. Phase 1 begins only when these foundations agree.
+Run contract CI and merge `BMI-P0-006`, then finalize `BMI-P0-004`, `BMI-P0-005`, `BMI-P0-007`, and `BMI-P0-008`. Phase 1 begins only when these foundations agree.
 
 ## Handoff Rule
 

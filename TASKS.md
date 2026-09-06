@@ -85,17 +85,23 @@ Deliverables drafted:
 
 ### BMI-P0-006 — Source Registry & Connector Contract
 Owner: Primary Maintainer
-Status: IN PROGRESS
+Status: REVIEW
 Tracking: Issue #7
 
-Deliverables:
-- source registry schema
-- connector interface
+Deliverables completed:
+- source registry schema and policy/health separation
+- connector interface and shared poll request/result contracts
 - source policy/access metadata
-- polling schedule/cursor model
+- polling schedule and cursor model
+- transactional cursor commit rule
 - rate-limit/backoff metadata
 - source health states
-- first connector readiness checklist
+- secret requirement boundary
+- deterministic connector-owned dedupe strategy
+- operator-upload and search-discovery boundaries
+- source runtime-state database addition plan
+- first connector selection/readiness checklist
+- source registry example fixture and contract validation coverage
 
 ### BMI-P0-007 — Entity Resolution Strategy
 Owner: Unassigned

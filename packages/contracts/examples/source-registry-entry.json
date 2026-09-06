@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "source_id": "88888888-8888-4888-8888-888888888888",
+  "name": "Example Official Results Feed",
+  "source_type": "RSS",
+  "base_url": "https://example.org/results.xml",
+  "connector_key": "generic-rss",
+  "access_method": "RSS_FEED",
+  "reliability_tier": "OFFICIAL",
+  "policy_status": "APPROVED",
+  "policy_notes": "Public official feed used for result monitoring.",
+  "status": "ACTIVE",
+  "polling": {
+    "enabled": true,
+    "interval_minutes": 120,
+    "timezone": "Asia/Bangkok",
+    "active_windows": [],
+    "max_items_per_run": 100
+  },
+  "rate_limit": {
+    "min_request_interval_ms": 1000,
+    "max_requests_per_run": 10,
+    "max_concurrency": 1,
+    "cooldown_seconds": 300,
+    "respect_retry_after": true
+  },
+  "connector_config": {
+    "language": "th"
+  },
+  "secret_requirements": [],
+  "tags": ["results", "official"]
+}

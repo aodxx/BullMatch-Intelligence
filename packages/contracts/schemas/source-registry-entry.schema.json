@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bullmatch.local/contracts/source-registry-entry/1.0.0",
+  "title": "SourceRegistryEntry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_id",
+    "name",
+    "source_type",
+    "connector_key",
+    "access_method",
+    "reliability_tier",
+    "policy_status",
+    "status",
+    "polling",
+    "rate_limit",
+    "connector_config",
+    "secret_requirements",
+    "tags"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "source_id": { "type": "string", "format": "uuid" },
+    "name": { "type": "string", "minLength": 1 },
+    "source_type": {
+      "enum": ["WEBSITE", "RSS", "SITEMAP", "API", "YOUTUBE", "OPERATOR_UPLOAD", "SEARCH_DISCOVERY", "OTHER"]
+    },
+    "base_url": { "type": ["string", "null"], "format": "uri" },
+    "connector_key": { "type": "string", "minLength": 1 },
+    "access_method": {
+      "enum": ["PUBLIC_PAGE", "RSS_FEED", "PUBLIC_API", "AUTHENTICATED_API", "OPERATOR_UPLOAD", "SEARCH_RESULT", "UNKNOWN"]
+    },
+    "reliability_tier": { "enum": ["OFFICIAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
+    "policy_status": { "enum": ["APPROVED", "REVIEW_REQUIRED", "BLOCKED"] },
+    "policy_notes": { "type": ["string", "null"] },
+    "status": { "enum": ["ACTIVE", "PAUSED", "ERROR", "RETIRED"] },
+    "polling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "interval_minutes", "max_items_per_run"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "interval_minutes": { "type": ["integer", "null"], "minimum": 60 },
+        "timezone": { "type": ["string", "null"] },
+        "active_windows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["start", "end"],
+            "properties": {
+              "start": { "type": "string", "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$" },
+              "end": { "type": "string", "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$" }
+            }
+          }
+        },
+        "max_items_per_run": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "rate_limit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min_request_interval_ms", "max_requests_per_run", "max_concurrency", "cooldown_seconds", "respect_retry_after"],
+      "properties": {
+        "min_request_interval_ms": { "type": "integer", "minimum": 0 },
+        "max_requests_per_run": { "type": "integer", "minimum": 1 },
+        "max_concurrency": { "type": "integer", "minimum": 1 },
+        "cooldown_seconds": { "type": "integer", "minimum": 0 },
+        "respect_retry_after": { "type": "boolean" }
+      }
+    },
+    "connector_config": { "type": "object", "additionalProperties": true },
+    "secret_requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "required", "purpose"],
+        "properties": {
+          "key": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" },
+          "required": { "type": "boolean" },
+          "purpose": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  }
+}
