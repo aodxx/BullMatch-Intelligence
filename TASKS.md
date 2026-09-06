@@ -40,18 +40,22 @@ No production migration has been applied yet.
 
 ### BMI-P0-003 — AI Agent & Verification Specification
 Owner: Primary Maintainer
-Status: IN PROGRESS
+Status: REVIEW
 Tracking: Issue #2
 
-Deliverables:
+Deliverables completed:
 - Source Discovery Agent contract
-- Source Monitoring Agent contract
-- Extraction Agent contract
-- Entity Resolution Agent contract
-- Duplicate Detection Agent contract
-- Verification Agent contract
-- Report Agent contract
-- retry/idempotency/error handling model
+- normalized Source Monitoring / ingestion envelope
+- atomic Extraction Result contract
+- Entity Match Result contract
+- Duplicate Detection Result contract
+- Verification Result contract
+- Review Subject reference contract
+- Agent Run + Error contracts
+- retry/idempotency/conflict rules
+- provider abstraction and prompt-injection boundary
+- JSON Schema package with example payloads
+- automated contract validation workflow
 
 ### BMI-P0-004 — PRD v0.1
 Owner: Primary Maintainer
