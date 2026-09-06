@@ -6,18 +6,20 @@ This file defines the initial backlog. GitHub Issues are used for execution trac
 
 ### BMI-P0-001 — Repository & Collaboration Foundation
 Owner: Primary Maintainer
-Status: IN PROGRESS
+Status: DONE
 
-Deliverables:
+Deliverables completed:
 - repository structure
 - multi-agent rules
 - task/branch conventions
 - issue and PR templates
 - shared project status
+- Drive handoff folder
 
 ### BMI-P0-002 — Database Schema v0.1
 Owner: Unassigned
 Status: READY
+Tracking: Issue #1
 
 Deliverables:
 - entities and relationships
@@ -32,6 +34,7 @@ Must not implement production migrations before schema review.
 ### BMI-P0-003 — AI Agent & Verification Specification
 Owner: Unassigned
 Status: READY
+Tracking: Issue #2
 
 Deliverables:
 - Source Discovery Agent contract
@@ -45,22 +48,22 @@ Deliverables:
 
 ### BMI-P0-004 — PRD v0.1
 Owner: Primary Maintainer
-Status: IN PROGRESS
+Status: REVIEW
 
-Deliverables:
+Deliverables drafted:
 - product goals
 - users and roles
 - MVP scope
 - core workflows
 - functional requirements
 - non-functional requirements
-- acceptance criteria
+- success measures
 
 ### BMI-P0-005 — Architecture v0.1
 Owner: Primary Maintainer
-Status: IN PROGRESS
+Status: REVIEW
 
-Deliverables:
+Deliverables drafted:
 - component boundaries
 - data flow
 - trust boundaries
@@ -84,6 +87,7 @@ Deliverables:
 ### BMI-P0-007 — Entity Resolution Strategy
 Owner: Unassigned
 Status: READY
+Tracking: Issue #3
 
 Deliverables:
 - bull identity candidate scoring
@@ -96,6 +100,7 @@ Deliverables:
 ### BMI-P0-008 — Review Queue UX Specification
 Owner: Unassigned
 Status: READY
+Tracking: Issue #4
 
 Deliverables:
 - new match review
