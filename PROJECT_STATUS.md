@@ -8,9 +8,9 @@ Last structural update: 2026-09-06
 
 Repository: `aodxx/BullMatch-Intelligence`
 
-Current phase: **Frontend Foundation + Core Verified Database**
+Current phase: **Phase 1 — Core Verified Database + Frontend Foundation**
 
-Overall status: **FIRST APP UI IN PROGRESS**
+Overall status: **APP FOUNDATION DEPLOYED / READY FOR AUTH + DATA WIRING**
 
 ## Completed Gates
 
@@ -20,98 +20,87 @@ Overall status: **FIRST APP UI IN PROGRESS**
 - BMI-P1-004 Authorization Foundation — DONE via PR #20
 - BMI-P1-005 Controlled Domain CRUD — DONE via PR #22
 - BMI-P1-006 Manual Match Entry & Verification — DONE via PR #24
+- BMI-APP-001 Frontend Foundation & First Screens — DONE via PR #26
 
-## Backend baseline
+Selected shared Supabase host:
 
-Shared Supabase host: **`aodxx's Project`**
+**`aodxx's Project`**
 
-BullMatch-owned schemas only:
+BullMatch owns only:
 - `bullmatch`
 - `bullmatch_private`
 
 `freshmart` remains outside BullMatch scope.
 
-Manual trusted workflow is available at the database/domain layer:
+## Manual Workflow Available
 
-`Venue / Bulls -> Event -> Match -> Participants -> Result -> Verify -> Publish`
+Trusted ADMIN flow:
 
-Historical participant snapshots, result synchronization, publication guards, ADMIN-only mutation rules and audit trail are tested against the real Supabase project.
+`Venue / Bulls -> Event -> Match -> Match Participants -> Match Result -> Verify -> Publish`
 
-Production Bulls/Matches remain intentionally empty; no fabricated data or fake ADMIN has been created.
+Historical participant snapshots preserve match-time display name, camp, owner, weight and estimated age independently of current Bull profile values.
 
-## Current Work — BMI-APP-001
+Publication requires a VERIFIED match, at least two participants, a known verified result, consistent match status, and synchronized participant result states.
 
-Status: **IN PROGRESS**
-Tracking: Issue #25
-Branch: `agent/bmi-app-001-frontend-foundation`
+## Security Boundary
 
-### Frontend stack
+- browser roles have zero direct table write grants
+- all state-changing commands enforce ACTIVE ADMIN membership
+- REVIEWER / VIEWER / non-member mutation attempts fail
+- private audit data remains inaccessible to browser roles
+- no fake production ADMIN or production bull/match data has been created
+- frontend contains no service-role secret
+- BullMatch mutation functions are not wired directly to the browser
 
+## Frontend
+
+Stack:
 - React 19
 - TypeScript
 - Vite 8
-- dependency-light CSS
-- Node 24 in CI
-- static/hash navigation compatible with GitHub Pages
+- mobile-first / Thai-first
+- responsive desktop sidebar + mobile bottom navigation
+- PWA manifest and app icon
 
-### First screens implemented in the branch
-
+Screens:
 - Dashboard
-- Bulls list
-- Bull Profile shell
-- Matches list
-- Match Detail shell
-- Manual Match Entry shell
-- Review Queue shell
-- Profile / Settings shell
+- Bulls
+- Bull Profile
+- Matches
+- Match Detail
+- Manual Entry
+- Review Queue
+- Settings/Profile
 
-### UX direction
+Real-data surfaces intentionally show empty states until secure data wiring is implemented.
 
-- Thai-first
-- mobile-first
-- desktop sidebar + mobile bottom navigation
-- large readable typography and tap targets
-- sports intelligence / statistics tone
-- PWA-ready manifest/icon
-- no fake production records
-- explicit empty states until real data wiring exists
+## Deployment
 
-### Security boundary
+GitHub Pages deployment is ACTIVE.
 
-The frontend currently contains **no Supabase secret and no data mutation wiring**.
+Production URL:
+`https://aodxx.github.io/BullMatch-Intelligence/`
 
-Do not expose the existing `bullmatch` SECURITY DEFINER mutation functions directly through the Data API just to connect the UI. APP-003 must use a controlled API/server boundary or separately designed exposed surface.
+Verified on GitHub Actions run #10 attempt 2:
+- locked dependency install — PASS
+- TypeScript — PASS
+- Vite production build — PASS
+- Configure Pages — PASS
+- Upload Pages artifact — PASS
+- Deploy GitHub Pages — PASS
 
-## Build / deployment
+## Next Gates
 
-`.github/workflows/web.yml`:
-- installs pinned web dependencies
-- typechecks
-- builds the Vite production bundle
-- prepares GitHub Pages deployment on `main`
+1. **BMI-P1-007 — Bull Profile & Basic Statistics**
+2. **BMI-APP-002 — Supabase Auth Login UI**
+3. **BMI-APP-003 — Secure Domain Data & Admin Action Wiring**
 
-Vite base path is `/BullMatch-Intelligence/`.
+The next frontend integration must preserve the existing API/security boundary and must not expose privileged `bullmatch` mutation functions directly.
 
-The first CI run was created before the CSS commit and correctly failed on the missing stylesheet. A current-head PR build is required before APP-001 can merge.
+## Still Deferred
 
-## Parallel-ready backend tasks
-
-- BMI-P1-007 — Bull Profile & Basic Statistics
-- BMI-P1-008 — Review Backend Foundation
-
-These remain isolated so another contributor can take one without editing APP-001 files.
-
-## Next after APP-001
-
-1. BMI-APP-002 — Supabase Auth Login UI
-2. Define secure API/read boundary
-3. BMI-APP-003 — Wire real BullMatch data/actions
-4. BMI-P1-007 — expose verified statistics through the chosen safe read boundary
-
-## Deferred
-
-- first production ADMIN activation (requires a real Auth account)
+- actual first production ADMIN activation using a real Auth account
 - AI provider selection
 - first production source selection/compliance approval
 
-None block completing the visible app foundation.
+These no longer block opening and reviewing the deployed frontend shell.
