@@ -37,8 +37,8 @@ Phase 0 is complete only when all of the following are approved and consistent:
 | BMI-P0-004 | Product requirements / MVP boundaries | Primary Maintainer | REVIEW | `PRD.md` v0.1 |
 | BMI-P0-005 | System architecture | Primary Maintainer | REVIEW | `ARCHITECTURE.md` v0.1 |
 | BMI-P0-006 | Source registry and connector contract | Primary Maintainer | DONE | Issue #7 / PR #8 |
-| BMI-P0-007 | Entity resolution strategy | Primary Maintainer | REVIEW | Issue #3 / entity-resolution branch |
-| BMI-P0-008 | Human review queue UX specification | Unassigned | READY | Issue #4 |
+| BMI-P0-007 | Entity resolution strategy | Primary Maintainer | DONE | Issue #3 / PR #9 |
+| BMI-P0-008 | Human review queue UX specification | Primary Maintainer | IN PROGRESS | Issue #4 |
 
 ## Decisions Locked
 
@@ -70,30 +70,20 @@ Phase 0 is complete only when all of the following are approved and consistent:
 - `BMI-P0-002` Database Schema — PR #5
 - `BMI-P0-003` AI Contracts — PR #6, contract CI passed
 - `BMI-P0-006` Source Registry / Connector Contract — PR #8, contract CI passed
+- `BMI-P0-007` Entity Resolution — PR #9, contract CI passed
 
-## Review Gate — Entity Resolution
+## Current Work — Review Queue UX
 
-`BMI-P0-007` is review-ready on `agent/bmi-p0-007-entity-resolution`.
-
-Key outputs:
-- `docs/ENTITY-RESOLUTION-STRATEGY.md`
-- `entity-resolution-policy.schema.json`
-- conservative policy fixture with per-entity thresholds
-- updated contract validator
-- calibration, golden-fixture, merge/split and reviewer requirements
+`BMI-P0-008` defines how reviewers safely turn AI candidates into controlled decisions. It must expose evidence, conflicts, identity signals, previous decisions, and impact before destructive actions.
 
 ## Current Blockers
 
 - Supabase project has not yet been selected/created for this project.
 - The first real production source has not yet been selected and validated for access/compliance.
 
-## Parallel-Ready Task
-
-`BMI-P0-008` Review Queue UX Specification remains available for another contributor and should use the entity-resolution reviewer requirements from this task.
-
 ## Next Integration Gate
 
-Run contract CI and merge `BMI-P0-007`, then complete the Review Queue UX and reconcile PRD/Architecture before Phase 1.
+Complete `BMI-P0-008`, then reconcile/finalize `PRD.md` and `ARCHITECTURE.md` against all Phase 0 contracts. After that the architecture foundation is ready for Phase 1 planning/bootstrap.
 
 ## Handoff Rule
 
