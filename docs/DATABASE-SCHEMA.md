@@ -1,30 +1,47 @@
-# Database Schema v0.1 — Final Phase 0 Contract
+# Database Schema v0.2 — Community Claims + Thai Bullfighting Temporal Domain
 
-Status: **REVIEW READY**
-Task: `BMI-P0-002`
-Primary datastore: PostgreSQL / Supabase
+Status: **IMPLEMENTATION CONTRACT / MIGRATION NOT YET APPLIED**  
+Task: `BMI-P1-011`  
+Primary datastore: PostgreSQL / Supabase  
+Schemas: `bullmatch` + `bullmatch_private`  
+Last updated: 2026-09-07
 
-This document is the migration-ready data contract for Phase 1. It intentionally separates authoritative sports data from untrusted source material and AI-generated candidates.
+## 1. Purpose
 
-## 1. Design Principles
+Schema v0.2 expands the deployed Phase 1 database from an operator-centric historical sports database into the approved BullMatch Community Data Network + Verified Big Data model.
 
-1. UUIDs are canonical identifiers; names are never foreign keys.
-2. Historical match-time facts are immutable snapshots attached to the match.
-3. Raw evidence, AI candidates, review state, and verified domain data are separate layers.
-4. Every published historical fact must be traceable to evidence and/or an explicit human action.
-5. Automated workers may create candidates and review cases but may not silently publish historical facts.
-6. Entity merges/splits are auditable and reversible at the decision layer.
-7. Source ingestion is idempotent.
-8. Hard delete is not used for referenced historical records.
-9. Workflow/status values use `text + check constraints` in v0.1 rather than PostgreSQL enums so states can evolve without enum migration friction.
-10. Database constraints protect integrity; AI confidence is metadata, never an integrity rule.
+The deployed v0.1 production foundation remains valid. v0.2 is deliberately **additive**: existing public API queries, admin CRUD functions, bull profiles, match statistics, matches and results continue to use the current canonical tables until new verified facts are promoted into them or future APIs intentionally expose new domain surfaces.
 
-## 2. Schema Boundaries
+The central flow is:
 
-### `public`
-Contains application-facing authoritative data and user/reviewer workflow records that may be reached through the Supabase Data API when explicitly granted and protected by RLS.
+`Community/source input -> Evidence -> Atomic claims -> Entity resolution / duplicate checks -> Corroboration / review -> Canonical verified domain -> Publication -> Analytics`
 
-Initial tables:
+A community submission never writes directly over canonical history.
+
+## 2. Non-negotiable design rules
+
+1. Stable UUIDs identify canonical entities; display names never serve as identity keys.
+2. Community input and external-source input are untrusted until verified.
+3. Evidence survives claim rejection where retention policy permits.
+4. Claims are atomic. Result, duration, date, identity, venue and affiliation can have different verification states.
+5. Current owner/camp/profile convenience columns never replace historical time-bound relationships.
+6. `วันเปรียบ`, pairing, program publication and actual match are separate domain records.
+7. Program amendments are versioned; old program versions are not overwritten.
+8. Physical traits, horn/yod and `ทางชน` are observations with evidence, not permanent unquestionable labels.
+9. Unresolved lineage remains a claim; only resolved/verified relationships enter canonical lineage tables.
+10. Contributor reputation is multidimensional and derived from verified outcomes, not submission volume.
+11. Reputation/credit is never a substitute for evidence or a database integrity constraint.
+12. Financial labels appearing in programs are archival source metadata only. The schema does not model stake collection, wallets, settlement or payouts.
+13. `bullmatch_private` remains inaccessible to browser clients.
+14. All privileged promotion/review operations remain server-mediated and auditable.
+15. Existing production API and canonical tables must remain backward compatible during migration.
+
+## 3. Deployed baseline retained from v0.1
+
+The following existing canonical tables remain authoritative and are not renamed or destructively rebuilt:
+
+### `bullmatch`
+
 - `app_users`
 - `owners`
 - `owner_aliases`
@@ -40,688 +57,843 @@ Initial tables:
 - `match_results`
 - `review_cases`
 - `review_actions`
+- existing statistics/views/functions and controlled API support objects
 
-### `private`
-Contains ingestion, raw evidence metadata, AI output, provenance, operational history, and identity-audit records. This schema must not be exposed to public clients.
+### `bullmatch_private`
 
-Initial tables:
 - `sources`
+- `source_runtime_state`
 - `source_items`
 - `evidence`
 - `agent_runs`
 - `extraction_runs`
+- `candidate_groups`
 - `claims`
 - `claim_evidence`
 - `entity_match_candidates`
+- `entity_source_mappings`
 - `duplicate_candidates`
 - `verification_results`
 - `fact_provenance`
 - `identity_events`
 - `audit_log`
+- private owner details and other already-deployed support objects
 
-### Object storage
-Binary evidence such as screenshots, uploaded images, PDFs, or derived artifacts should live in object storage/Google Drive as appropriate. Database rows store stable references, hashes, metadata, and access classification rather than large binary blobs.
+Canonical `bulls.current_owner_id`, `bulls.current_camp_id`, `color_description`, `lineage_notes` and similar v0.1 fields remain for compatibility. v0.2 treats them as **legacy/current-summary conveniences**, not the sole historical model.
 
-## 3. Authentication and Roles
+## 4. Identity and account separation
 
-### `public.app_users`
-Application identity/role record linked to Supabase Auth.
+### 4.1 Privileged application role stays separate
+
+`bullmatch.app_users` remains the authorization table for privileged BullMatch roles currently used by production:
+
+- `ADMIN`
+- `REVIEWER`
+- `VIEWER`
+
+Do not overload this role column with contributor reputation or topic expertise.
+
+A user can participate as a contributor without being granted reviewer/admin authority.
+
+### 4.2 New `bullmatch.contributor_profiles`
+
+Purpose: application-level participation profile linked to shared `auth.users` while remaining independent from privileged roles.
 
 Fields:
-- `id uuid primary key references auth.users(id) on delete cascade`
+
+- `user_id uuid primary key references auth.users(id) on delete cascade`
+- `handle text null`
 - `display_name text null`
-- `role text not null check (role in ('ADMIN','REVIEWER','VIEWER'))`
-- `status text not null default 'ACTIVE' check (status in ('ACTIVE','SUSPENDED'))`
+- `profile_visibility text not null default 'PRIVATE' check (... in ('PRIVATE','PUBLIC'))`
+- `status text not null default 'ACTIVE' check (... in ('ACTIVE','SUSPENDED','BANNED','LEFT'))`
+- `contribution_started_at timestamptz null`
+- `public_bio text null`
+- `home_region_code text null`
 - `created_at timestamptz not null default now()`
 - `updated_at timestamptz not null default now()`
 
 Rules:
-- Role changes are privileged operations.
-- Do not use user-editable auth metadata for authorization.
-- `VIEWER` has no write privileges to historical records.
-- `REVIEWER` may act on review workflows but may not change system configuration/source credentials.
-- `ADMIN` controls canonical data, source registry, and reviewer access.
 
-## 4. Canonical Domain Tables
+- no email/phone is copied into the public contributor profile
+- public visibility is opt-in
+- contributor status does not grant canonical write permission
+- browser writes should go through controlled API, not direct table mutation
 
-All canonical domain tables should use:
+## 5. Community submission layer
+
+### 5.1 New `bullmatch_private.community_submissions`
+
+One user intent/action: upload a program image, report a result, propose a correction, identify a bull, submit lineage information, submit a URL, etc.
+
+Fields:
+
 - `id uuid primary key default gen_random_uuid()`
-- `created_at timestamptz not null default now()`
+- `submitter_user_id uuid not null references auth.users(id)`
+- `submission_type text not null check (... in ('PROGRAM','RESULT','BULL_IDENTITY','BULL_PROFILE','AFFILIATION','LINEAGE','PHYSICAL_OBSERVATION','STYLE_OBSERVATION','COMPARISON','PAIRING','CORRECTION','URL','OTHER'))`
+- `client_submission_key text null`
+- `status text not null default 'RECEIVED' check (... in ('RECEIVED','PARSING','CLAIMS_READY','REVIEW_REQUIRED','PARTIALLY_ACCEPTED','ACCEPTED','REJECTED','WITHDRAWN','DUPLICATE','FAILED'))`
+- `target_hint jsonb not null default '{}'::jsonb`
+- `user_note text null`
+- `source_url text null`
+- `dedupe_fingerprint text null`
+- `submitted_at timestamptz not null default now()`
 - `updated_at timestamptz not null default now()`
-- `archived_at timestamptz null` where applicable
-- `archive_reason text null` where applicable
-
-### `public.owners`
-
-Fields:
-- `id uuid pk`
-- `name text not null`
-- `normalized_name text not null`
-- `province text null`
-- `district text null`
-- `contact_private jsonb null`
-- `notes text null`
-- `verification_status text not null default 'VERIFIED' check (verification_status in ('UNVERIFIED','REVIEW_REQUIRED','VERIFIED','REJECTED'))`
-- lifecycle timestamps
-
-Indexes:
-- btree on `normalized_name`
-- optional trigram index in Phase 1 for fuzzy matching
-
-### `public.owner_aliases`
-
-Fields:
-- `id uuid pk`
-- `owner_id uuid not null references public.owners(id)`
-- `alias text not null`
-- `normalized_alias text not null`
-- `alias_type text null`
-- `verified boolean not null default false`
-- timestamps
+- `resolved_at timestamptz null`
+- `moderation_metadata jsonb not null default '{}'::jsonb`
 
 Constraints/indexes:
-- unique `(owner_id, normalized_alias)`
-- index `normalized_alias`
 
-### `public.camps`
+- optional unique `(submitter_user_id, client_submission_key)` where key is not null for retry/idempotency
+- index `(submitter_user_id, submitted_at desc)`
+- index `(status, submitted_at)`
+- index `dedupe_fingerprint`
+
+The raw form payload must not become a canonical record. Structured candidate data belongs in claims.
+
+### 5.2 Generalize `bullmatch_private.evidence`
+
+Current production evidence requires a `source_item_id`. v0.2 must support community-origin evidence without inventing fake external source records.
+
+Add:
+
+- `submission_id uuid null references bullmatch_private.community_submissions(id) on delete set null`
+- `submitted_by_user_id uuid null references auth.users(id) on delete set null`
+- `captured_at timestamptz null`
+- `original_filename text null`
+- `mime_type text null`
+- `rights_basis text null`
+- `moderation_status text not null default 'PENDING' check (... in ('PENDING','ALLOWED','RESTRICTED','REJECTED'))`
+
+Change:
+
+- `source_item_id` becomes nullable
+- its FK should use `on delete set null` rather than making evidence disappear with a source item
+
+Origin constraint:
+
+`num_nonnulls(source_item_id, submission_id) >= 1`
+
+Evidence may have both when a community-submitted URL/file is later associated with a registered source item.
+
+Retain:
+
+- content hashes
+- timestamps/video ranges
+- `access_class`
+- storage reference
+- minimal excerpt policy
+
+Binary media remains in object storage/approved file storage, not PostgreSQL blobs.
+
+### 5.3 Generalize `bullmatch_private.extraction_runs`
+
+AI/deterministic extraction must accept either external source material or a community submission.
+
+Add:
+
+- `submission_id uuid null references bullmatch_private.community_submissions(id) on delete set null`
+- `input_evidence_id uuid null references bullmatch_private.evidence(id) on delete set null`
+
+Change:
+
+- `source_item_id` becomes nullable
+
+Constraint:
+
+At least one of `source_item_id`, `submission_id`, `input_evidence_id` is non-null.
+
+Do not require a community contribution to use AI. Manual confirmed claims can exist without an extraction run.
+
+## 6. Atomic claim model v0.2
+
+### 6.1 Generalize `bullmatch_private.claims`
+
+The existing claim representation is retained because `subject_type + subject_ref + field_key + value_json` is intentionally language/domain neutral.
+
+Changes:
+
+- make `extraction_run_id` nullable
+- add `submission_id uuid null references bullmatch_private.community_submissions(id) on delete set null`
+- add `created_by_user_id uuid null references auth.users(id) on delete set null`
+- add `origin_type text not null default 'SOURCE_EXTRACTION' check (... in ('SOURCE_EXTRACTION','COMMUNITY_SUBMISSION','OPERATOR_MANUAL','SYSTEM_DERIVED'))`
+- add `canonical_subject_id uuid null`
+- add `value_fingerprint text null`
+- add `supersedes_claim_id uuid null references bullmatch_private.claims(id) on delete set null`
+- add `review_case_id uuid null references bullmatch.review_cases(id) on delete set null`
+- add `updated_at timestamptz not null default now()`
+
+Replace status check with:
+
+- `PROPOSED`
+- `REVIEW_REQUIRED`
+- `CORROBORATED`
+- `VERIFIED`
+- `CONFLICT`
+- `REJECTED`
+- `SUPERSEDED`
+- `WITHDRAWN`
+
+Origin integrity:
+
+- `SOURCE_EXTRACTION` requires `extraction_run_id`
+- `COMMUNITY_SUBMISSION` requires `submission_id`
+- manual/system claims must retain an audit actor/correlation reference through review/audit operations
+
+Important: `VERIFIED` means the claim itself has passed policy. It does not automatically mean a canonical table was already mutated. Promotion is a separate auditable operation.
+
+### 6.2 Existing `claim_evidence` remains the common evidence edge
+
+Relationships remain:
+
+- `SUPPORTS`
+- `CONTRADICTS`
+- `CONTEXT`
+
+v0.2 may additionally allow:
+
+- `IDENTIFIES`
+- `DATES`
+- `ATTRIBUTES`
+
+only if implementation proves those labels useful. The minimal three-value model is sufficient for first migration.
+
+### 6.3 Claim granularity examples
+
+A submitted statement:
+
+> วัว A ชนะวัว B ที่สนาม X ใช้เวลา 25 นาที
+
+must become separate claims, e.g.:
+
+- participant identity A
+- participant identity B
+- match occurrence
+- venue identity
+- match date if supplied
+- result = A wins
+- duration = 1500 seconds
+
+Verification can accept the result while leaving duration in `CONFLICT`.
+
+## 7. Canonical people and temporal bull affiliations
+
+### 7.1 New `bullmatch.people`
+
+Purpose: represent publicly relevant human actors who are not adequately modeled as an `owner` entity, such as keeper/handler, trainer, breeder contact identity, referee or domain expert when needed by product scope.
 
 Fields:
-- `id uuid pk`
-- `name text not null`
+
+- `id uuid primary key default gen_random_uuid()`
+- `display_name text not null`
 - `normalized_name text not null`
-- `owner_id uuid null references public.owners(id)`
+- `person_type text not null default 'OTHER' check (... in ('KEEPER','HANDLER','TRAINER','BREEDER','REFEREE','EXPERT','VENUE_STAFF','OTHER'))`
 - `province text null`
 - `district text null`
 - `notes text null`
-- `verification_status text not null default 'VERIFIED'`
-- lifecycle timestamps
-
-### `public.camp_aliases`
-Same structural pattern as owner aliases, referencing `public.camps(id)`.
-
-### `public.bulls`
-
-Fields:
-- `id uuid pk`
-- `canonical_name text not null`
-- `normalized_name text not null`
-- `birth_date date null`
-- `birth_date_precision text null check (birth_date_precision in ('DAY','MONTH','YEAR','ESTIMATED','UNKNOWN'))`
-- `sex text not null default 'MALE' check (sex in ('MALE','UNKNOWN'))`
-- `color_description text null`
-- `breed_description text null`
-- `lineage_notes text null`
-- `current_camp_id uuid null references public.camps(id)`
-- `current_owner_id uuid null references public.owners(id)`
-- `home_province text null`
-- `home_district text null`
-- `status text not null default 'ACTIVE' check (status in ('ACTIVE','RESTING','RETIRED','DECEASED','UNKNOWN'))`
-- `primary_image_ref text null`
-- `notes text null`
-- `verification_status text not null default 'VERIFIED'`
-- lifecycle timestamps
-
-Important rule: current camp/owner are convenience attributes only. Historical camp/owner at match time lives on `match_participants`.
-
-### `public.bull_aliases`
-
-Fields:
-- `id uuid pk`
-- `bull_id uuid not null references public.bulls(id)`
-- `alias text not null`
-- `normalized_alias text not null`
-- `alias_type text null check (alias_type is null or alias_type in ('ALTERNATE_NAME','SPELLING','TITLE_PREFIX','SOURCE_LABEL','FORMER_NAME','OTHER'))`
-- `verified boolean not null default false`
-- `first_seen_at timestamptz null`
+- `verification_status text not null default 'UNVERIFIED' check (... in ('UNVERIFIED','REVIEW_REQUIRED','VERIFIED','REJECTED'))`
+- `archived_at timestamptz null`
+- `archive_reason text null`
 - timestamps
 
-Constraints/indexes:
-- unique `(bull_id, normalized_alias)`
-- btree on `normalized_alias`
-- optional trigram index on `normalized_alias` after `pg_trgm` is enabled without explicit extension version pinning
+No private contact details belong in this table.
 
-Do not make `normalized_alias` globally unique because different bulls can legitimately share the same display name.
+### 7.2 New `bullmatch.bull_affiliations`
 
-### `public.venues`
+Time-bound association of a bull with owner/camp/person.
 
 Fields:
-- `id uuid pk`
-- `name text not null`
-- `normalized_name text not null`
-- `province text null`
-- `district text null`
-- `address text null`
-- `latitude numeric(9,6) null check (latitude between -90 and 90)`
-- `longitude numeric(9,6) null check (longitude between -180 and 180)`
-- `status text not null default 'ACTIVE' check (status in ('ACTIVE','INACTIVE','UNKNOWN'))`
-- `verification_status text not null default 'VERIFIED'`
-- lifecycle timestamps
 
-### `public.venue_aliases`
-Same structural pattern as owner/camp aliases, referencing `public.venues(id)`.
-
-### `public.events`
-
-Fields:
-- `id uuid pk`
-- `venue_id uuid null references public.venues(id)`
-- `name text null`
-- `event_date date null`
-- `start_time timestamptz null`
-- `date_precision text not null default 'UNKNOWN' check (date_precision in ('EXACT','DATE_ONLY','MONTH_ONLY','YEAR_ONLY','ESTIMATED','UNKNOWN'))`
-- `status text not null default 'SCHEDULED' check (status in ('SCHEDULED','IN_PROGRESS','COMPLETED','CANCELLED','UNKNOWN'))`
-- `notes text null`
-- `verification_status text not null default 'VERIFIED'`
-- lifecycle timestamps
-
-Indexes:
-- `(venue_id, event_date)`
-- `event_date`
-
-### `public.matches`
-
-Fields:
-- `id uuid pk`
-- `event_id uuid null references public.events(id)`
-- `venue_id uuid null references public.venues(id)`
-- `match_date timestamptz null`
-- `date_precision text not null default 'UNKNOWN' check (date_precision in ('EXACT','DATE_ONLY','ESTIMATED','UNKNOWN'))`
-- `match_number integer null check (match_number is null or match_number > 0)`
-- `status text not null default 'SCHEDULED' check (status in ('SCHEDULED','COMPLETED','CANCELLED','NO_RESULT','UNKNOWN'))`
-- `duration_seconds integer null check (duration_seconds is null or duration_seconds >= 0)`
-- `result_detail text null`
-- `verification_status text not null default 'VERIFIED' check (verification_status in ('UNVERIFIED','REVIEW_REQUIRED','VERIFIED','CONFLICT','REJECTED'))`
-- `published_at timestamptz null`
-- lifecycle timestamps
-
-Rules:
-- `published_at` is not set until publishing policy is satisfied.
-- venue may be duplicated from event intentionally to preserve convenient match-level historical attribution; application validation keeps it consistent when event is known.
-
-Indexes:
-- `match_date`
-- `(venue_id, match_date)`
-- `(event_id, match_number)`
-- partial index on `published_at where published_at is not null`
-
-### `public.match_participants`
-Historical snapshot for one bull in one match.
-
-Fields:
-- `id uuid pk`
-- `match_id uuid not null references public.matches(id)`
-- `bull_id uuid not null references public.bulls(id)`
-- `side text null check (side is null or side in ('A','B','OTHER'))`
-- `camp_id_snapshot uuid null references public.camps(id)`
-- `owner_id_snapshot uuid null references public.owners(id)`
-- `weight_kg numeric(7,2) null check (weight_kg is null or weight_kg > 0)`
-- `age_months_estimate integer null check (age_months_estimate is null or age_months_estimate >= 0)`
-- `display_name_snapshot text not null`
-- `participant_result text null check (participant_result is null or participant_result in ('WIN','LOSS','DRAW','NO_RESULT','CANCELLED','UNKNOWN'))`
+- `id uuid primary key default gen_random_uuid()`
+- `bull_id uuid not null references bullmatch.bulls(id)`
+- `relationship_type text not null check (... in ('OWNER','CO_OWNER','BREEDER','CAMP','KEEPER','HANDLER','TRAINER','OTHER'))`
+- `owner_id uuid null references bullmatch.owners(id) on delete set null`
+- `camp_id uuid null references bullmatch.camps(id) on delete set null`
+- `person_id uuid null references bullmatch.people(id) on delete set null`
+- `valid_from date null`
+- `valid_from_precision text not null default 'UNKNOWN' check (... in ('DAY','MONTH','YEAR','ESTIMATED','UNKNOWN'))`
+- `valid_to date null`
+- `valid_to_precision text not null default 'UNKNOWN'`
+- `is_current boolean not null default false`
+- `verification_status text not null default 'VERIFIED' check (... in ('UNVERIFIED','REVIEW_REQUIRED','VERIFIED','CONFLICT','REJECTED'))`
 - `notes text null`
 - timestamps
 
-Constraints/indexes:
-- unique `(match_id, bull_id)`
-- unique `(match_id, side)` where side in `A/B` can be enforced by partial unique index
-- index `bull_id`
-- index `(bull_id, match_id)`
+Constraint:
 
-Historical rule: snapshot values are not recomputed when current bull/camp/owner data later changes.
+`num_nonnulls(owner_id, camp_id, person_id) = 1`
 
-### `public.match_results`
-Separating match result from `matches` avoids a cyclic winner FK.
+Application/domain validation maps relationship type to sensible target kinds but does not force ambiguous historical evidence into the wrong entity type.
+
+No global no-overlap constraint is imposed because co-owners, multiple caretakers and uncertain dates can legitimately overlap.
+
+### 7.3 Compatibility with `bulls.current_owner_id/current_camp_id`
+
+Current columns remain.
+
+After v0.2 implementation, controlled promotion may update current summary columns when a verified open-ended affiliation is authoritative. The temporal table remains the history of record; the current columns remain optimized compatibility/read conveniences.
+
+## 8. Bull identity, imagery and external identifiers
+
+### 8.1 New `bullmatch.bull_media`
 
 Fields:
+
 - `id uuid pk`
-- `match_id uuid not null unique references public.matches(id)`
-- `result_type text not null check (result_type in ('WIN','DRAW','NO_RESULT','CANCELLED','UNKNOWN'))`
-- `winner_participant_id uuid null references public.match_participants(id)`
-- `result_reason text null`
+- `bull_id uuid not null references bullmatch.bulls(id)`
+- `evidence_id uuid null references bullmatch_private.evidence(id) on delete set null`
+- `media_role text not null check (... in ('PRIMARY','IDENTITY','PROFILE','MATCH','COMPARISON','GALLERY','OTHER'))`
+- `storage_ref text null`
+- `captured_at timestamptz null`
+- `is_public boolean not null default false`
+- `verification_status text not null default 'UNVERIFIED'`
+- timestamps
+
+This supports the real-bull visual mandate while keeping rights/access policy explicit.
+
+### 8.2 New private `bullmatch_private.bull_external_identifiers`
+
+Potentially sensitive/durable identifiers stay private by default.
+
+Fields:
+
+- `id uuid pk`
+- `bull_id uuid not null references bullmatch.bulls(id)`
+- `identifier_type text not null`
+- `issuer text null`
+- `identifier_value text not null`
+- `normalized_value text not null`
+- `valid_from date null`
+- `valid_to date null`
+- `verification_status text not null default 'UNVERIFIED'`
+- `evidence_id uuid null references bullmatch_private.evidence(id) on delete set null`
+- timestamps
+
+Do not expose identifiers through the public API merely because they exist.
+
+## 9. Physical, marking, horn and fighting-style observations
+
+### 9.1 New `bullmatch.bull_trait_observations`
+
+Fields:
+
+- `id uuid pk`
+- `bull_id uuid not null references bullmatch.bulls(id)`
+- `trait_family text not null check (... in ('COLOR','MARKING','BODY','HORN','YOD','OTHER'))`
+- `normalized_term text null`
+- `raw_term text not null`
+- `body_region text null`
+- `observed_value jsonb not null default '{}'::jsonb`
+- `observed_at date null`
+- `date_precision text not null default 'UNKNOWN'`
+- `match_id uuid null references bullmatch.matches(id) on delete set null`
+- `comparison_session_id uuid null` (FK added after comparison table creation)
+- `evidence_id uuid null references bullmatch_private.evidence(id) on delete set null`
+- `verification_status text not null default 'UNVERIFIED' check (... in ('UNVERIFIED','REVIEW_REQUIRED','VERIFIED','CONFLICT','REJECTED'))`
+- timestamps
+
+Raw local terminology is preserved even when no normalized vocabulary exists.
+
+### 9.2 New `bullmatch.bull_style_observations`
+
+Fields:
+
+- `id uuid pk`
+- `bull_id uuid not null references bullmatch.bulls(id)`
+- `normalized_style_term text null`
+- `raw_description text not null`
+- `observation_context text not null check (... in ('MATCH','SPARRING','COMPARISON','EXPERT_REPORT','VIDEO','OTHER'))`
+- `match_id uuid null references bullmatch.matches(id) on delete set null`
+- `comparison_session_id uuid null`
+- `observed_at date null`
+- `date_precision text not null default 'UNKNOWN'`
+- `evidence_id uuid null references bullmatch_private.evidence(id) on delete set null`
+- `verification_status text not null default 'UNVERIFIED' check (... in ('UNVERIFIED','REVIEW_REQUIRED','VERIFIED','CONFLICT','REJECTED'))`
+- timestamps
+
+Do not collapse all observations into one permanent `style` field on the bull.
+
+## 10. Verified lineage graph
+
+### New `bullmatch.bull_parentage`
+
+This table stores resolved canonical parentage only. Unresolved community lineage statements remain atomic claims.
+
+Fields:
+
+- `id uuid pk`
+- `child_bull_id uuid not null references bullmatch.bulls(id)`
+- `parent_bull_id uuid not null references bullmatch.bulls(id)`
+- `parent_role text not null check (... in ('SIRE','DAM'))`
+- `verification_status text not null default 'VERIFIED' check (... in ('VERIFIED','CONFLICT','REVOKED'))`
 - `verified_at timestamptz null`
 - timestamps
 
-Integrity rules:
-- `WIN` requires `winner_participant_id`.
-- non-`WIN` results require `winner_participant_id is null`.
-- a database trigger or validated domain function must ensure the winner participant belongs to the same `match_id`.
+Constraints:
 
-## 5. Source Registry and Ingestion (`private`)
+- child cannot equal parent
+- unique active `(child_bull_id, parent_role)` should **not** be blindly enforced if conflicting historical claims must temporarily coexist; canonical promotion policy should allow `CONFLICT` rows and require one authoritative `VERIFIED` row per role before public lineage views choose a parent
+- cycles must be prevented by a controlled promotion function, not only by a trivial row check
 
-### `private.sources`
+Breeder/farm-of-origin relationships belong in `bull_affiliations` or claims, not in parentage.
+
+## 11. Comparison day / `วันเปรียบ`
+
+### 11.1 New `bullmatch.comparison_sessions`
 
 Fields:
+
 - `id uuid pk`
-- `name text not null`
-- `source_type text not null check (source_type in ('WEBSITE','RSS','SITEMAP','API','YOUTUBE','OPERATOR_UPLOAD','SEARCH_DISCOVERY','OTHER'))`
-- `base_url text null`
-- `connector_key text not null`
-- `access_method text not null`
-- `reliability_tier text not null default 'UNKNOWN' check (reliability_tier in ('OFFICIAL','HIGH','MEDIUM','LOW','UNKNOWN'))`
-- `polling_enabled boolean not null default false`
-- `poll_interval_minutes integer null check (poll_interval_minutes is null or poll_interval_minutes >= 60)`
-- `policy_status text not null default 'REVIEW_REQUIRED' check (policy_status in ('APPROVED','REVIEW_REQUIRED','BLOCKED'))`
-- `policy_notes text null`
-- `status text not null default 'ACTIVE' check (status in ('ACTIVE','PAUSED','ERROR','RETIRED'))`
-- `last_success_at timestamptz null`
-- `last_error_at timestamptz null`
-- timestamps
-
-No connector credential is stored in this table. Secrets stay in platform secret stores.
-
-### `private.source_items`
-One normalized discovered post/page/video/feed item.
-
-Fields:
-- `id uuid pk`
-- `source_id uuid not null references private.sources(id)`
-- `external_id text null`
-- `canonical_url text null`
-- `dedupe_key text not null`
-- `published_at timestamptz null`
-- `retrieved_at timestamptz not null`
-- `content_hash text null`
-- `title text null`
-- `normalized_text text null`
-- `raw_metadata jsonb not null default '{}'::jsonb`
-- `connector_name text not null`
-- `connector_version text not null`
-- `ingestion_status text not null default 'DISCOVERED' check (ingestion_status in ('DISCOVERED','EXTRACTED','REVIEW_REQUIRED','PROCESSED','FAILED','IGNORED'))`
-- timestamps
-
-Constraints/indexes:
-- unique `(source_id, dedupe_key)` — canonical idempotency constraint
-- partial unique `(source_id, external_id)` where `external_id is not null`
-- index `(source_id, published_at desc)`
-- index `content_hash`
-
-`dedupe_key` is computed by the connector from the strongest stable source identity available; it must not depend only on AI output.
-
-### `private.evidence`
-
-Fields:
-- `id uuid pk`
-- `source_item_id uuid not null references private.source_items(id)`
-- `evidence_type text not null check (evidence_type in ('TEXT','IMAGE','VIDEO_SEGMENT','AUDIO_SEGMENT','PDF','METADATA','OPERATOR_NOTE','OTHER'))`
-- `storage_ref text null`
-- `content_sha256 text null`
-- `text_excerpt text null`
-- `timestamp_start_seconds numeric null`
-- `timestamp_end_seconds numeric null`
-- `metadata jsonb not null default '{}'::jsonb`
-- `access_class text not null default 'INTERNAL' check (access_class in ('PUBLIC_REFERENCE','INTERNAL','RESTRICTED'))`
-- `created_at timestamptz not null default now()`
-
-Rules:
-- Evidence remains even if extraction is rejected.
-- Long copyrighted source content should not be copied into `text_excerpt`; store only the minimum excerpt/reference necessary for verification.
-
-## 6. Agent and Extraction Tables (`private`)
-
-### `private.agent_runs`
-
-Fields:
-- `id uuid pk`
-- `agent_type text not null`
-- `agent_version text not null`
-- `source_id uuid null references private.sources(id)`
-- `correlation_id uuid null`
-- `started_at timestamptz not null`
-- `completed_at timestamptz null`
-- `status text not null check (status in ('RUNNING','SUCCEEDED','FAILED','PARTIAL','CANCELLED'))`
-- `items_scanned integer not null default 0`
-- `items_created integer not null default 0`
-- `review_cases_created integer not null default 0`
-- `error_count integer not null default 0`
-- `metrics jsonb not null default '{}'::jsonb`
-- `errors jsonb not null default '[]'::jsonb`
-
-Indexes:
-- `(agent_type, started_at desc)`
-- `(source_id, started_at desc)`
-
-### `private.extraction_runs`
-
-Fields:
-- `id uuid pk`
-- `source_item_id uuid not null references private.source_items(id)`
-- `agent_run_id uuid null references private.agent_runs(id)`
-- `model_provider text not null`
-- `model_name text not null`
-- `contract_version text not null`
-- `prompt_version text null`
-- `input_hash text not null`
-- `started_at timestamptz not null`
-- `completed_at timestamptz null`
-- `status text not null check (status in ('RUNNING','SUCCEEDED','FAILED','PARTIAL'))`
-- `usage_metadata jsonb not null default '{}'::jsonb`
-- `error jsonb null`
-
-Idempotency:
-- unique `(source_item_id, model_provider, model_name, contract_version, input_hash)` for successful-equivalent extraction identity, or enforce equivalent application-side upsert semantics if retries need multiple run rows.
-
-### `private.claims`
-Atomic extracted factual assertions.
-
-Fields:
-- `id uuid pk`
-- `extraction_run_id uuid not null references private.extraction_runs(id)`
-- `candidate_group_id uuid not null`
-- `subject_type text not null check (subject_type in ('BULL','OWNER','CAMP','VENUE','EVENT','MATCH','MATCH_PARTICIPANT'))`
-- `subject_candidate_key text not null`
-- `field_key text not null`
-- `value_jsonb jsonb null`
-- `basis text not null check (basis in ('EXPLICIT','INFERRED','UNKNOWN'))`
-- `confidence numeric(5,4) null check (confidence is null or (confidence >= 0 and confidence <= 1))`
-- `status text not null default 'CANDIDATE' check (status in ('CANDIDATE','SUPPORTED','CONFLICT','REJECTED','VERIFIED'))`
-- `created_at timestamptz not null default now()`
-
-Important: `UNKNOWN` may have `value_jsonb = null`; the extractor should represent missing facts explicitly rather than fabricate values.
-
-### `private.claim_evidence`
-Many-to-many evidence attachment.
-
-Fields:
-- `claim_id uuid references private.claims(id) on delete cascade`
-- `evidence_id uuid references private.evidence(id)`
-- `relationship text not null default 'SUPPORTS' check (relationship in ('SUPPORTS','CONTRADICTS','CONTEXT'))`
-- `created_at timestamptz not null default now()`
-
-Primary key: `(claim_id, evidence_id, relationship)`.
-
-### `private.entity_match_candidates`
-
-Fields:
-- `id uuid pk`
-- `candidate_group_id uuid not null`
-- `entity_type text not null check (entity_type in ('BULL','OWNER','CAMP','VENUE','EVENT'))`
-- `candidate_key text not null`
-- `proposed_entity_id uuid null`
-- `match_score numeric(5,4) not null check (match_score between 0 and 1)`
-- `signals jsonb not null default '{}'::jsonb`
-- `recommendation text not null check (recommendation in ('AUTO_LINK','REVIEW','NO_MATCH'))`
-- `decision text null check (decision is null or decision in ('LINKED','REJECTED','NEW_ENTITY','MERGED'))`
-- `review_case_id uuid null references public.review_cases(id)`
-- timestamps
-
-No generic FK is possible for `proposed_entity_id`; application validation must confirm the ID belongs to the declared entity type before a decision is committed.
-
-### `private.duplicate_candidates`
-
-Fields:
-- `id uuid pk`
-- `candidate_group_id uuid not null`
-- `candidate_type text not null check (candidate_type in ('MATCH','EVENT','ENTITY'))`
-- `proposed_existing_id uuid null`
-- `score numeric(5,4) not null check (score between 0 and 1)`
-- `signals jsonb not null default '{}'::jsonb`
-- `differing_fields jsonb not null default '{}'::jsonb`
-- `status text not null default 'CANDIDATE' check (status in ('CANDIDATE','REVIEW_REQUIRED','CONFIRMED_DUPLICATE','NOT_DUPLICATE'))`
-- `review_case_id uuid null references public.review_cases(id)`
-- timestamps
-
-### `private.verification_results`
-
-Fields:
-- `id uuid pk`
-- `candidate_group_id uuid not null`
-- `verification_version text not null`
-- `status text not null check (status in ('CORROBORATED','CONFLICT','INSUFFICIENT_EVIDENCE','REVIEW_REQUIRED','REJECTED'))`
-- `confidence_summary numeric(5,4) null check (confidence_summary is null or confidence_summary between 0 and 1)`
-- `summary jsonb not null default '{}'::jsonb`
-- `review_case_id uuid null references public.review_cases(id)`
-- `created_at timestamptz not null default now()`
-
-A `CONFLICT` result must preserve competing claims; confidence averaging must not collapse the conflict.
-
-## 7. Review Workflow (`public`)
-
-### `public.review_cases`
-
-Fields:
-- `id uuid pk`
-- `case_type text not null check (case_type in ('NEW_ENTITY','ENTITY_MATCH','DUPLICATE_MATCH','CONFLICTING_RESULT','CONFLICTING_DATE','LOW_CONFIDENCE','SOURCE_APPROVAL','MERGE_SPLIT','DATA_QUALITY','OTHER'))`
-- `status text not null default 'OPEN' check (status in ('OPEN','IN_REVIEW','RESOLVED','REJECTED','CANCELLED'))`
-- `priority text not null default 'NORMAL' check (priority in ('LOW','NORMAL','HIGH','URGENT'))`
-- `subject_type text not null`
-- `subject_ref jsonb not null`
-- `summary text not null`
-- `context jsonb not null default '{}'::jsonb`
-- `assigned_to uuid null references public.app_users(id)`
-- `created_at timestamptz not null default now()`
-- `resolved_at timestamptz null`
-- `resolved_by uuid null references public.app_users(id)`
-
-`subject_ref` is intentionally JSON because review cases can target unpersisted candidates as well as canonical records. Required structure is versioned by the AI/review contract.
-
-Indexes:
-- `(status, priority, created_at)`
-- `assigned_to`
-- GIN on `subject_ref` only if query profiling later justifies it
-
-### `public.review_actions`
-Append-only review history.
-
-Fields:
-- `id uuid pk`
-- `review_case_id uuid not null references public.review_cases(id)`
-- `actor_id uuid not null references public.app_users(id)`
-- `action text not null check (action in ('CLAIM','UNCLAIM','APPROVE','REJECT','EDIT','LINK_ENTITY','CREATE_ENTITY','CONFIRM_DUPLICATE','MARK_NOT_DUPLICATE','RESOLVE_CONFLICT','MERGE','SPLIT','COMMENT','REOPEN'))`
-- `before_value jsonb null`
-- `after_value jsonb null`
+- `venue_id uuid null references bullmatch.venues(id) on delete set null`
+- `session_date date null`
+- `date_precision text not null default 'UNKNOWN'`
+- `name text null`
+- `status text not null default 'PLANNED' check (... in ('PLANNED','IN_PROGRESS','COMPLETED','CANCELLED','UNKNOWN'))`
+- `verification_status text not null default 'UNVERIFIED' check (... in ('UNVERIFIED','REVIEW_REQUIRED','VERIFIED','CONFLICT','REJECTED'))`
 - `notes text null`
-- `created_at timestamptz not null default now()`
+- timestamps / archive fields
 
-Review actions are never updated/deleted in normal application flow.
+### 11.2 New `bullmatch.comparison_entries`
 
-## 8. Provenance and Audit (`private`)
-
-### `private.fact_provenance`
-Links a canonical fact to candidate claims/evidence/reviewer decision.
+One bull presented/recorded in a comparison session.
 
 Fields:
+
 - `id uuid pk`
-- `subject_type text not null`
-- `subject_id uuid not null`
-- `field_key text not null`
-- `value_fingerprint text null`
-- `claim_id uuid null references private.claims(id)`
-- `evidence_id uuid null references private.evidence(id)`
-- `review_action_id uuid null references public.review_actions(id)`
-- `relationship text not null check (relationship in ('SUPPORTS','CONTRADICTS','DERIVED_FROM','MANUAL_ENTRY'))`
-- `created_at timestamptz not null default now()`
+- `comparison_session_id uuid not null references bullmatch.comparison_sessions(id) on delete cascade`
+- `bull_id uuid not null references bullmatch.bulls(id)`
+- `display_name_snapshot text not null`
+- `owner_id_snapshot uuid null references bullmatch.owners(id) on delete set null`
+- `camp_id_snapshot uuid null references bullmatch.camps(id) on delete set null`
+- `weight_kg numeric(7,2) null`
+- `age_months_estimate integer null`
+- `appearance_snapshot jsonb not null default '{}'::jsonb`
+- `verification_status text not null default 'UNVERIFIED'`
+- timestamps
 
-Rules:
-- At least one of claim/evidence/review action must be present.
-- Generic subject references are audit metadata; application/domain services validate subject type/ID consistency.
+Unique `(comparison_session_id, bull_id)` unless evidence shows the session itself is duplicated, in which case duplicate resolution occurs at session/entity level before canonical insertion.
 
-### `private.identity_events`
-Append-only identity decision log.
+## 12. Pairing lifecycle
+
+### 12.1 New `bullmatch.pairings`
+
+A pairing is distinct from a program row and distinct from the actual match.
 
 Fields:
+
 - `id uuid pk`
-- `entity_type text not null check (entity_type in ('BULL','OWNER','CAMP','VENUE','EVENT'))`
-- `event_type text not null check (event_type in ('MERGE','SPLIT','ALIAS_VERIFIED','ALIAS_REVOKED','CANONICAL_RENAMED'))`
-- `source_entity_ids uuid[] not null default '{}'`
-- `target_entity_ids uuid[] not null default '{}'`
-- `review_case_id uuid null references public.review_cases(id)`
-- `review_action_id uuid null references public.review_actions(id)`
+- `comparison_session_id uuid null references bullmatch.comparison_sessions(id) on delete set null`
+- `venue_id uuid null references bullmatch.venues(id) on delete set null`
+- `proposed_match_date date null`
+- `date_precision text not null default 'UNKNOWN'`
+- `status text not null default 'PROPOSED' check (... in ('PROPOSED','REJECTED','ACCEPTED','CANCELLED','SUPERSEDED','UNKNOWN'))`
+- `accepted_at timestamptz null`
+- `cancelled_at timestamptz null`
+- `cancellation_reason text null`
+- `archival_terms jsonb not null default '{}'::jsonb`
+- `verification_status text not null default 'UNVERIFIED'`
+- timestamps / archive fields
+
+`archival_terms` may preserve source labels such as published prize/financial wording, deposits or conditions only as provenance-bearing historical metadata. It is never a wallet, bet or settlement ledger.
+
+### 12.2 New `bullmatch.pairing_participants`
+
+Fields:
+
+- `id uuid pk`
+- `pairing_id uuid not null references bullmatch.pairings(id) on delete cascade`
+- `bull_id uuid not null references bullmatch.bulls(id)`
+- `position smallint not null check (position in (1,2))`
+- `display_name_snapshot text not null`
+- `owner_id_snapshot uuid null references bullmatch.owners(id) on delete set null`
+- `camp_id_snapshot uuid null references bullmatch.camps(id) on delete set null`
+- `weight_kg_snapshot numeric(7,2) null`
+- `published_side_label text null`
+- timestamps
+
+Constraints:
+
+- unique `(pairing_id, bull_id)`
+- unique `(pairing_id, position)`
+- a controlled acceptance operation requires exactly two participants before status can become `ACCEPTED`
+
+### 12.3 Add optional pairing link to `bullmatch.matches`
+
+Add:
+
+- `pairing_id uuid null references bullmatch.pairings(id) on delete set null`
+
+Existing matches remain valid with null pairing.
+
+## 13. Versioned event programs
+
+### 13.1 New `bullmatch.event_programs`
+
+Stable identity for one program/card concept.
+
+Fields:
+
+- `id uuid pk`
+- `event_id uuid null references bullmatch.events(id) on delete set null`
+- `venue_id uuid null references bullmatch.venues(id) on delete set null`
+- `program_date date null`
+- `name text null`
+- `verification_status text not null default 'UNVERIFIED'`
+- timestamps / archive fields
+
+### 13.2 New `bullmatch.event_program_versions`
+
+Fields:
+
+- `id uuid pk`
+- `program_id uuid not null references bullmatch.event_programs(id) on delete cascade`
+- `version_no integer not null check (version_no > 0)`
+- `supersedes_version_id uuid null references bullmatch.event_program_versions(id) on delete set null`
+- `published_at timestamptz null`
+- `effective_at timestamptz null`
+- `status text not null default 'PUBLISHED' check (... in ('DRAFT','PUBLISHED','SUPERSEDED','RETRACTED'))`
+- `source_label text null`
+- `verification_status text not null default 'UNVERIFIED'`
+- timestamps
+
+Unique `(program_id, version_no)`.
+
+Published versions are immutable except controlled correction metadata; amendments create a new version.
+
+### 13.3 New `bullmatch.event_program_entries`
+
+Fields:
+
+- `id uuid pk`
+- `program_version_id uuid not null references bullmatch.event_program_versions(id) on delete cascade`
+- `entry_order integer null`
+- `pairing_id uuid null references bullmatch.pairings(id) on delete set null`
+- `match_id uuid null references bullmatch.matches(id) on delete set null`
+- `entry_status text not null default 'SCHEDULED' check (... in ('SCHEDULED','CANCELLED','REPLACED','COMPLETED','UNKNOWN'))`
+- `display_label text null`
+- `feature_label text null`
+- `archival_financial_labels jsonb not null default '{}'::jsonb`
+- `raw_text text null`
+- timestamps
+
+Program entries retain what was actually published in that version even when the eventual match differs.
+
+## 14. Rule version readiness
+
+Venue/event rules must not be hard-coded globally.
+
+### 14.1 New `bullmatch.rule_profiles`
+
+- stable rule profile identity
+- name
+- venue scope when appropriate
+- status
+- timestamps
+
+### 14.2 New `bullmatch.rule_profile_versions`
+
+- `rule_profile_id`
+- `version_no`
+- effective date range
+- structured `rules_json`
+- exact/source wording reference
+- verification state
+- provenance
+
+### 14.3 Add nullable rule links
+
+Future additive columns:
+
+- `events.rule_profile_version_id`
+- `comparison_sessions.rule_profile_version_id`
+- `matches.rule_profile_version_id`
+
+Null remains valid until field validation establishes a verified rule version.
+
+## 15. Contributor reputation model
+
+### 15.1 New `bullmatch_private.contributor_reputation_events`
+
+Append-only events generated from verified review outcomes.
+
+Fields:
+
+- `id uuid pk`
+- `user_id uuid not null references auth.users(id)`
+- `dimension text not null check (... in ('BULL_IDENTITY','MATCH_RESULT','PROGRAM','LINEAGE','PHYSICAL_STYLE','EVIDENCE_QUALITY','REVIEW_QUALITY'))`
+- `venue_id uuid null references bullmatch.venues(id) on delete set null`
+- `region_code text null`
+- `claim_id uuid null references bullmatch_private.claims(id) on delete set null`
+- `review_action_id uuid null references bullmatch.review_actions(id) on delete set null`
+- `outcome text not null check (... in ('ACCURATE','PARTIAL','INACCURATE','DUPLICATE','ABUSIVE','REVIEW_AGREEMENT','REVIEW_OVERTURNED'))`
+- `weight numeric(8,4) not null default 1`
 - `metadata jsonb not null default '{}'::jsonb`
 - `created_at timestamptz not null default now()`
 
-This records the decision history even if the application later changes canonical pointers.
+Reputation events are never directly inserted by a browser client.
 
-### `private.audit_log`
+### 15.2 New `bullmatch.contributor_reputation`
+
+Materialized/current aggregate per dimension and optional locality scope.
 
 Fields:
-- `id uuid pk`
-- `actor_type text not null check (actor_type in ('USER','AGENT','SYSTEM'))`
-- `actor_id text null`
-- `action text not null`
-- `entity_type text null`
-- `entity_id uuid null`
-- `correlation_id uuid null`
-- `metadata jsonb not null default '{}'::jsonb`
-- `created_at timestamptz not null default now()`
 
-Audit rows are append-only.
+- `user_id uuid not null references auth.users(id)`
+- `dimension text not null`
+- `venue_id uuid null references bullmatch.venues(id) on delete cascade`
+- `region_code text null`
+- `verified_count integer not null default 0`
+- `rejected_count integer not null default 0`
+- `duplicate_count integer not null default 0`
+- `quality_score numeric(6,3) null`
+- `confidence_band text not null default 'INSUFFICIENT_DATA' check (... in ('INSUFFICIENT_DATA','LOW','MEDIUM','HIGH'))`
+- `last_event_at timestamptz null`
+- `updated_at timestamptz not null default now()`
 
-## 9. Canonical Relationships
+Use a synthetic `scope_key` generated from venue/region/global scope to support deterministic uniqueness rather than relying on nullable unique-column semantics.
 
-```text
-auth.users
-   -> public.app_users
+No client can self-edit these rows.
 
-owners -> camps -> bulls
-   \        \      \
-    aliases aliases aliases
+### 15.3 Credits remain separate from reputation
 
-venues -> events -> matches -> match_participants -> bulls
-   \                   \
-    aliases              -> match_results
+`Contribute to Unlock` economics are intentionally deferred to BMI-P1-012.
 
-private.sources
-   -> private.source_items
-      -> private.evidence
-      -> private.extraction_runs
-         -> private.claims
-            -> private.claim_evidence -> evidence
+If credits are implemented, use an append-only credit ledger derived from verified contribution value. Never place credit balance/points inside `claims` or use it to decide factual truth.
 
-candidate groups
-   -> entity_match_candidates
-   -> duplicate_candidates
-   -> verification_results
-   -> public.review_cases
-      -> public.review_actions
+## 16. Entity resolution and duplicate compatibility
 
-verified facts
-   -> private.fact_provenance
+Existing candidate tables remain useful but their type constraints need expansion.
 
-merge/split/name identity decisions
-   -> private.identity_events
-```
+### `bullmatch_private.entity_match_candidates.entity_type`
 
-## 10. Publication and Statistics Rules
+Extend supported canonical types toward:
 
-Authoritative statistics use only matches satisfying all of:
-- `matches.verification_status = 'VERIFIED'`
-- `matches.published_at is not null`
-- match result exists
-- referenced participants are valid
-- result integrity checks pass
+- `BULL`
+- `OWNER`
+- `CAMP`
+- `PERSON`
+- `VENUE`
+- `EVENT`
+- `COMPARISON_SESSION`
+- `PAIRING`
+- `PROGRAM`
 
-Rejected, unverified, review-required, or conflict records are excluded from public win/loss statistics by default.
+### `bullmatch_private.duplicate_candidates.candidate_type`
 
-Derived statistics must be reproducible from canonical tables; they should not be manually stored as source-of-truth counters on `bulls`.
+Extend toward:
 
-## 11. RLS and Data API Model
+- `MATCH`
+- `EVENT`
+- `ENTITY`
+- `COMPARISON_SESSION`
+- `PAIRING`
+- `PROGRAM_VERSION`
+- `SUBMISSION`
 
-Supabase exposure is **opt-in** for this project.
+New contributions must search likely existing bulls/pairings/programs before canonical entity creation.
 
-### Public read
-Anonymous/public clients may eventually receive `SELECT` only for records that are explicitly published and not archived. Exact public policies are created in Phase 1 together with tests.
+Name normalization remains candidate-retrieval input, never identity proof.
 
-### Authenticated viewer
-Same authoritative reads as public, plus self-profile where applicable.
+## 17. Review workflow compatibility
 
-### Reviewer
-Can read review cases assigned/available to reviewers and append allowed review actions. Reviewers do not get unrestricted direct writes to canonical domain tables; review decisions go through controlled domain operations.
+Existing `bullmatch.review_cases` and `review_actions` remain the review shell.
 
-### Admin
-Can manage canonical/reference data and source configuration through authenticated application operations.
+P1-011 does not redesign their full API because BMI-P1-008 resumes after P1-012.
 
-### Private schema
-`private` is not exposed to anonymous/public Data API clients. Workers/backend use trusted credentials or direct server-side database access.
+Schema v0.2 requires review cases to be able to reference:
 
-Security requirements for Phase 1:
-- RLS enabled on every exposed table
-- grants explicitly reviewed; do not rely on platform defaults
-- policies use `TO anon` / `TO authenticated` and explicit predicates
-- no service-role/secret key in browser code
-- views exposed to clients must use `security_invoker = true` where applicable
-- `supabase test db` coverage for allow/deny behavior
-- security/performance advisors run after DDL
+- submission
+- claim
+- evidence
+- candidate group
+- entity match candidate
+- duplicate candidate
+- conflict set
 
-## 12. Soft Delete / Archive Policy
+Where the existing review table has generic subject metadata, reuse it. If it cannot express these links strongly enough, the later P1-008 migration should add nullable reference columns or a normalized `review_case_links` table rather than replacing review history.
 
-Canonical domain records use archive semantics after they are referenced.
+## 18. Promotion from verified claims into canonical facts
 
-- `archived_at` + `archive_reason` hide inactive records while preserving historical references.
-- Matches with evidence/history are not hard-deleted through ordinary application actions.
-- Source items/evidence are retained even when rejected unless legal/policy requirements require deletion.
-- Candidate rows may be lifecycle-pruned only under an explicit retention policy; provenance referenced by verified facts cannot be silently removed.
+Canonical mutation is a controlled server-side action.
 
-## 13. Search and Index Strategy
+A promotion operation must:
 
-Phase 1 baseline indexes:
-- normalized names and aliases
-- bull match history (`match_participants.bull_id`)
-- match date / venue date
-- source id + publication time
-- source dedupe key unique index
-- review queue status/priority
-- agent run type/start time
+1. verify claim state/policy
+2. resolve the canonical subject/entity
+3. use optimistic/stale-write checks where an existing fact is being changed
+4. update/insert the canonical table or temporal relationship
+5. write `fact_provenance`
+6. write review/audit action
+7. never delete contradicting evidence
+8. invalidate/recompute affected derived statistics if necessary
 
-Fuzzy search:
-- enable `pg_trgm` only if needed after baseline exact-normalized search
-- do not pin an explicit extension version
-- add GIN/GiST trigram indexes only to fields measured as useful
+Examples:
 
-## 14. Migration Ordering
+- verified current owner claim -> insert temporal `bull_affiliations`; optionally update `bulls.current_owner_id`
+- verified style observation -> insert `bull_style_observations`
+- verified sire claim -> insert/resolve `bull_parentage`
+- verified comparison record -> insert `comparison_sessions` + entries
+- verified result claim -> update/create existing match result through controlled match functions
 
-Proposed order:
+## 19. Publication and analytics boundary
 
-1. required extensions (`pgcrypto`; optional `pg_trgm` without version pinning)
-2. create `private` schema
-3. `public.app_users`
-4. owners + owner aliases
-5. camps + camp aliases
-6. bulls + bull aliases
-7. venues + venue aliases
-8. events
-9. matches
-10. match participants
-11. match results
-12. review cases + review actions
-13. private source/evidence tables
-14. private agent/extraction/claim tables
-15. matching/duplicate/verification tables
-16. provenance/identity/audit tables
-17. indexes
-18. integrity triggers/functions required for cross-table checks
-19. grants/RLS/policies
-20. database tests
-21. advisors and performance review
+Authoritative public surfaces use only verified/published canonical data.
 
-No production data migration is part of `BMI-P0-002`.
+Community submissions, raw claims, private evidence and reputation-event internals remain private unless a specific safe projection is intentionally exposed.
 
-## 15. Cross-Table Integrity Requiring Trigger/Domain Service
+Future analytics should receive data-quality fields such as:
 
-PostgreSQL CHECK constraints cannot express every cross-table rule. Phase 1 must explicitly test:
+- evidence count/diversity
+- unresolved conflicts
+- observation recency
+- sample size
+- identity confidence
+- contributor-locality corroboration
 
-- `match_results.winner_participant_id` belongs to the same match
-- a winner exists only for `result_type='WIN'`
-- participant results are consistent with the match result
-- reviewer resolution timestamps/actors match terminal status
-- canonical publication occurs only from verified state
-- generic entity references in identity/provenance records point to the declared type when written through domain services
+These are analytical metadata, not betting odds or guarantees.
 
-## 16. Schema Acceptance Criteria
+## 20. Security / RLS contract
 
-`BMI-P0-002` is accepted when:
+### `bullmatch_private`
 
-- canonical and untrusted data zones are separate
-- historical match snapshots are preserved
-- result modeling avoids cyclic schema dependencies
-- source item ingestion has a deterministic idempotency key
-- claim-level evidence linkage exists
-- review subject references can point to both candidates and canonical records
-- identity merge/split decisions are auditable
-- publication rules exclude unverified/conflicted data from statistics
-- RLS/exposure assumptions are explicit
-- migration order is unambiguous
-- downstream AI/API contracts can reference stable table concepts
+- schema not browser-exposed
+- `PUBLIC`, `anon`, `authenticated` receive no direct table/function privileges
+- service-side operations only
+- source text, restricted evidence, moderation metadata, external identifiers and reputation-event details remain private
 
-## 17. Phase 1 Implementation Notes
+### `bullmatch`
 
-Before implementing migrations, confirm current Supabase behavior/documentation. In particular, project code must explicitly handle grants/RLS because new tables are no longer assumed to be automatically exposed to the Data API. Do not use platform behavior as an authorization strategy.
+- new tables start RLS-enabled and default-deny
+- current production controlled Edge API remains the preferred mutation boundary
+- public data is projected only from verified/published rows
+- contributor self-service uses authenticated server-mediated endpoints that derive the user from validated auth, never from an arbitrary submitted `user_id`
+
+### Storage
+
+- uploads use non-public/private buckets by default
+- public bull/profile media requires explicit allowed/public state
+- storage object path must not grant canonical verification status
+- hashes/references stored in PostgreSQL
+
+## 21. Indexing and scale principles
+
+Initial indexes should cover:
+
+- all foreign keys used in joins
+- submission `(submitter_user_id, submitted_at desc)`
+- submission `(status, submitted_at)`
+- evidence hashes
+- claim `(canonical_subject_id, field_key, status)`
+- claim `(submission_id, created_at)`
+- affiliations `(bull_id, relationship_type, valid_from)`
+- trait/style observations `(bull_id, observed_at desc)`
+- comparison `(venue_id, session_date)`
+- pairing `(status, proposed_match_date)` and participants `bull_id`
+- program `(venue_id, program_date)` / version `(program_id, version_no)`
+- reputation `(user_id, dimension, scope_key)`
+
+Do not create expensive GIN/JSON indexes until a demonstrated query needs them.
+
+Evidence binaries do not belong in PostgreSQL.
+
+## 22. Backward compatibility
+
+The following production behaviors must remain unchanged immediately after v0.2 migration:
+
+- existing ADMIN login and role checks
+- existing `/me` behavior
+- existing public Dashboard/Bulls/Bull/Matches/Match/Venues API resources
+- existing manual canonical admin CRUD
+- existing match publication/statistics views
+- existing service-role-only bridge security
+- existing canonical row IDs
+
+No v0.2 migration may rename/drop current columns or change existing function signatures required by `bullmatch-api`.
+
+New columns added to existing tables are nullable or have safe defaults.
+
+## 23. Migration sequencing contract
+
+Implementation should be split into reviewable migrations, not one monolith:
+
+1. **P1-011A — Community submission/evidence/claim generalization**
+2. **P1-011B — Contributor profile + reputation event/aggregate foundation**
+3. **P1-011C — People + temporal affiliations + bull media/identity extensions**
+4. **P1-011D — Trait/style observations + verified lineage**
+5. **P1-011E — Comparison + pairing lifecycle**
+6. **P1-011F — Program versioning + optional rule-version foundation**
+7. **P1-011G — Resolution type expansion + indexes/security tests**
+
+These migration IDs are design labels; actual migration filenames must use repository timestamp conventions.
+
+Each migration requires:
+
+- transaction-safe DDL where supported
+- grants/RLS assertions
+- shared-Supabase isolation checks
+- rollback/repair notes
+- API compatibility check
+- no fabricated production data
+
+## 24. Rollback philosophy
+
+Because new tables are additive, rollback should prefer disabling new application paths and leaving empty/unreferenced tables intact over destructive data deletion.
+
+Before production usage:
+
+- a migration may be reversed by dropping newly created empty objects and restoring altered constraints
+
+After real community data exists:
+
+- never drop submission/evidence/claim/reputation history merely to roll back application code
+- use forward repair migrations
+- restore old API behavior by feature flag/routing while preserving data
+
+Constraint changes to `evidence`, `extraction_runs` and `claims` must be reversible in tests, but production rollback must first prove no new rows depend on nullable/new-origin behavior.
+
+## 25. Deferred decisions
+
+Not finalized in P1-011:
+
+- exact reputation scoring formula and thresholds
+- contribution-credit economic formula
+- owner/camp representative verification policy
+- public contributor badge rules
+- automated claim auto-verification thresholds
+- venue-specific rule vocabulary still awaiting field validation
+- exact external animal-identifier types/visibility
+- premium entitlements/billing schema
+
+These belong to P1-012 or later product/legal/field-validation tasks.
+
+## 26. Definition of ready for migration implementation
+
+Schema v0.2 is ready for implementation when:
+
+- this contract is merged
+- P1-012 defines trust/moderation behavior that affects write permissions
+- migration slices are converted into timestamped SQL
+- local/transactional migration tests are written
+- production API backward-compatibility tests pass
+- RLS/grant/isolation tests prove community users cannot mutate canonical truth directly
+
+## 27. Summary
+
+v0.2 does **not** replace BullMatch's working production database.
+
+It wraps that foundation with the missing structures needed for the real product:
+
+- community submissions
+- first-class evidence from community or sources
+- atomic claims independent of AI
+- temporal owner/camp/keeper history
+- real bull imagery and identity support
+- physical/horn/style observations
+- verified lineage graph
+- comparison day
+- pairing lifecycle
+- versioned programs
+- rule-version readiness
+- multidimensional contributor trust
+- controlled promotion into canonical history
+
+This is the data foundation required before opening BullMatch to large-scale community contribution and before building serious evidence-aware Matchup Intelligence.
