@@ -10,7 +10,7 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 1 — Core Verified Database + Frontend Integration**
 
-Overall status: **PRODUCTION API + VERIFIED READ UI ACTIVE / FIRST ADMIN NEXT**
+Overall status: **PRODUCTION API ACTIVE / FIRST REAL ADMIN ACTIVE**
 
 ## Completed Gates
 
@@ -24,8 +24,9 @@ Overall status: **PRODUCTION API + VERIFIED READ UI ACTIVE / FIRST ADMIN NEXT**
 - BMI-APP-001 Frontend Foundation & First Screens — DONE via PR #26
 - BMI-APP-002 Supabase Auth Login UI — DONE via PR #31
 - BMI-APP-003 Controlled API + Production Data Wiring — DONE via PR #33
+- BMI-OPS-002 First Production ADMIN Bootstrap — DONE
 
-Selected shared Supabase host: **`aodxx's Project`**
+Selected shared Supabase host: **`aodxx's Project`** (`kaanguobjhlusjvgbowt`)
 
 BullMatch owns only:
 - `bullmatch`
@@ -77,7 +78,22 @@ UI authorization:
 - Review shell: ACTIVE ADMIN or REVIEWER
 - authenticated alone grants no BullMatch application role
 
-Current Production records intentionally remain empty. The visible zero/empty states are real Production state, not fabricated sample data.
+Current Production Bull/Match records intentionally remain empty. Visible zero/empty states are real Production state, not fabricated sample data.
+
+## First Production ADMIN
+
+The first intended real Supabase Auth account has now been bootstrapped as BullMatch `ADMIN / ACTIVE`.
+
+Verified:
+- Auth identity exists in project `kaanguobjhlusjvgbowt`
+- email is confirmed
+- exact Auth UUID is linked to `bullmatch.app_users`
+- `bullmatch_api_member` reports `member=true`, `role=ADMIN`, `status=ACTIVE`, `active=true`
+- an authenticated database role check reports ADMIN authorized
+
+For privacy and security, the public repository does not contain the owner's email, password, tokens, or Auth UUID.
+
+Runbook: `docs/FIRST-ADMIN-BOOTSTRAP.md`
 
 ## Verification
 
@@ -105,23 +121,9 @@ Reference: https://supabase.com/docs/guides/database/database-linter?lint=0008_r
 Performance Advisor: no actionable WARN introduced. Existing `unused_index` INFO is expected before real workload accumulates.
 Reference: https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index
 
-## Current Operational Gate — First ADMIN
-
-Supabase Auth currently contains **0 real Production users**.
-
-Safe next step:
-1. project owner creates the first real user through Supabase Authentication UI
-2. password remains private and is never shared with the maintainer/agent
-3. maintainer verifies there is exactly one intended Auth user
-4. maintainer links that exact UUID to `bullmatch.app_users` with `role='ADMIN'`, `status='ACTIVE'`
-5. verify role through the server boundary
-6. owner refreshes or signs in again and confirms ADMIN state in the app
-
-Runbook: `docs/FIRST-ADMIN-BOOTSTRAP.md`
-
 ## Next Engineering Gates
 
-1. **BMI-OPS-002 — First Production ADMIN bootstrap**
+1. Verify owner sign-in shows `ADMIN / ACTIVE` in the production app
 2. Atomic operational form/command for real match entry without partial writes
 3. **BMI-P1-008 — Review Backend Foundation**
 4. Phase 2 first permitted automated source connector
