@@ -8,13 +8,13 @@ Last structural update: 2026-09-07
 
 Repository: `aodxx/BullMatch-Intelligence`
 
-Current phase: **Phase 1 — Community / Domain Rebaseline on top of active production foundation**
+Current phase: **Phase 1 — Community / Domain Rebaseline on active production foundation**
 
-Overall status: **PRODUCTION API ACTIVE / FIRST REAL ADMIN ACTIVE / COMMUNITY BIG-DATA PRODUCT CONTRACT v0.3 COMPLETE / DATABASE SCHEMA v0.2 NEXT**
+Overall status: **PRODUCTION API ACTIVE / COMMUNITY BIG-DATA PRODUCT CONTRACT v0.3 COMPLETE / DATABASE SCHEMA v0.2 COMPLETE / CONTRIBUTION & TRUST ARCHITECTURE NEXT**
 
 ## Product Direction
 
-BullMatch is explicitly organized as three connected layers:
+BullMatch is organized as three connected layers:
 
 1. **Community Data Network** — people in the Thai bullfighting ecosystem contribute observations, corrections, programs, results, identity evidence, lineage claims, photos/links and local knowledge.
 2. **Verified BullMatch Big Data** — evidence, AI assistance, entity resolution, contributor reputation and controlled review convert submissions into auditable facts.
@@ -26,7 +26,7 @@ Core principle:
 
 Community contributors do not directly overwrite canonical history.
 
-BullMatch remains a data/statistics/research/analytics product. It is not a bet-taking, wallet, odds-settlement or payout service.
+BullMatch remains a data/statistics/research/analytics product, not a bet-taking, wallet, odds-settlement or payout service.
 
 ## Completed Gates
 
@@ -39,77 +39,67 @@ BullMatch remains a data/statistics/research/analytics product. It is not a bet-
 - BMI-P1-007 Bull Profile & Basic Statistics — DONE via PR #29
 - BMI-P1-009 Thai Bullfighting Domain Rebaseline — DONE via PR #36
 - BMI-P1-010 Product Rebaseline v0.3 — DONE via PR #38
+- BMI-P1-011 Database Schema v0.2 — COMPLETE IN PR #39
 - BMI-APP-001 Frontend Foundation & First Screens — DONE via PR #26
 - BMI-APP-002 Supabase Auth Login UI — DONE via PR #31
 - BMI-APP-003 Controlled API + Production Data Wiring — DONE via PR #33
 - BMI-OPS-002 First Production ADMIN Bootstrap — DONE
 - BMI-OPS-003 Autonomous Development Continuity — DONE
 
-## Product Contract v0.3 Result
+## Database Schema v0.2 Result
 
-`PRD.md` is now the approved Community Big Data + Intelligence contract.
+`docs/DATABASE-SCHEMA.md` is now the implementation contract for Community Claims + Thai Bullfighting Temporal Domain.
 
-It defines:
+It preserves the deployed canonical API/table foundation and adds a migration-ready design for:
 
-- three-layer product architecture: Community Data Network / Verified Big Data / Intelligence Products
-- open contribution with closed canonical truth
-- atomic claims and evidence-first verification
-- Thai bullfighting temporal/domain lifecycle requirements
-- contributor roles, feedback and multidimensional reputation
-- `Contribute to Unlock` readiness without rewarding raw submission volume
-- monetization lanes: Pro, reports, API, venue/camp/media tools and compatible sponsorship
-- legal boundary excluding bet-taking, wallet, settlement and payout functions
-- Matchup Intelligence as explainable evidence-aware analytics rather than guaranteed picks
-- real-bull / real-venue sports-intelligence visual and motion requirements
-- security, scalability, free-plan and accessibility requirements
-- explicit next contract for additive Database Schema v0.2
+- contributor participation profiles separate from privileged app roles
+- community submissions with idempotent client keys and moderation status
+- community-origin evidence without fabricating external source items
+- extraction runs that can originate from source items or community evidence
+- atomic claims from AI/source/community/operator/system origins
+- claim-level evidence, supersession, conflict and review linkage
+- temporal bull affiliations: owner/co-owner/camp/breeder/keeper/handler/trainer
+- people/aliases for relevant non-owner actors
+- real-bull media and private durable external identifiers
+- physical/color/marking/horn/yod observations
+- evidence-backed fighting-style / `ทางชน` observations
+- verified lineage/parentage graph
+- first-class `วันเปรียบ` comparison sessions and entries
+- pairing lifecycle separated from actual matches
+- versioned event programs and amendments
+- versioned venue/event rule profiles
+- multidimensional contributor reputation derived from verified outcomes
+- profile-representation claims without authority to erase verified adverse history
+- anti-abuse/quality signals
+- controlled fact promotion with provenance/audit
 
-P1-010 changed no production schema, API, runtime code, secrets or production data.
+`docs/DATABASE-SCHEMA-V0.2-MIGRATION-PLAN.md` defines additive migration slices and compatibility/rollback rules.
 
-## Thai Bullfighting Domain Rebaseline
+`docs/DATABASE-SCHEMA-NAMESPACE-OVERLAY.md` is now historical because v0.2 uses `bullmatch` / `bullmatch_private` directly.
 
-The project must not model the domain as only `Bull + Match + Winner`.
+## Key Production Compatibility Findings
 
-The approved domain baseline includes:
+The existing production foundation remains active and unchanged in BMI-P1-011.
 
-- stable bull identity independent of name
-- historical aliases
-- physical/color/marking/horn observations
-- fighting-style / `ทางชน` observations with evidence
-- lineage claims with provenance
-- owner/camp/keeper relationships over time
-- comparison day / `วันเปรียบ`
-- proposed/rejected/accepted pairings
-- versioned match programs and amendments
-- actual match occurrence, result, duration and reason
-- venue/event rule versions
-- recovery/rest and subsequent history
-- evidence uncertainty and claim-level verification
+Current API still reads verified/published records from the established canonical tables including:
 
-Canonical domain references:
-- `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md`
-- `docs/THAI-BULLFIGHTING-FIELD-VALIDATION.md`
+- `bullmatch.bulls`
+- `owners`, `camps`, `venues`, `events`
+- `matches`, `match_participants`, `match_results`
+- existing statistics/views
 
-## Visual / UX Mandate
+The v0.2 contract intentionally does not rename/drop those objects or change their IDs/function signatures.
 
-Future BullMatch UI must not default to cartoon bulls, cute iconography or repetitive generic dashboard templates.
+Two existing private assumptions were identified as blockers for community contribution and are handled additively in the migration plan:
 
-Approved direction:
+1. `bullmatch_private.evidence.source_item_id` is currently mandatory.
+2. `bullmatch_private.claims.extraction_run_id` is currently mandatory.
 
-- real bull photography and real venue atmosphere where rights/source permit
-- bull identity centered on real animal imagery
-- high-energy sports-intelligence / broadcast-graphics presentation
-- strong typography, statistics and purpose-built indicators
-- layered imagery, motion, matchup transitions, stat reveals, timelines and animated data visualization where useful
-- `Matchup Intelligence` as a flagship visual experience
-- reusable motion language and image treatment rather than page-by-page gimmicks
-- reduced-motion accessibility and mobile-performance protection
-
-This requirement applies to the production application, not to generating decorative images in chat.
+No production DDL was applied in P1-011.
 
 ## Production Infrastructure
 
-Selected shared Supabase host: **`aodxx's Project`** (`kaanguobjhlusjvgbowt`)
+Selected shared Supabase host: **`aodxx's Project`** (`kaanguobjhlusjvgbowt`).
 
 BullMatch owns only:
 - `bullmatch`
@@ -117,105 +107,67 @@ BullMatch owns only:
 
 `freshmart` remains outside BullMatch scope.
 
-### Production API Boundary
+Production API flow remains:
 
-Applied migration:
-`20260906092707_add_bullmatch_controlled_api_bridge`
+`GitHub Pages React app -> bullmatch-api Edge Function -> service-only RPC bridge -> bullmatch/bullmatch_private`
 
-Deployed Edge Function:
-- `bullmatch-api`
-- version 1
-- status ACTIVE
-
-Flow:
-
-`GitHub Pages React app -> bullmatch-api Edge Function -> service-only public RPC bridge -> bullmatch/bullmatch_private domain`
-
-The browser never receives a service-role key and cannot execute the three bridge RPCs directly. `PUBLIC`, `anon`, and `authenticated` have no EXECUTE permission on them; only `service_role` does.
-
-Public API returns verified/published data only. Protected requests validate the Supabase Auth user before resolving BullMatch membership or accepting commands.
-
-ADMIN mutations remain protected twice:
-1. Edge Function requires ACTIVE ADMIN membership.
-2. Existing BullMatch domain functions independently enforce `require_admin()` and write the private audit trail.
-
-## Production Web App
+Browser roles do not receive service-role credentials or direct privileged RPC execution.
 
 Production URL:
 `https://aodxx.github.io/BullMatch-Intelligence/`
 
-Live data surfaces:
-- Dashboard counts
-- Bull list/search
-- Bull Profile
-- W/L/D statistics and win rate
-- recent form
-- Bull match history/opponents
-- published Matches list
-- Match Detail
+Current production Bull/Match records remain intentionally empty; no sample data was fabricated.
 
-Signed-in role comes from `/me` using `bullmatch.app_users`.
+## Visual / UX Mandate
 
-UI authorization:
-- Manual Entry: ACTIVE ADMIN
-- Review shell: ACTIVE ADMIN or REVIEWER
-- authenticated alone grants no BullMatch application role
+Future UI work must use real bull / real venue imagery where rights permit, high-energy sports-intelligence presentation, strong typography and purposeful motion. Cartoon/cute bull identity and generic repeated dashboard templates are not the approved direction.
 
-Current Production Bull/Match records intentionally remain empty. Visible zero/empty states are real Production state, not fabricated sample data.
+`Matchup Intelligence` remains the flagship future visual experience, with reduced-motion/mobile-performance safeguards.
 
-## First Production ADMIN
+## Validation for BMI-P1-011
 
-The first intended real Supabase Auth account has been bootstrapped as BullMatch `ADMIN / ACTIVE`.
+Completed:
 
-For privacy and security, the public repository does not contain the owner's email, password, tokens or Auth UUID.
-
-Runbook: `docs/FIRST-ADMIN-BOOTSTRAP.md`
-
-## Verification Baseline
-
-BMI-P1-010 was documentation/product-contract only.
-
-Checks completed:
-
-- mandatory repository collaboration/status/runbook documents read before work
-- no conflicting P1-010 branch existed before claim
-- PRD v0.3 checked against the approved Thai bullfighting domain baseline and autonomous product direction
-- branch compared to main; only `PRD.md`, `PROJECT_STATUS.md` and `TASKS.md` changed
-- no migration/API/runtime change introduced
+- read mandatory collaboration/status/runbook/product/domain documents
+- verified no conflicting P1-011 branch ownership before claim
+- inspected current production migrations for canonical entities, matches/results, evidence/claims and service API bridge
+- documented additive/backward-compatible schema changes instead of destructive replacement
+- no production migration applied
+- no API/runtime code changed
 - no production records fabricated
 - no secrets or personal credentials added
-- PR #38 confirmed mergeable before integration
+- shared-Supabase schema isolation preserved
 
-Existing production runtime remains on the previously verified API/web baseline.
+PR: **#39 — `[BMI-P1-011] Define Database Schema v0.2`**
 
 ## Exact Next Autonomous Action
 
-Start **BMI-P1-011 — Database Schema v0.2: Community Claims + Temporal Domain**.
+Start **BMI-P1-012 — Contribution & Trust Architecture** after PR #39 integration.
 
-Required startup actions:
+Required focus:
 
-1. read current `docs/DATABASE-SCHEMA.md` and namespace overlay
-2. inspect existing production migrations/tables to avoid conflicting assumptions
-3. claim `BMI-P1-011` on a dedicated branch
-4. design an additive/backward-compatible schema contract before writing a production migration
-5. cover community submissions, atomic claims/evidence, temporal affiliations, physical/style observations, lineage claims, comparison sessions, pairings, program versions and reputation dimensions
-6. document migration/rollback and compatibility with the active production API
+1. define field-friendly contribution flows for photo/program/result/link/text/correction inputs
+2. define AI-assisted extraction + user confirmation without bypassing claim verification
+3. define submission, claim, moderation and review state transitions
+4. define contributor reputation dimensions and event-to-score policy boundaries
+5. define anti-spam, duplicate flooding, evidence reuse and abuse controls
+6. define owner/camp/venue profile claims and restricted management rights
+7. define verified-contribution credit / `Contribute to Unlock` readiness without rewarding raw volume
+8. define API/security boundaries for contributor self-service
+9. leave BMI-P1-008 review backend re-scoped to these contracts
 
-## Next Autonomous Engineering Gates
+## Next Engineering Gates
 
-1. **BMI-P1-011 — Database Schema v0.2: Community Claims + Temporal Domain** — READY
-2. **BMI-P1-012 — Contribution & Trust Architecture**
-3. **BMI-APP-004 — Visual Design Rebaseline: Real Bull / Sports Intelligence / Motion**
-4. **BMI-P1-008 — Review Backend Foundation, re-scoped to the new contribution model**
-5. Community contribution implementation
-6. First permitted automated source connector/pipeline
-7. Intelligence products and advanced matchup analytics
-
-Detailed rules and blocking behavior: `docs/AUTO-RUN-RUNBOOK.md`.
+1. **BMI-P1-012 — Contribution & Trust Architecture** — READY after P1-011 merge
+2. **BMI-APP-004 — Visual Design Rebaseline**
+3. **BMI-P1-008 — Review Backend Foundation, re-scoped**
+4. Community contribution migration/API/UI implementation
+5. First permitted automated source connector/pipeline
+6. Intelligence products and advanced matchup analytics
 
 ## Still Deferred / Requires Later Resolution
 
 - AI provider selection
 - first production source selection/compliance approval
 - venue-specific field validation for uncertain terminology/rules
-- real community incentive pricing/credit economics until contribution behavior can be measured
+- real contributor credit economics until actual contribution/review behavior can be measured
