@@ -32,11 +32,11 @@ Phase 0 is complete only when all of the following are approved and consistent:
 | Task ID | Work | Owner | Status | Tracking |
 |---|---|---|---|---|
 | BMI-P0-001 | Repository and collaboration foundation | Primary Maintainer | DONE | root docs + `.github/` |
-| BMI-P0-002 | Initial database model | Primary Maintainer | REVIEW | Issue #1 / schema branch |
-| BMI-P0-003 | AI collection and verification contracts | Unassigned | READY | Issue #2 |
+| BMI-P0-002 | Initial database model | Primary Maintainer | DONE | Issue #1 / PR #5 |
+| BMI-P0-003 | AI collection and verification contracts | Primary Maintainer | IN PROGRESS | Issue #2 |
 | BMI-P0-004 | Product requirements / MVP boundaries | Primary Maintainer | REVIEW | `PRD.md` v0.1 |
 | BMI-P0-005 | System architecture | Primary Maintainer | REVIEW | `ARCHITECTURE.md` v0.1 |
-| BMI-P0-006 | Source discovery and source registry specification | Unassigned | BLOCKED BY P0-002/P0-003 | planned |
+| BMI-P0-006 | Source discovery and source registry specification | Unassigned | BLOCKED BY P0-003 | planned |
 | BMI-P0-007 | Entity resolution strategy | Unassigned | READY | Issue #3 |
 | BMI-P0-008 | Human review queue UX specification | Unassigned | READY | Issue #4 |
 
@@ -55,21 +55,9 @@ Phase 0 is complete only when all of the following are approved and consistent:
 11. Source ingestion uses a deterministic per-source `dedupe_key` as the canonical idempotency boundary.
 12. Public statistics exclude unverified, review-required, conflict, rejected, or unpublished matches by default.
 
-## Collaboration Foundation
+## Completed Gate — Database Schema
 
-Operational files available:
-
-- `AGENTS.md`
-- `TASKS.md`
-- `docs/TEAM-WORKFLOW.md`
-- `.github/ISSUE_TEMPLATE/task.md`
-- `.github/pull_request_template.md`
-
-Google Drive contains `06_Team-Handoffs` for non-code handoff artifacts when needed.
-
-## Database Schema Gate
-
-`BMI-P0-002` is review-ready on `agent/bmi-p0-002-database-schema`.
+`BMI-P0-002` merged via PR #5.
 
 Key outputs:
 - `docs/DATABASE-SCHEMA.md`
@@ -77,15 +65,19 @@ Key outputs:
 
 No production Supabase DDL has been applied.
 
+## Current Work — AI Contracts
+
+`BMI-P0-003` is now the active integration task. It must define stable inputs/outputs for source monitoring, extraction, entity resolution, duplicate detection, verification, retry/idempotency, and agent reporting before connector implementation begins.
+
 ## Current Blockers
 
 - Supabase project has not yet been selected/created for this project.
-- AI agent draft must be finalized under `BMI-P0-003` before collector implementation.
+- `BMI-P0-003` must finish before `BMI-P0-006` and production collector implementation.
 - First real source connectors have not yet been selected and validated for access/compliance.
 
 ## Next Integration Gate
 
-Merge/approve `BMI-P0-002`, then finalize `BMI-P0-003`. Do not start production scraping/collection code until both establish the common evidence, source-item, entity candidate, and review contracts.
+Complete and merge `BMI-P0-003`, then unblock `BMI-P0-006` Source Registry/Connector Contract and allow `BMI-P0-007`/`BMI-P0-008` to proceed against stable shared contracts.
 
 ## Handoff Rule
 
