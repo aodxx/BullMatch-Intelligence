@@ -47,9 +47,8 @@ Status: DONE
 Tracking: Issue #23 / PR #24
 
 ### BMI-P1-007 — Bull Profile & Basic Statistics
-Owner: Primary Maintainer
-Status: REVIEW
-Tracking: Issue #28
+Status: DONE
+Tracking: Issue #28 / PR #29
 
 Completed:
 - verified/published Bull match-history read model
@@ -89,27 +88,27 @@ Tracking: Issue #25 / PR #26
 Deployment: GitHub Pages ACTIVE
 URL: `https://aodxx.github.io/BullMatch-Intelligence/`
 
-Completed:
-- mobile-first application shell
-- Dashboard
-- Bulls list/profile shell
-- Matches list/detail shell
-- Admin manual-entry shell
-- Review Queue shell
-- Settings/Profile shell
-- responsive navigation
-- empty/loading/error-ready states
-- no fake production data
-- PWA manifest + icon
-- locked dependency build
-- GitHub Pages deploy
-- secure API boundary preserved
-
 ### BMI-APP-002 — Supabase Auth Login UI
-Status: READY
+Owner: Primary Maintainer
+Status: REVIEW
+Tracking: Issue #30
+
+Completed:
+- Supabase email/password login for existing accounts
+- publishable-key-only browser Auth client
+- session persistence, validation and refresh
+- local logout
+- public Dashboard/Bulls/Matches remain accessible signed out
+- Manual Entry/Review Queue require authentication
+- intended protected route resumes after sign-in
+- no public sign-up UI
+- authenticated user is never assumed to be ADMIN
+- BullMatch role resolution deferred to APP-003 controlled API
+- no service-role/secret key in frontend
+- production TypeScript/Vite build passes
 
 ### BMI-APP-003 — Wire Domain Data & Admin Actions
-Status: BLOCKED BY APP-002 + API BOUNDARY DECISION
+Status: BLOCKED BY APP-002 MERGE + API BOUNDARY IMPLEMENTATION
 
 ### BMI-OPS-001 — Enable GitHub Pages
 Status: DONE
