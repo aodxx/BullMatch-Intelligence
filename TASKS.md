@@ -112,7 +112,9 @@ Status: DONE — PR #31
 Status: DONE — PR #33
 
 ### BMI-APP-004 — Visual Design Rebaseline: Real Bull / Sports Intelligence / Motion
-Status: READY — AUTONOMOUS PRIORITY 1
+Status: IN PROGRESS
+Owner: Primary Maintainer (ChatGPT)
+Branch: `agent/bmi-app-004-visual-rebaseline`
 
 Mandate:
 - real bull and real venue imagery where rights/source permit
@@ -131,6 +133,13 @@ Expected outcome:
 - image-treatment rules
 - typography/data-visualization grammar
 - implemented production-facing components, not mockups only
+
+Allowed files/areas:
+- `apps/web/src/`
+- `apps/web/public/` for documented visual assets/attribution
+- `docs/` visual-system documentation
+- `TASKS.md`
+- `PROJECT_STATUS.md`
 
 ---
 
