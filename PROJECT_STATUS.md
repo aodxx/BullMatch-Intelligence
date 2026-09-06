@@ -22,7 +22,7 @@ BullMatch is organized as:
 
 Canonical flow:
 
-`Open Contribution -> Evidence -> Atomic Claims -> Resolution -> Verification -> Published History -> Analytics`
+`Open Contribution -> Evidence -> Atomic Claims -> Resolution -> Verification -> Controlled Promotion -> Published History -> Analytics`
 
 Community contributors never directly overwrite canonical history.
 
@@ -91,89 +91,132 @@ Deferred QA remains non-blocking: Production has no real VERIFIED/PUBLISHED Bull
 Status: **IN PROGRESS**
 
 Owner: Primary Maintainer (ChatGPT autonomous run)
-Current continuation branch: `agent/bmi-p1-008-identity-impact-preview`
+Current continuation branch: `agent/bmi-p1-008-verified-claim-promotion`
 
-### Foundation slice deployed
+### Review foundation deployed — PR #50
 
 Production migration:
-
 `20260906211732_add_bullmatch_review_backend_foundation`
 
 Implemented:
-- claim lifecycle supports `VERIFIED`, `SUPERSEDED`, and `WITHDRAWN` while preserving proposal/corroboration/conflict/rejection states
-- explicit `review_case_claims` linkage between review cases and atomic claims
-- controlled reviewer queue and review-case detail APIs
-- reviewer evidence access remains service-mediated; restricted evidence content/storage references are not exposed
-- ACTIVE ADMIN/REVIEWER authorization enforced in both Edge/API and PostgreSQL boundaries
-- review `command_id` idempotency
-- optimistic expected-status + `case_version` stale-write rejection
-- commands: `CLAIM`, `UNCLAIM`, `COMMENT`, `APPROVE`, `REJECT`, `RESOLVE_CONFLICT`, `REOPEN`
-- successful commands append `review_actions` and private `audit_log`
-- direct MERGE/SPLIT execution remains blocked
+- controlled REVIEWER/ADMIN queue + review-case detail API
+- controlled reviewer evidence access
+- ACTIVE ADMIN/REVIEWER checks in Edge and PostgreSQL boundaries
+- idempotent `command_id`
+- optimistic expected-status + `case_version` checks
+- claim decisions: VERIFIED / REJECTED / CONFLICT / SUPERSEDED without direct canonical publication
+- append-only review action + private audit records
+- MERGE/SPLIT execution blocked
 
-Foundation verification:
-- `anon` and `authenticated` cannot execute reviewer RPCs directly
-- `service_role` can execute reviewer RPCs
-- rollback-only command tests passed and retained no test review data
-- regression coverage: `supabase/tests/p1_008_review_backend.sql`
-- verification record: `supabase/P1-008-VERIFICATION.md`
+Verification:
+- `supabase/tests/p1_008_review_backend.sql`
+- `supabase/P1-008-VERIFICATION.md`
 
-### Identity merge/split impact preview deployed
+### Bull identity impact preview deployed — PR #51
 
 Production migration:
-
 `20260906212825_add_bullmatch_identity_impact_preview`
 
+Implemented:
+- deterministic read-only `MERGE_SPLIT` preview for Bull identities
+- source/target Bull summaries and affected-row counts
+- same-match distinct-Bull hard-conflict detection
+- deterministic preview fingerprint
+- `execution_enabled: false`
+- name similarity is explicitly not merge authority
+- no identity/history mutation
+
+Production validation confirmed ACL, fixed search path, rollback-only hard-conflict behavior, and zero retained fixtures.
+
+Verification:
+- `supabase/tests/p1_008_identity_impact_preview.sql`
+- `supabase/P1-008-IDENTITY-PREVIEW-VERIFICATION.md`
+
+### Guarded VERIFIED claim -> canonical promotion deployed
+
+Production migration:
+`20260906214802_add_bullmatch_verified_claim_promotion`
+
 Production Edge Function:
+`bullmatch-api` version 9
 
-`bullmatch-api` version 7
+This is the first deliberately narrow canonical promotion bridge. It is not general CRUD.
 
-Implemented read-only Bull identity preview:
-- accepts only `MERGE_SPLIT` review cases and currently supports `entity_type = BULL`
-- returns source/target Bull summaries without performing any mutation
-- reports affected aliases, match participants, distinct matches, VERIFIED/PUBLISHED matches, source mappings, fact provenance and prior identity events
-- detects the hard contradiction where two proposed source Bull identities appeared as distinct participants in the same match
-- reports unverified/archived source counts
-- returns deterministic `impact_preview_fingerprint`
-- always returns `execution_enabled: false`
-- explicitly states that name similarity is not merge authority
-- SPLIT remains assignment-plan-only at preview stage; no new canonical identity is created
+Promotion policy `BMI-P1-008-BULL-DESCRIPTIVE-V1` requires:
+- ACTIVE ADMIN; REVIEWER may verify claims but cannot perform canonical promotion
+- resolved review case with matching optimistic `case_version`
+- claim linked to that review case
+- claim state `VERIFIED`
+- claim basis `EXPLICIT`
+- subject type `BULL`
+- explicit `subject_ref.canonical_subject_id`
+- target Bull exists, is VERIFIED and is not archived
+- at least one SUPPORTS evidence link
+- JSON string value and conservative length limits
+- same claim has not already created canonical provenance for that Bull/field
 
-Identity-preview validation completed against Production:
-- `anon` EXECUTE = false
-- `authenticated` EXECUTE = false
-- `service_role` EXECUTE = true
-- RPC remains `SECURITY DEFINER` with fixed empty `search_path`
-- rollback-only fixture confirmed one affected match, one hard identity conflict, merge blocked, execution disabled and fingerprint present
-- rollback follow-up confirmed zero retained test Bulls and zero retained test review cases
-- current Production remains `bulls = 0`, `matches = 0`, `review_cases = 0`, `review_actions = 0`
-- verification record: `supabase/P1-008-IDENTITY-PREVIEW-VERIFICATION.md`
+First allowlist only:
+- `home_province`
+- `home_district`
+- `color_description`
+- `breed_description`
 
-Supabase advisors rerun after DDL:
-- no direct identity-preview RPC exposure reported
-- existing `bullmatch_private` RLS-enabled/no-policy INFO notices remain expected for intentionally service-only private tables
-- existing Auth leaked-password-protection WARN remains outside this task
-- unused-index INFO remains expected on the empty/nearly empty dataset; indexes were not removed merely to silence advisor output
+Explicitly not promotable in this slice:
+- Bull canonical name / aliases / identity
+- owner/camp relationships
+- lineage
+- imagery/media
+- Bull lifecycle status
+- match participants/opponents
+- match result/duration/date/venue/event history
+- merge/split
+
+Successful promotion atomically performs:
+- canonical Bull field update
+- review-case version increment
+- `PROMOTE_CLAIM` review action
+- claim-level provenance
+- SUPPORTS / CONTRADICTS evidence provenance
+- private `REVIEW_PROMOTE_CLAIM` audit record
+
+Idempotency uses the existing global review `command_id` ledger. Same-command replay does not remutate canonical state or increment version again.
+
+Production validation completed:
+- direct RPC ACL: anon=false, authenticated=false, service_role=true
+- RPC is SECURITY DEFINER with fixed empty search path
+- rollback-only evidence-backed `home_province` claim promoted successfully
+- case version advanced 2 -> 3
+- claim + evidence provenance rows recorded
+- exactly one review action and one audit record recorded
+- same command replayed idempotently
+- disallowed `canonical_name` promotion was blocked
+- rollback left zero test Bull, review case and source fixtures
+- Supabase Security Advisor reports no new direct promotion-RPC browser exposure
+
+Regression / verification:
+- `supabase/tests/p1_008_verified_claim_promotion.sql`
+- `supabase/P1-008-CLAIM-PROMOTION-VERIFICATION.md`
 
 ### Canonical truth boundary
 
-`APPROVE` currently means **atomic claim verified**. It does not directly update canonical Bull/Match/Event/Owner/Camp/Venue history.
+`APPROVE` still means **the atomic claim is verified**; it does not itself mutate canonical tables.
 
-The identity preview is advisory/read-only. It cannot merge or split identities, reassign match participants, archive Bulls, rewrite aliases, or publish claims.
+Canonical mutation now requires the separate ADMIN-only promotion operation and is allowed only under a versioned strict field policy with evidence, provenance, audit and optimistic concurrency.
 
-Verified-claim promotion into canonical history remains a separate controlled operation requiring strict fact/type allowlists, provenance and audit.
+Community submissions, AI extraction and reviewer verification cannot bypass this promotion boundary.
 
 ## Exact Next Autonomous Action
 
-Continue **BMI-P1-008** after the identity-preview PR is merged.
+Finish/merge the current verified-claim-promotion PR after CI. Then continue **BMI-P1-008** on a fresh non-overlapping branch.
 
 Next implementation order:
-1. define narrowly scoped verified-claim -> canonical promotion operations with strict subject/field/type allowlists, `fact_provenance`, review-action linkage and private audit
-2. add safe semantics for `LINK_ENTITY`, `CREATE_ENTITY`, `CONFIRM_DUPLICATE`, `MARK_NOT_DUPLICATE`, and selected `EDIT`
-3. wire the production Review Queue UI to `REVIEW_QUEUE` / `REVIEW_CASE` and identity preview
-4. only after preview + promotion/provenance safeguards are complete, design separately confirmed merge/split execution that requires an unchanged preview fingerprint and explicit reassignment plan
+1. define safe semantics for `LINK_ENTITY`, `CONFIRM_DUPLICATE`, and `MARK_NOT_DUPLICATE` using existing candidate tables, provenance/audit and idempotent review commands
+2. design `CREATE_ENTITY` separately with mandatory candidate search / duplicate safeguards before any new Bull identity can be created
+3. define selected `EDIT` semantics only where it does not bypass claim verification/promotion
+4. wire production Review Queue UI to `REVIEW_QUEUE`, `REVIEW_CASE`, identity preview and safe reviewer commands
+5. destructive merge/split remains deferred until a separately reviewed execution design requires an unchanged preview fingerprint plus explicit reassignment/provenance plan
 
-Do not implement merge/split as one-click AI or community actions. Do not publish unresolved/conflicted claims. Do not infer Bull identity from name similarity alone.
+Do not expand canonical promotion to names, identity, match result/history, lineage or affiliations without domain-specific promotion rules. Do not publish unresolved/conflicted claims. Do not infer Bull identity from name similarity alone.
 
 ## Next Engineering Gates
 
@@ -185,7 +228,8 @@ Do not implement merge/split as one-click AI or community actions. Do not publis
 
 ## Still Deferred
 
-- destructive identity merge/split execution until deterministic preview, provenance and explicit reassignment safeguards exist
+- destructive identity merge/split execution
+- broad/high-risk canonical promotion
 - AI provider selection
 - first production source selection/compliance approval
 - venue-specific uncertain terminology/rules requiring field validation
