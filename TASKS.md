@@ -32,27 +32,20 @@ Status: DONE — PR #24
 Status: DONE — PR #29
 
 ### BMI-P1-008 — Review Backend Foundation
-Status: IN PROGRESS
-Owner: Primary Maintainer (ChatGPT autonomous run)
-Current branch: `agent/bmi-p1-008-guarded-create-entity`
+Status: DONE — IMPLEMENTATION GATE COMPLETE
+Merged/deployed slices: PR #50, #51, #52, #53, #54, #55, #56
 
-Dependencies satisfied:
-- BMI-P1-011 DONE — PR #39
-- BMI-P1-012 DONE — PR #40
-- BMI-APP-004 implementation gate DONE — PR #41, #42, #46, #47, #48
-
-Completed/deployed slices:
+Delivered:
 
 **Review foundation — PR #50 / migration `20260906211732_add_bullmatch_review_backend_foundation`**
 - controlled REVIEWER/ADMIN queue + detail API
-- controlled evidence access
+- controlled evidence access with access-class redaction
 - idempotent review commands + optimistic case version
 - claim VERIFIED/REJECTED/CONFLICT/SUPERSEDED decisions
-- append-only review action + private audit
-- MERGE/SPLIT execution blocked
+- append-only review actions + private audit
 
 **Bull identity impact preview — PR #51 / migration `20260906212825_add_bullmatch_identity_impact_preview`**
-- deterministic read-only MERGE/SPLIT preview
+- deterministic read-only MERGE/SPLIT impact preview
 - same-match distinct-Bull hard-conflict detection
 - deterministic fingerprint
 - execution disabled
@@ -65,7 +58,7 @@ Completed/deployed slices:
 - identity/name/alias, affiliation, lineage, media, lifecycle, match history/results and merge/split excluded
 - provenance + review action + audit + idempotency
 
-**Reviewed entity/duplicate decisions — PR #53 / migration `20260906215917_add_bullmatch_reviewed_entity_decisions` / Edge v10**
+**Reviewed entity/duplicate decisions — PR #53 / migration `20260906215917_add_bullmatch_reviewed_entity_decisions`**
 - `LINK_ENTITY`, `CONFIRM_DUPLICATE`, `MARK_NOT_DUPLICATE`
 - ACTIVE ADMIN/REVIEWER authorization
 - command-id idempotency + optimistic case version
@@ -73,36 +66,40 @@ Completed/deployed slices:
 - Bull non-name-only identity basis; `NAME_ONLY` blocked
 - duplicate decisions do not merge canonical entities
 - `canonical_mutation: false`
-- verification: `supabase/P1-008-ENTITY-DECISIONS-VERIFICATION.md`
 
-**Guarded reviewed Bull CREATE_ENTITY — current PR / migration `20260906224832_add_bullmatch_guarded_review_create_entity` / Edge v11**
+**Guarded reviewed Bull CREATE_ENTITY — PR #54 / migration `20260906224832_add_bullmatch_guarded_review_create_entity`**
 - policy `BMI-P1-008-BULL-CREATE-V1`
 - ACTIVE ADMIN only
-- Bull `NEW_ENTITY_CANDIDATE` attached to an OPEN/IN_REVIEW NEW_ENTITY or ENTITY_MATCH case
 - completed candidate search + duplicate search + search policy version required
 - strong creation basis required; `NAME_ONLY` blocked
 - unresolved/confirmed duplicate candidate blocks creation
-- confirmed Bull link in candidate group blocks creation
 - active same-normalized-name Bull blocks creation conservatively
-- successful path creates only canonical name and leaves Bull `UNVERIFIED`
+- successful path creates canonical name only and leaves Bull `UNVERIFIED`
 - no owner/camp/lineage/media/descriptive/match fields written
-- candidate links to new Bull
-- one review-case version increment, one CREATE_ENTITY review action, private audit + existing Bull-created audit
-- idempotent replay returns same Bull
-- rollback-only Production regression passed with zero retained fixtures
-- migration filename reconciled to Production version
-- verification: `supabase/P1-008-GUARDED-CREATE-ENTITY-VERIFICATION.md`
+- idempotent replay + audit/provenance safeguards
 
-Remaining BMI-P1-008 scope:
-- selected EDIT semantics that cannot bypass claim verification/promotion
-- production Review Queue UI wiring
-- destructive merge/split only in a later separately confirmed slice
+**Production Review Queue UI — PR #55**
+- authenticated reviewer control room wired to existing Production review APIs
+- queue, case detail, atomic claims, evidence, candidate signals and append-only audit history
+- CLAIM / UNCLAIM / COMMENT / APPROVE / REJECT controls use fresh command IDs and optimistic case status/version
+- APPROVE is clearly separated from canonical promotion
+- read-only MERGE/SPLIT impact preview; no destructive identity controls
+- responsive sports-intelligence UI and valid empty-Production state without fabricated fixtures
+- Web CI + controlled Production API smoke + GitHub Pages deployment passed
 
-Required invariants:
+**Safe review metadata EDIT — PR #56 / migration `20260906225757_add_bullmatch_review_metadata_edit` / Edge v12**
+- policy `BMI-P1-008-REVIEW-METADATA-EDIT-V1`
+- only `priority` and `summary` review-routing metadata are editable
+- subject/claim/evidence/canonical fields cannot be changed through EDIT
+- idempotent command + optimistic case version + reviewer note
+- `canonical_mutation: false`
+- rollback-only Production regression and security review passed
+
+Required invariants preserved:
 - canonical history remains closed to direct community writes
 - claim verification and canonical promotion remain separate
 - UNVERIFIED entity creation is not publication/verification
-- ACTIVE ADMIN/REVIEWER authorization is server/database enforced; CREATE_ENTITY and canonical promotion are ADMIN-only under current policy
+- ACTIVE ADMIN/REVIEWER authorization is server/database enforced
 - review operations are idempotent and concurrency-safe
 - evidence/provenance/audit are preserved
 - no majority-vote canonical truth
@@ -110,12 +107,10 @@ Required invariants:
 - unresolved/conflicted claims are not published
 - no betting/wallet/settlement/payout capability
 
-Exact next BMI-P1-008 implementation slice after the current CREATE_ENTITY PR merges:
-1. selected `EDIT` semantics only where they cannot bypass atomic-claim verification or canonical-promotion policy
-2. production Review Queue UI wiring
-3. separately designed destructive merge/split only after fingerprint-bound reassignment/provenance safeguards
-
-Do not implement a broad generic EDIT over Bull identity, name/aliases, lineage, owner/camp affiliation, media or match history.
+Explicitly deferred outside the BMI-P1-008 implementation gate:
+- destructive Bull identity MERGE/SPLIT execution; future work must require an unchanged impact-preview fingerprint plus explicit reassignment/provenance safeguards
+- broad/high-risk canonical EDIT or promotion for Bull identity/name/aliases, owner/camp affiliations, lineage, media and match history
+- distinct-Bull same-name creation escalation policy
 
 ### BMI-P1-009 — Thai Bullfighting Domain Rebaseline
 Status: DONE — PR #36
@@ -143,6 +138,28 @@ Core contract:
 - evidence quality separate from contributor reputation
 - community review risk tiers; no majority-vote truth
 - Data Credit is not money/betting value
+
+### BMI-P1-013 — Community Contribution Intake Foundation
+Status: READY
+Owner: UNCLAIMED
+
+Goal:
+Build the first production-safe community contribution path on top of Schema v0.2 + Contribution & Trust Architecture + completed Review Backend.
+
+Initial scope:
+- authenticated contributor identity/membership boundary appropriate to the contribution contract
+- mobile-first submission envelope for a narrowly selected first input type
+- evidence reference + atomic claim creation; never direct canonical mutation
+- server-side validation, rate/abuse-ready metadata and idempotency
+- likely-existing-entity/candidate search before new Bull identity proposal
+- review-case routing using the completed P1-008 review foundation
+- contributor-visible submission state without exposing private review/audit data
+- no AI auto-publish
+
+Recommended first input slice:
+**Bull profile correction / observation with evidence or public source reference**, because it exercises evidence -> atomic claim -> entity resolution/review without requiring a full comparison/program/match ingestion workflow in the first increment.
+
+Before implementation, inspect Schema v0.2 migration plan and contribution/trust architecture, then define the exact V1 contract. Prefer additive/reversible changes and keep canonical tables closed to contributor writes.
 
 ---
 
@@ -184,7 +201,7 @@ Runbook: `docs/AUTO-RUN-RUNBOOK.md`
 ---
 
 ## Phase 2 — First Automated Collection Pipeline
-Status: PLANNED — follows community/review stabilization.
+Status: PLANNED — follows community contribution stabilization.
 
 ## Phase 3 — Multi-Source Expansion
 Status: PLANNED
@@ -196,11 +213,11 @@ Includes Matchup Intelligence, opponent-adjusted form, shared-opponent/style ana
 
 ## Autonomous Priority Reference
 
-1. **BMI-P1-008 — Review Backend Foundation**
-2. Community contribution migration/API/UI
-3. Automated collection pipeline
-4. Intelligence products
-5. deferred APP-004 real-data visual QA
+1. **BMI-P1-013 — Community Contribution Intake Foundation**
+2. Automated collection pipeline after contribution/review contracts stabilize in production
+3. Intelligence products
+4. deferred APP-004 real-data visual QA
+5. separately approved destructive identity operations only when their safety design is complete
 
 Canonical autonomous instructions: `docs/AUTO-RUN-RUNBOOK.md`.
 
