@@ -40,8 +40,8 @@ No production migration has been applied yet.
 
 ### BMI-P0-003 — AI Agent & Verification Specification
 Owner: Primary Maintainer
-Status: REVIEW
-Tracking: Issue #2
+Status: DONE
+Tracking: Issue #2 / PR #6
 
 Deliverables completed:
 - Source Discovery Agent contract
@@ -84,16 +84,18 @@ Deliverables drafted:
 - deployment approach
 
 ### BMI-P0-006 — Source Registry & Connector Contract
-Owner: Unassigned
-Status: BLOCKED
-Depends on: BMI-P0-003
+Owner: Primary Maintainer
+Status: IN PROGRESS
+Tracking: Issue #7
 
 Deliverables:
 - source registry schema
 - connector interface
 - source policy/access metadata
-- polling schedule model
-- rate-limit metadata
+- polling schedule/cursor model
+- rate-limit/backoff metadata
+- source health states
+- first connector readiness checklist
 
 ### BMI-P0-007 — Entity Resolution Strategy
 Owner: Unassigned
