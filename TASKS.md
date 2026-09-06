@@ -27,14 +27,6 @@ Tracking: Issue #15 / PR #16
 Status: DONE
 Tracking: Issue #17 / PR #18
 
-Completed:
-- 15 `bullmatch` tables
-- 17 `bullmatch_private` tables
-- canonical/match/review/source/AI/provenance model
-- publication/winner/idempotency integrity
-- RLS/private isolation
-- migration/integration tests
-
 ### BMI-P1-003 — Seed / Reference Data
 Status: DEFERRED — NO REQUIRED MVP SEED YET
 
@@ -43,53 +35,61 @@ Rules:
 - add only stable reference/config data when a real implementation dependency exists
 
 ### BMI-P1-004 — Admin Authentication & Roles
-Owner: Primary Maintainer
-Status: REVIEW
-Tracking: Issue #19
+Status: DONE
+Tracking: Issue #19 / PR #20
 
 Completed:
-- `bullmatch.app_users` remains application role source of truth
-- active role helper uses `auth.uid()` + `app_users`, not user-editable metadata
-- helper is `SECURITY INVOKER`
-- authenticated browser grants remain read-only
-- ADMIN/REVIEWER canonical + review visibility
-- VIEWER verified/published-only visibility
-- non-member/suspended users receive no BullMatch role access
-- `bullmatch_private` remains unavailable to browser roles
-- no self-elevation / no browser role writes
-- first-admin bootstrap runbook
-- authorization assertions and advisor review
-- performance policy WARN findings remediated
-
-Key files:
-- `supabase/migrations/20260906054956_add_bullmatch_role_authorization.sql`
-- `supabase/migrations/20260906055150_consolidate_bullmatch_read_policies.sql`
-- `supabase/tests/p1_004_authorization.sql`
-- `supabase/P1-004-VERIFICATION.md`
-- `docs/AUTHORIZATION-RUNBOOK.md`
-
-Operational note:
-- no real Auth user exists yet, therefore no production ADMIN membership was fabricated
+- app-scoped ADMIN / REVIEWER / VIEWER authorization
+- database-backed active role lookup
+- SELECT-only browser grants + RLS
+- no self-elevation
+- first-admin trusted bootstrap runbook
+- authorization tests/advisors
 
 ### BMI-P1-005 — Bull/Camp/Owner/Venue CRUD
-Status: READY AFTER P1-004 MERGE
+Owner: Primary Maintainer
+Status: REVIEW
+Tracking: Issue #21
 
-Scope:
-- controlled ADMIN domain operations
-- create/update/archive owner/camp/bull/venue records
-- alias management
-- normalization and validation
-- audit/provenance hooks where required
-- no unrestricted browser table writes
+Completed:
+- ADMIN-only Owner create/update
+- ADMIN-only Camp create/update
+- ADMIN-only Bull create/update
+- ADMIN-only Venue create/update
+- soft archive for Owner/Camp/Bull/Venue
+- explicit entity verification-state command
+- alias upsert + alias verification command
+- Thai-safe whitespace/case normalization
+- allowlisted JSON patch validation
+- reference checks for active Owner/Camp links
+- every mutation audited in `bullmatch_private.audit_log`
+- no direct browser table writes
+- rollback-only ADMIN/REVIEWER/VIEWER/non-member integration tests
+- no leaked test users/data
+
+Key files:
+- `supabase/migrations/20260906055912_add_bullmatch_admin_owner_camp_crud.sql`
+- `supabase/migrations/20260906060030_add_bullmatch_admin_bull_venue_alias_crud.sql`
+- `supabase/tests/p1_005_domain_crud.sql`
+- `supabase/P1-005-VERIFICATION.md`
 
 ### BMI-P1-006 — Manual Match Entry & Verification
-Status: READY AFTER P1-004 MERGE
+Status: READY AFTER P1-005 MERGE
+
+Scope:
+- controlled ADMIN match/event creation and updates
+- participant snapshots
+- result entry
+- explicit verification and publication transition
+- audit every state change
+- preserve same-match winner/publication guards
+- no unrestricted browser writes
 
 ### BMI-P1-007 — Bull Profile & Basic Statistics
-Status: BLOCKED BY P1-005/P1-006
+Status: BLOCKED BY P1-006
 
 ### BMI-P1-008 — Review Backend Foundation
-Status: READY AFTER P1-004 MERGE
+Status: READY
 
 Scope:
 - review case API/domain operations
