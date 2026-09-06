@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { type AuthSession, restoreSession, signInWithPassword, signOutLocal } from './auth'
+import DataCoverageRail from './DataCoverageRail'
 import {
   type BullListItem,
   type BullProfileData,
@@ -89,6 +90,12 @@ function BullProfile({id,go}:{id:string|null;go:(v:ViewId)=>void}){
   useEffect(()=>{if(!id){setData(null);setLoading(false);return}let active=true;setLoading(true);setError(null);getBull(id).then(v=>{if(active)setData(v)}).catch(e=>{if(active)setError(e instanceof Error?e.message:'โหลดไม่สำเร็จ')}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[id,tick])
   return <><button className="back-button" onClick={()=>go('bulls')}>← กลับทะเบียนวัว</button>{!id?<div className="panel"><EmptyState title="ยังไม่ได้เลือกวัว" body="เลือกวัวจากทะเบียนเพื่อดูสถิติและประวัติ"/></div>:error?<ErrorPanel message={error} retry={()=>setTick(v=>v+1)}/>:loading?<LoadingPanel/>:!data?<div className="panel"><EmptyState title="ไม่พบวัวที่เผยแพร่" body="วัวอาจยังไม่ผ่านการยืนยันหรือถูกเก็บถาวร"/></div>:<>
     <div className="profile-hero panel"><VerifiedBullImage src={data.bull.primary_image_ref} name={data.bull.canonical_name} className="profile-avatar"/><div className="profile-copy"><span className="status-chip neutral">VERIFIED</span><h2>{data.bull.canonical_name}</h2><p>{[data.bull.camp?.name,data.bull.owner?.name,data.bull.home_province].filter(Boolean).join(' • ')||'ยังไม่มีข้อมูลคอก/เจ้าของ/จังหวัด'}</p></div></div>
+    <DataCoverageRail signals={[
+      {label:'Record',value:'VERIFIED',detail:'canonical bull record',state:'verified'},
+      {label:'Published history',value:`${data.stats.published_matches} MATCHES`,detail:'เฉพาะคู่ชนที่เผยแพร่แล้ว',state:data.stats.published_matches>0?'available':'missing'},
+      {label:'Statistical sample',value:`${data.stats.statistical_matches} MATCHES`,detail:'ฐานที่ใช้คำนวณสถิติ',state:data.stats.statistical_matches>0?'available':'missing'},
+      {label:'Primary image',value:safeImageUrl(data.bull.primary_image_ref)?'AVAILABLE':'NOT RECORDED',detail:'ภาพอ้างอิงของวัวตัวนี้',state:safeImageUrl(data.bull.primary_image_ref)?'available':'missing'},
+    ]}/>
     <div className="detail-grid"><div className="panel metric-panel"><span>จำนวนครั้งที่ชน</span><strong>{data.stats.published_matches}</strong><small>Published</small></div><div className="panel metric-panel"><span>ชนะ</span><strong>{data.stats.wins}</strong><small>Win</small></div><div className="panel metric-panel"><span>แพ้ / เสมอ</span><strong>{data.stats.losses} / {data.stats.draws}</strong><small>Loss / Draw</small></div><div className="panel metric-panel"><span>อัตราชนะ</span><strong>{fmtPct(data.stats.win_rate_pct)}</strong><small>W / (W+L+D)</small></div></div>
     <SectionTitle eyebrow="RECENT FORM" title={`ฟอร์มล่าสุด ${data.recent_form.length?data.recent_form.join(' • '):'—'}`}/>
     <SectionTitle eyebrow="MATCH HISTORY" title="ประวัติการแข่งขัน"/>
@@ -107,6 +114,12 @@ function MatchDetail({id,go}:{id:string|null;go:(v:ViewId)=>void}){
   useEffect(()=>{if(!id){setData(null);setLoading(false);return}let active=true;setLoading(true);setError(null);getMatch(id).then(v=>{if(active)setData(v)}).catch(e=>{if(active)setError(e instanceof Error?e.message:'โหลดไม่สำเร็จ')}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[id,tick])
   return <><button className="back-button" onClick={()=>go('matches')}>← กลับรายการคู่ชน</button>{!id?<div className="panel"><EmptyState title="ยังไม่ได้เลือกคู่ชน" body="เลือกคู่ชนจากรายการเพื่อดูรายละเอียด"/></div>:error?<ErrorPanel message={error} retry={()=>setTick(v=>v+1)}/>:loading?<LoadingPanel/>:!data?<div className="panel"><EmptyState title="ไม่พบคู่ชนที่เผยแพร่" body="รายการอาจยังไม่ VERIFIED/PUBLISHED"/></div>:<>
     <div className="match-card panel"><div className="match-meta"><span className="status-chip neutral">VERIFIED / PUBLISHED</span><span>{data.venue?.name??'สนาม —'}</span></div><div className="versus">{data.participants.slice(0,2).map(p=><div key={p.id}><VerifiedBullImage src={p.primary_image_ref} name={p.display_name} className="bull-circle"/><strong>{p.display_name}</strong><small>{p.weight_kg?`${p.weight_kg} กก.`:'snapshot วันชน'}</small></div>)}</div><div className="result-placeholder">ผลการแข่งขัน: {data.result.type}</div></div>
+    <DataCoverageRail title="MATCH DATA STATUS" signals={[
+      {label:'Match record',value:'VERIFIED',detail:'ผ่าน canonical verification gate',state:'verified'},
+      {label:'Publication',value:'PUBLISHED',detail:fmtDate(data.published_at),state:'verified'},
+      {label:'Participants',value:`${data.participants.length} RECORDS`,detail:'snapshot ตัวตนวันชน',state:data.participants.length>0?'available':'missing'},
+      {label:'Image refs',value:`${data.participants.filter(p=>Boolean(safeImageUrl(p.primary_image_ref))).length}/${data.participants.length} AVAILABLE`,detail:'ภาพอ้างอิงรายตัวที่ URL ใช้งานได้',state:data.participants.some(p=>Boolean(safeImageUrl(p.primary_image_ref)))?'available':'missing'},
+    ]}/>
     <div className="detail-grid two"><div className="panel"><h3>ข้อมูลการแข่งขัน</h3><dl className="definition-list"><div><dt>วันที่</dt><dd>{fmtDate(data.match_date)}</dd></div><div><dt>สนาม</dt><dd>{data.venue?.name??'—'}</dd></div><div><dt>ระยะเวลา</dt><dd>{data.duration_seconds==null?'—':`${data.duration_seconds} วินาที`}</dd></div></dl></div><div className="panel"><h3>ผลที่ตรวจสอบแล้ว</h3><dl className="definition-list"><div><dt>ประเภทผล</dt><dd>{data.result.type}</dd></div><div><dt>เหตุผล</dt><dd>{data.result.reason??'—'}</dd></div><div><dt>เผยแพร่</dt><dd>{fmtDate(data.published_at)}</dd></div></dl></div></div>
   </>}</>
 }
