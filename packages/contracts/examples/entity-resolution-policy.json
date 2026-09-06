@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "policy_version": "entity-resolution-2026-09-v1",
+  "entities": {
+    "BULL": {
+      "candidate_floor": 0.55,
+      "review_floor": 0.72,
+      "auto_link_threshold": 0.97,
+      "minimum_candidate_margin": 0.10,
+      "minimum_independent_positive_signal_groups": 2,
+      "require_strong_signal_for_auto_link": true
+    },
+    "CAMP": {
+      "candidate_floor": 0.55,
+      "review_floor": 0.72,
+      "auto_link_threshold": 0.97,
+      "minimum_candidate_margin": 0.10,
+      "minimum_independent_positive_signal_groups": 2,
+      "require_strong_signal_for_auto_link": true
+    },
+    "OWNER": {
+      "candidate_floor": 0.60,
+      "review_floor": 0.78,
+      "auto_link_threshold": 0.985,
+      "minimum_candidate_margin": 0.12,
+      "minimum_independent_positive_signal_groups": 2,
+      "require_strong_signal_for_auto_link": true
+    },
+    "VENUE": {
+      "candidate_floor": 0.55,
+      "review_floor": 0.72,
+      "auto_link_threshold": 0.97,
+      "minimum_candidate_margin": 0.10,
+      "minimum_independent_positive_signal_groups": 2,
+      "require_strong_signal_for_auto_link": true
+    },
+    "EVENT": {
+      "candidate_floor": 0.55,
+      "review_floor": 0.75,
+      "auto_link_threshold": 0.98,
+      "minimum_candidate_margin": 0.12,
+      "minimum_independent_positive_signal_groups": 2,
+      "require_strong_signal_for_auto_link": true
+    }
+  },
+  "hard_conflict_behavior": "FORCE_REVIEW_OR_NO_MATCH"
+}
