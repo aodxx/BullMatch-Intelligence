@@ -4,6 +4,7 @@ import App from './App'
 import './styles.css'
 import './auth.css'
 import './api-data.css'
+import './visual-system.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
