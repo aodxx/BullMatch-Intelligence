@@ -17,19 +17,26 @@ Deliverables completed:
 - Drive handoff folder
 
 ### BMI-P0-002 — Database Schema v0.1
-Owner: Unassigned
-Status: READY
+Owner: Primary Maintainer
+Status: REVIEW
 Tracking: Issue #1
 
-Deliverables:
-- entities and relationships
+Deliverables completed:
+- canonical entities and relationships
+- public/private trust boundary
 - source/evidence tables
+- claim-level provenance
 - review/audit tables
 - historical match snapshots
+- result model without cyclic winner FK
+- source idempotency strategy
 - indexes and uniqueness strategy
-- initial Supabase migration plan
+- RLS/Data API assumptions
+- archive/retention policy
+- merge/split identity history
+- Supabase migration plan
 
-Must not implement production migrations before schema review.
+No production migration has been applied yet.
 
 ### BMI-P0-003 — AI Agent & Verification Specification
 Owner: Unassigned
