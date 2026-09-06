@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bullmatch.local/contracts/entity-match-result/1.0.0",
+  "title": "EntityMatchResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "correlation_id",
+    "candidate_group_id",
+    "entity_type",
+    "candidate_key",
+    "resolution_version",
+    "candidates",
+    "recommendation",
+    "reason_codes"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "candidate_group_id": { "type": "string", "format": "uuid" },
+    "entity_type": { "enum": ["BULL", "OWNER", "CAMP", "VENUE", "EVENT"] },
+    "candidate_key": { "type": "string", "minLength": 1 },
+    "resolution_version": { "type": "string", "minLength": 1 },
+    "canonical_index_version": { "type": ["string", "null"] },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["entity_id", "score", "signals"],
+        "properties": {
+          "entity_id": { "type": "string", "format": "uuid" },
+          "score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "signals": { "type": "object", "additionalProperties": true }
+        }
+      }
+    },
+    "recommendation": { "enum": ["AUTO_LINK", "REVIEW", "NO_MATCH"] },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  }
+}

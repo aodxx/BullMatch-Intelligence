@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bullmatch.local/contracts/extraction-result/1.0.0",
+  "title": "ExtractionResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "correlation_id",
+    "source_item_id",
+    "candidate_groups",
+    "model"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "source_item_id": { "type": "string", "format": "uuid" },
+    "candidate_groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["candidate_group_id", "candidate_type", "claims", "unresolved_fields", "warnings"],
+        "properties": {
+          "candidate_group_id": { "type": "string", "format": "uuid" },
+          "candidate_type": { "enum": ["MATCH", "EVENT", "ENTITY"] },
+          "claims": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "claim_id",
+                "subject_type",
+                "subject_candidate_key",
+                "field_key",
+                "basis",
+                "confidence",
+                "evidence_refs"
+              ],
+              "properties": {
+                "claim_id": { "type": "string", "format": "uuid" },
+                "subject_type": {
+                  "enum": ["MATCH", "MATCH_PARTICIPANT", "BULL", "CAMP", "OWNER", "VENUE", "EVENT"]
+                },
+                "subject_candidate_key": { "type": "string", "minLength": 1 },
+                "field_key": { "type": "string", "minLength": 1 },
+                "value": {},
+                "basis": { "enum": ["EXPLICIT", "INFERRED", "UNKNOWN"] },
+                "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+                "evidence_refs": {
+                  "type": "array",
+                  "items": { "type": "string", "format": "uuid" },
+                  "uniqueItems": true
+                }
+              }
+            }
+          },
+          "unresolved_fields": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true
+          },
+          "warnings": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "name", "contract_version", "input_hash"],
+      "properties": {
+        "provider": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "contract_version": { "const": "1.0.0" },
+        "prompt_version": { "type": ["string", "null"] },
+        "input_hash": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

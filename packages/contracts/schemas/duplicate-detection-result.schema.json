@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bullmatch.local/contracts/duplicate-detection-result/1.0.0",
+  "title": "DuplicateDetectionResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "correlation_id",
+    "candidate_group_id",
+    "candidate_type",
+    "detector_version",
+    "matches",
+    "recommendation",
+    "reason_codes"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "candidate_group_id": { "type": "string", "format": "uuid" },
+    "candidate_type": { "enum": ["MATCH", "EVENT", "ENTITY"] },
+    "detector_version": { "type": "string", "minLength": 1 },
+    "search_snapshot": { "type": ["string", "null"] },
+    "matches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["existing_id", "score", "signals", "differing_fields"],
+        "properties": {
+          "existing_id": { "type": "string", "format": "uuid" },
+          "score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "signals": { "type": "object", "additionalProperties": true },
+          "differing_fields": { "type": "object", "additionalProperties": true }
+        }
+      }
+    },
+    "recommendation": { "enum": ["ATTACH_EVIDENCE", "REVIEW", "NOT_DUPLICATE"] },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bullmatch.local/contracts/agent-run/1.0.0",
+  "title": "AgentRun",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "correlation_id",
+    "agent_type",
+    "agent_version",
+    "started_at",
+    "status",
+    "input_refs",
+    "output_refs",
+    "metrics",
+    "errors"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "run_id": { "type": "string", "format": "uuid" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "agent_type": {
+      "enum": ["SOURCE_DISCOVERY", "SOURCE_MONITORING", "EXTRACTION", "ENTITY_RESOLUTION", "DUPLICATE_DETECTION", "VERIFICATION", "DATA_QUALITY", "REPORT"]
+    },
+    "agent_version": { "type": "string", "minLength": 1 },
+    "source_id": { "type": ["string", "null"], "format": "uuid" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": ["string", "null"], "format": "date-time" },
+    "status": { "enum": ["RUNNING", "SUCCEEDED", "FAILED", "PARTIAL", "CANCELLED"] },
+    "input_refs": { "type": "array", "items": { "type": "string" } },
+    "output_refs": { "type": "array", "items": { "type": "string" } },
+    "metrics": { "type": "object", "additionalProperties": true },
+    "errors": {
+      "type": "array",
+      "items": { "$ref": "agent-error.schema.json" }
+    }
+  }
+}

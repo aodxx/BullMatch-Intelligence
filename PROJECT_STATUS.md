@@ -33,7 +33,7 @@ Phase 0 is complete only when all of the following are approved and consistent:
 |---|---|---|---|---|
 | BMI-P0-001 | Repository and collaboration foundation | Primary Maintainer | DONE | root docs + `.github/` |
 | BMI-P0-002 | Initial database model | Primary Maintainer | DONE | Issue #1 / PR #5 |
-| BMI-P0-003 | AI collection and verification contracts | Primary Maintainer | IN PROGRESS | Issue #2 |
+| BMI-P0-003 | AI collection and verification contracts | Primary Maintainer | REVIEW | Issue #2 / contract branch |
 | BMI-P0-004 | Product requirements / MVP boundaries | Primary Maintainer | REVIEW | `PRD.md` v0.1 |
 | BMI-P0-005 | System architecture | Primary Maintainer | REVIEW | `ARCHITECTURE.md` v0.1 |
 | BMI-P0-006 | Source discovery and source registry specification | Unassigned | BLOCKED BY P0-003 | planned |
@@ -54,6 +54,9 @@ Phase 0 is complete only when all of the following are approved and consistent:
 10. Match results are modeled separately from matches/participants so winner references do not create cyclic migration dependencies.
 11. Source ingestion uses a deterministic per-source `dedupe_key` as the canonical idempotency boundary.
 12. Public statistics exclude unverified, review-required, conflict, rejected, or unpublished matches by default.
+13. Shared agent payloads are versioned JSON contracts under `packages/contracts/`.
+14. External source content is untrusted data and cannot instruct agents to reveal secrets, bypass verification, or alter system configuration.
+15. Confidence values are advisory and task-specific; conflicts are preserved instead of averaged away.
 
 ## Completed Gate — Database Schema
 
@@ -65,19 +68,27 @@ Key outputs:
 
 No production Supabase DDL has been applied.
 
-## Current Work — AI Contracts
+## Review Gate — AI Contracts
 
-`BMI-P0-003` is now the active integration task. It must define stable inputs/outputs for source monitoring, extraction, entity resolution, duplicate detection, verification, retry/idempotency, and agent reporting before connector implementation begins.
+`BMI-P0-003` is review-ready on `agent/bmi-p0-003-ai-contracts`.
+
+Key outputs:
+- `docs/AI-AGENT-SPEC.md`
+- `packages/contracts/README.md`
+- JSON Schemas for ingestion, extraction, entity matching, duplicate detection, verification, review references, agent runs, and errors
+- example payloads
+- `.github/workflows/contracts.yml`
+- `scripts/validate_contracts.py`
 
 ## Current Blockers
 
 - Supabase project has not yet been selected/created for this project.
-- `BMI-P0-003` must finish before `BMI-P0-006` and production collector implementation.
+- `BMI-P0-003` must merge before `BMI-P0-006` starts.
 - First real source connectors have not yet been selected and validated for access/compliance.
 
 ## Next Integration Gate
 
-Complete and merge `BMI-P0-003`, then unblock `BMI-P0-006` Source Registry/Connector Contract and allow `BMI-P0-007`/`BMI-P0-008` to proceed against stable shared contracts.
+Run contract CI and merge `BMI-P0-003`. Then `BMI-P0-006` becomes READY and `BMI-P0-007`/`BMI-P0-008` can consume stable shared contracts.
 
 ## Handoff Rule
 

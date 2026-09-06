@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bullmatch.local/contracts/verification-result/1.0.0",
+  "title": "VerificationResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "correlation_id",
+    "candidate_group_id",
+    "verification_version",
+    "overall_status",
+    "claim_decisions",
+    "required_review",
+    "review_reasons"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "candidate_group_id": { "type": "string", "format": "uuid" },
+    "verification_version": { "type": "string", "minLength": 1 },
+    "input_fingerprint": { "type": ["string", "null"] },
+    "overall_status": {
+      "enum": ["CORROBORATED", "CONFLICT", "INSUFFICIENT_EVIDENCE", "REVIEW_REQUIRED", "REJECTED"]
+    },
+    "claim_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim_id",
+          "status",
+          "supporting_evidence_refs",
+          "contradicting_evidence_refs",
+          "reason_codes"
+        ],
+        "properties": {
+          "claim_id": { "type": "string", "format": "uuid" },
+          "status": { "enum": ["SUPPORTED", "CONFLICT", "INSUFFICIENT_EVIDENCE", "REJECTED"] },
+          "supporting_evidence_refs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" },
+            "uniqueItems": true
+          },
+          "contradicting_evidence_refs": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" },
+            "uniqueItems": true
+          },
+          "reason_codes": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "confidence_summary": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+    "required_review": { "type": "boolean" },
+    "review_reasons": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  }
+}
