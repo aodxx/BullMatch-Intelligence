@@ -45,7 +45,7 @@ Delivered:
 - append-only review actions + private audit
 
 **Bull identity impact preview — PR #51 / migration `20260906212825_add_bullmatch_identity_impact_preview`**
-- deterministic read-only MERGE/SPLIT impact preview
+- deterministic read-only MERGE/SPLIT preview
 - same-match distinct-Bull hard-conflict detection
 - deterministic fingerprint
 - execution disabled
@@ -140,26 +140,48 @@ Core contract:
 - Data Credit is not money/betting value
 
 ### BMI-P1-013 — Community Contribution Intake Foundation
-Status: READY
-Owner: UNCLAIMED
+Status: IN PROGRESS
+Owner: Primary Maintainer (ChatGPT autonomous run)
+Current branch: `agent/bmi-p1-013-community-origin-contract`
+Contract: `docs/COMMUNITY-CONTRIBUTION-V1.md`
 
-Goal:
-Build the first production-safe community contribution path on top of Schema v0.2 + Contribution & Trust Architecture + completed Review Backend.
+Selected first V1 input:
+**Evidence-backed correction/observation for an existing VERIFIED Bull profile using a public HTTP(S) source reference.**
 
-Initial scope:
-- authenticated contributor identity/membership boundary appropriate to the contribution contract
-- mobile-first submission envelope for a narrowly selected first input type
-- evidence reference + atomic claim creation; never direct canonical mutation
-- server-side validation, rate/abuse-ready metadata and idempotency
-- likely-existing-entity/candidate search before new Bull identity proposal
-- review-case routing using the completed P1-008 review foundation
-- contributor-visible submission state without exposing private review/audit data
+V1 atomic field allowlist:
+- `home_province`
+- `home_district`
+- `color_description`
+- `breed_description`
+
+This matches the existing guarded claim-promotion policy and keeps contributor intake useful without creating a new identity or direct canonical write.
+
+Production inspection at task start confirmed Schema v0.2 community origin is not yet applied:
+- `bullmatch_private.community_submissions` absent
+- contributor profile/reputation tables absent
+- `evidence.source_item_id` still NOT NULL
+- `claims.extraction_run_id` still NOT NULL
+
+Current implementation order:
+1. additive community-origin + contributor-profile migration
+2. rollback-only compatibility/security/idempotency tests
+3. controlled authenticated submission RPC/Edge operation
+4. contributor `MY_SUBMISSIONS` safe projection
+5. mobile contribution UI
+
+Required invariants:
+- authenticated actor ID derived server-side, never trusted from payload
+- contributor does not require ADMIN/REVIEWER role and gains no privileged role
+- submission/evidence/claim/review tables remain server-mediated
+- one submission produces atomic `REVIEW_REQUIRED` claims, never canonical mutation
+- existing source-ingestion evidence/claims remain valid and retain IDs
+- idempotency key retry cannot create duplicate submission/evidence/claim/review case
+- canonical Bull row must remain unchanged after contribution
 - no AI auto-publish
+- no betting/wallet/settlement/payout fields or flow
 
-Recommended first input slice:
-**Bull profile correction / observation with evidence or public source reference**, because it exercises evidence -> atomic claim -> entity resolution/review without requiring a full comparison/program/match ingestion workflow in the first increment.
-
-Before implementation, inspect Schema v0.2 migration plan and contribution/trust architecture, then define the exact V1 contract. Prefer additive/reversible changes and keep canonical tables closed to contributor writes.
+Exact next slice:
+Implement the additive migration defined in `docs/COMMUNITY-CONTRIBUTION-V1.md`, then run rollback-only compatibility and access-control tests before exposing the submission route.
 
 ---
 
