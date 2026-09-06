@@ -8,9 +8,9 @@ Last structural update: 2026-09-06
 
 Repository: `aodxx/BullMatch-Intelligence`
 
-Current phase: **Phase 1 — Core Verified Database + Frontend Foundation**
+Current phase: **Phase 1 — Core Verified Database + Frontend Integration**
 
-Overall status: **APP FOUNDATION DEPLOYED / READY FOR AUTH + DATA WIRING**
+Overall status: **VERIFIED STATISTICS APPLIED / AUTH NEXT**
 
 ## Completed Gates
 
@@ -32,15 +32,41 @@ BullMatch owns only:
 
 `freshmart` remains outside BullMatch scope.
 
-## Manual Workflow Available
+## Current Work — BMI-P1-007
 
-Trusted ADMIN flow:
+Status: **REVIEW**
+Tracking: Issue #28
+Branch: `agent/bmi-p1-007-bull-stats`
+Applied migration: `20260906084340_add_bullmatch_verified_profile_statistics`
 
-`Venue / Bulls -> Event -> Match -> Match Participants -> Match Result -> Verify -> Publish`
+## Verified Statistics Foundation
 
-Historical participant snapshots preserve match-time display name, camp, owner, weight and estimated age independently of current Bull profile values.
+Read models:
+- `bullmatch.published_bull_match_history`
+- `bullmatch.published_bull_opponent_history`
+- `bullmatch.bull_basic_stats`
+- `bullmatch.bull_recent_form`
 
-Publication requires a VERIFIED match, at least two participants, a known verified result, consistent match status, and synchronized participant result states.
+Authoritative statistics include only:
+- VERIFIED matches
+- published matches
+- non-archived matches
+- verified known results
+- verified, non-archived Bull entities
+
+### Win rate
+
+`wins / (wins + losses + draws) * 100`
+
+NO_RESULT and CANCELLED remain visible as separate counts/history but do not affect win rate.
+
+### Recent form
+
+Latest five W/L/D results only. NO_RESULT and CANCELLED are excluded.
+
+### Historical integrity
+
+Statistics history uses the match-time participant snapshot. Editing a Bull's current canonical name does not rewrite historical `display_name_snapshot` values.
 
 ## Security Boundary
 
@@ -48,59 +74,61 @@ Publication requires a VERIFIED match, at least two participants, a known verifi
 - all state-changing commands enforce ACTIVE ADMIN membership
 - REVIEWER / VIEWER / non-member mutation attempts fail
 - private audit data remains inaccessible to browser roles
-- no fake production ADMIN or production bull/match data has been created
 - frontend contains no service-role secret
 - BullMatch mutation functions are not wired directly to the browser
+- statistics views currently grant SELECT only to `service_role`
+- all statistics views use `security_invoker = true`
+
+## Verification
+
+Remote rollback-only P1-007 regression test passed on the real shared Supabase project.
+
+Fixture result:
+- published matches: 5
+- statistical matches: 3
+- W/L/D: 1/1/1
+- no-result: 1
+- cancelled: 1
+- win rate: 33.33%
+- recent form: LOSS, DRAW, WIN
+
+Also verified:
+- unpublished match excluded
+- unverified Bull excluded
+- opponent history available for future H2H
+- historical snapshot survives current-name edits
+- anon/authenticated cannot directly SELECT stats views
+- rollback leaves no fixture data
+
+Artifact:
+- `supabase/P1-007-VERIFICATION.md`
+
+## Advisors
+
+Security: no WARN/ERROR introduced. Existing private-schema `RLS Enabled No Policy` INFO remains intentional.
+Reference: https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy
+
+Performance: no actionable WARN introduced. Remaining `unused_index` INFO is expected before real workload statistics exist.
+Reference: https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index
 
 ## Frontend
-
-Stack:
-- React 19
-- TypeScript
-- Vite 8
-- mobile-first / Thai-first
-- responsive desktop sidebar + mobile bottom navigation
-- PWA manifest and app icon
-
-Screens:
-- Dashboard
-- Bulls
-- Bull Profile
-- Matches
-- Match Detail
-- Manual Entry
-- Review Queue
-- Settings/Profile
-
-Real-data surfaces intentionally show empty states until secure data wiring is implemented.
-
-## Deployment
-
-GitHub Pages deployment is ACTIVE.
 
 Production URL:
 `https://aodxx.github.io/BullMatch-Intelligence/`
 
-Verified on GitHub Actions run #10 attempt 2:
-- locked dependency install — PASS
-- TypeScript — PASS
-- Vite production build — PASS
-- Configure Pages — PASS
-- Upload Pages artifact — PASS
-- Deploy GitHub Pages — PASS
+Current app shell includes Dashboard, Bulls, Bull Profile, Matches, Match Detail, Manual Entry, Review Queue and Settings/Profile.
+
+Real-data surfaces intentionally remain empty until secure Auth/API wiring is implemented.
 
 ## Next Gates
 
-1. **BMI-P1-007 — Bull Profile & Basic Statistics**
+1. Merge **BMI-P1-007**
 2. **BMI-APP-002 — Supabase Auth Login UI**
-3. **BMI-APP-003 — Secure Domain Data & Admin Action Wiring**
-
-The next frontend integration must preserve the existing API/security boundary and must not expose privileged `bullmatch` mutation functions directly.
+3. Define/implement controlled API boundary
+4. **BMI-APP-003 — Wire verified read data and ADMIN actions**
 
 ## Still Deferred
 
 - actual first production ADMIN activation using a real Auth account
 - AI provider selection
 - first production source selection/compliance approval
-
-These no longer block opening and reviewing the deployed frontend shell.
