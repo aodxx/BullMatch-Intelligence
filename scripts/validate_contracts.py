@@ -13,6 +13,7 @@ SCHEMA_DIR = ROOT / "packages" / "contracts" / "schemas"
 EXAMPLE_DIR = ROOT / "packages" / "contracts" / "examples"
 
 EXAMPLE_SCHEMA_MAP = {
+    "source-registry-entry.json": "source-registry-entry.schema.json",
     "normalized-ingestion-envelope.json": "normalized-ingestion-envelope.schema.json",
     "extraction-result.json": "extraction-result.schema.json",
     "verification-result.json": "verification-result.schema.json",
