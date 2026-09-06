@@ -100,15 +100,17 @@ Key files:
 Status: DONE — Issue #27
 
 ### BMI-OPS-002 — Bootstrap First Production ADMIN
-Status: WAITING FOR OWNER AUTH USER
+Status: DONE
 
-Safe sequence:
-1. owner creates the first real user in Supabase Authentication UI
-2. owner does not share the password
-3. maintainer confirms Auth user count/UUID in the database
-4. maintainer inserts that exact UUID into `bullmatch.app_users` as `ADMIN / ACTIVE`
-5. verify server `/me` membership and role
-6. owner refreshes/re-signs in and confirms ADMIN status in the app
+Verified:
+- intended real Supabase Auth user located in project `kaanguobjhlusjvgbowt`
+- Auth email is confirmed
+- exact Auth UUID linked to `bullmatch.app_users`
+- role = `ADMIN`
+- status = `ACTIVE`
+- `bullmatch_api_member` returns member/ADMIN/ACTIVE
+- authenticated role check returns authorized = true
+- no password, token, email, or Auth UUID committed to the public repository
 
 Runbook: `docs/FIRST-ADMIN-BOOTSTRAP.md`
 
