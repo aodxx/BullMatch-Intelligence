@@ -105,18 +105,23 @@ Deliverables completed:
 
 ### BMI-P0-007 — Entity Resolution Strategy
 Owner: Primary Maintainer
-Status: IN PROGRESS
+Status: REVIEW
 Tracking: Issue #3
 
-Deliverables:
-- bull identity candidate scoring
-- Thai name/alias normalization rules
-- camp/owner/venue disambiguation
-- auto-link and review thresholds
-- negative/conflict signals
-- human review thresholds
-- merge/split audit and rollback strategy
-- calibration/test-fixture plan
+Deliverables completed:
+- Thai-safe normalization rules
+- candidate generation and bounded top-N strategy
+- positive/negative/hard-conflict signal model
+- entity-specific context rules
+- conservative auto-link/review/no-match policy
+- candidate margin and independent-signal requirements
+- stable source-native mapping strategy
+- alias lifecycle guidance
+- human-controlled reversible merge/split strategy
+- reviewer UX requirements
+- calibration/evaluation metrics and golden fixture plan
+- machine-readable entity-resolution policy schema + fixture
+- contract validation coverage
 
 ### BMI-P0-008 — Review Queue UX Specification
 Owner: Unassigned
