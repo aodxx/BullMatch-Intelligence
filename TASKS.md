@@ -55,7 +55,7 @@ Scope:
 - merge/split preview foundation
 
 ### BMI-P1-009 — Thai Bullfighting Domain Rebaseline & Open Contribution Readiness
-Status: IN PROGRESS
+Status: REVIEW
 Owner: Primary Maintainer (ChatGPT)
 Branch: `agent/bmi-p1-009-thai-bullfighting-domain-rebaseline`
 
@@ -67,8 +67,9 @@ Scope:
 - define the architecture implications for future open contribution, fact-level verification and provenance
 - do not change production schema or API in this task
 
-Primary deliverable:
+Deliverables:
 - `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md`
+- `docs/THAI-BULLFIGHTING-FIELD-VALIDATION.md`
 
 Dependencies / integration note:
 - findings inform the PRD/schema/review redesign before community write access is implemented
