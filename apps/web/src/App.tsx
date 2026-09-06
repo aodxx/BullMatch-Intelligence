@@ -47,6 +47,17 @@ function LoadingPanel({label='กำลังโหลดข้อมูลจ�
 function ErrorPanel({message,retry}:{message:string;retry:()=>void}){return <div className="panel"><EmptyState title="โหลดข้อมูลไม่สำเร็จ" body={message} action={<button className="primary-button" onClick={retry}>ลองใหม่</button>}/></div>}
 function fmtDate(value:string|null|undefined){if(!value)return '—';try{return new Intl.DateTimeFormat('th-TH',{dateStyle:'medium'}).format(new Date(value))}catch{return value}}
 function fmtPct(value:number|null|undefined){return value==null?'—':`${Number(value).toFixed(2)}%`}
+function safeImageUrl(value:string|null|undefined){
+  const raw=value?.trim();if(!raw)return null
+  try{const parsed=new URL(raw,window.location.origin);return ['https:','http:'].includes(parsed.protocol)?parsed.href:null}catch{return null}
+}
+function VerifiedBullImage({src,name,className}:{src:string|null|undefined;name:string;className:string}){
+  const [failed,setFailed]=useState(false)
+  const url=useMemo(()=>safeImageUrl(src),[src])
+  useEffect(()=>setFailed(false),[url])
+  if(!url||failed)return <div className={`${className} image-missing`} role="img" aria-label={`${name}: ยังไม่มีภาพยืนยัน`}><span>ยังไม่มี<br/>ภาพยืนยัน</span></div>
+  return <div className={`${className} has-image`}><img src={url} alt={`ภาพยืนยันของ ${name}`} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={()=>setFailed(true)}/></div>
+}
 
 function Dashboard({go}:{go:(view:ViewId)=>void}){
   const [data,setData]=useState<DashboardData|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState<string|null>(null),[tick,setTick]=useState(0)
@@ -77,7 +88,7 @@ function BullProfile({id,go}:{id:string|null;go:(v:ViewId)=>void}){
   const [data,setData]=useState<BullProfileData|null>(null),[loading,setLoading]=useState(Boolean(id)),[error,setError]=useState<string|null>(null),[tick,setTick]=useState(0)
   useEffect(()=>{if(!id){setData(null);setLoading(false);return}let active=true;setLoading(true);setError(null);getBull(id).then(v=>{if(active)setData(v)}).catch(e=>{if(active)setError(e instanceof Error?e.message:'โหลดไม่สำเร็จ')}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[id,tick])
   return <><button className="back-button" onClick={()=>go('bulls')}>← กลับทะเบียนวัว</button>{!id?<div className="panel"><EmptyState title="ยังไม่ได้เลือกวัว" body="เลือกวัวจากทะเบียนเพื่อดูสถิติและประวัติ"/></div>:error?<ErrorPanel message={error} retry={()=>setTick(v=>v+1)}/>:loading?<LoadingPanel/>:!data?<div className="panel"><EmptyState title="ไม่พบวัวที่เผยแพร่" body="วัวอาจยังไม่ผ่านการยืนยันหรือถูกเก็บถาวร"/></div>:<>
-    <div className="profile-hero panel"><div className="profile-avatar"><Icon name="bull" size={48}/></div><div className="profile-copy"><span className="status-chip neutral">VERIFIED</span><h2>{data.bull.canonical_name}</h2><p>{[data.bull.camp?.name,data.bull.owner?.name,data.bull.home_province].filter(Boolean).join(' • ')||'ยังไม่มีข้อมูลคอก/เจ้าของ/จังหวัด'}</p></div></div>
+    <div className="profile-hero panel"><VerifiedBullImage src={data.bull.primary_image_ref} name={data.bull.canonical_name} className="profile-avatar"/><div className="profile-copy"><span className="status-chip neutral">VERIFIED</span><h2>{data.bull.canonical_name}</h2><p>{[data.bull.camp?.name,data.bull.owner?.name,data.bull.home_province].filter(Boolean).join(' • ')||'ยังไม่มีข้อมูลคอก/เจ้าของ/จังหวัด'}</p></div></div>
     <div className="detail-grid"><div className="panel metric-panel"><span>จำนวนครั้งที่ชน</span><strong>{data.stats.published_matches}</strong><small>Published</small></div><div className="panel metric-panel"><span>ชนะ</span><strong>{data.stats.wins}</strong><small>Win</small></div><div className="panel metric-panel"><span>แพ้ / เสมอ</span><strong>{data.stats.losses} / {data.stats.draws}</strong><small>Loss / Draw</small></div><div className="panel metric-panel"><span>อัตราชนะ</span><strong>{fmtPct(data.stats.win_rate_pct)}</strong><small>W / (W+L+D)</small></div></div>
     <SectionTitle eyebrow="RECENT FORM" title={`ฟอร์มล่าสุด ${data.recent_form.length?data.recent_form.join(' • '):'—'}`}/>
     <SectionTitle eyebrow="MATCH HISTORY" title="ประวัติการแข่งขัน"/>

@@ -5,6 +5,7 @@ import './styles.css'
 import './auth.css'
 import './api-data.css'
 import './visual-system.css'
+import './verified-images.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
