@@ -115,6 +115,54 @@ export type MeData = {
   request_id: string
 }
 
+export type ContributionField = 'home_province'|'home_district'|'color_description'|'breed_description'
+
+export type BullCorrectionPayload = {
+  schema_version: '1.0.0'
+  client_submission_key: string
+  bull_id: string
+  field_key: ContributionField
+  proposed_value: string
+  source_url: string
+  note?: string
+}
+
+export type ContributionSubmitResult = {
+  ok: boolean
+  replayed: boolean
+  policy_id: string
+  submission_id: string
+  evidence_id: string
+  claim_id: string
+  review_case_id: string
+  status: 'REVIEW_REQUIRED'
+  canonical_mutation: false
+}
+
+export type MySubmissionClaim = {
+  field_key: string
+  proposed_value: string | null
+  outcome: 'PENDING_REVIEW'|'ACCEPTED'|'REJECTED'|'CONFLICT'|'SUPERSEDED'|'WITHDRAWN'
+}
+
+export type MySubmissionItem = {
+  id: string
+  submission_type: string
+  status: string
+  submitted_at: string
+  updated_at: string
+  resolved_at: string | null
+  target: { bull_id: string | null; bull_name: string | null }
+  claims: MySubmissionClaim[]
+}
+
+export type MySubmissionsData = {
+  total: number
+  limit: number
+  offset: number
+  items: MySubmissionItem[]
+}
+
 type ApiEnvelope<T> = { data: T; request_id: string }
 
 async function readError(response: Response): Promise<string> {
@@ -160,6 +208,24 @@ export async function getMe(session: AuthSession): Promise<MeData> {
   const url = new URL(API_URL)
   url.searchParams.set('resource', 'me')
   return request<MeData>(url, { headers: { Authorization: `Bearer ${session.access_token}` } })
+}
+
+export async function getMySubmissions(session: AuthSession, limit=50, offset=0): Promise<MySubmissionsData> {
+  const url = new URL(API_URL)
+  url.searchParams.set('resource', 'my_submissions')
+  url.searchParams.set('limit', String(limit))
+  url.searchParams.set('offset', String(offset))
+  const response = await request<ApiEnvelope<MySubmissionsData>>(url, { headers: { Authorization: `Bearer ${session.access_token}` } })
+  return response.data
+}
+
+export async function submitBullProfileCorrection(session: AuthSession, payload: BullCorrectionPayload): Promise<ContributionSubmitResult> {
+  const response = await request<ApiEnvelope<ContributionSubmitResult>>(new URL(API_URL), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ operation: 'submit_bull_profile_correction', payload }),
+  })
+  return response.data
 }
 
 export async function adminCommand<T = { ok: boolean; operation: string; id: string }>(session: AuthSession, operation: string, payload: Record<string, unknown>): Promise<T> {
