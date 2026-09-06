@@ -60,6 +60,9 @@ function parseUuidOrNull(value: string | null) {
 function isReviewMember(membership: any) {
   return Boolean(membership?.member && membership?.active && ['ADMIN','REVIEWER'].includes(membership?.role))
 }
+function isAdminMember(membership: any) {
+  return Boolean(membership?.member && membership?.active && membership?.role === 'ADMIN')
+}
 
 Deno.serve(async (req: Request) => {
   const requestId = crypto.randomUUID()
@@ -130,7 +133,13 @@ Deno.serve(async (req: Request) => {
         return respond(req,200,{data:result,request_id:requestId})
       }
 
-      if(!membership?.member||!membership?.active||membership?.role!=='ADMIN') return respond(req,403,{error:'ADMIN_REQUIRED',membership,request_id:requestId})
+      if(operation==='promote_verified_claim') {
+        if(!isAdminMember(membership)) return respond(req,403,{error:'ADMIN_REQUIRED',membership,request_id:requestId})
+        const result=await rpc('bullmatch_api_promote_verified_claim',{p_actor_id:user.id,p_command:payload ?? {}})
+        return respond(req,200,{data:result,request_id:requestId})
+      }
+
+      if(!isAdminMember(membership)) return respond(req,403,{error:'ADMIN_REQUIRED',membership,request_id:requestId})
       const result=await rpc('bullmatch_api_admin_command',{p_actor_id:user.id,p_operation:operation,p_payload:payload ?? {}})
       return respond(req,200,{data:result,request_id:requestId})
     }
