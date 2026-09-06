@@ -36,8 +36,8 @@ Phase 0 is complete only when all of the following are approved and consistent:
 | BMI-P0-003 | AI collection and verification contracts | Primary Maintainer | DONE | Issue #2 / PR #6 |
 | BMI-P0-004 | Product requirements / MVP boundaries | Primary Maintainer | REVIEW | `PRD.md` v0.1 |
 | BMI-P0-005 | System architecture | Primary Maintainer | REVIEW | `ARCHITECTURE.md` v0.1 |
-| BMI-P0-006 | Source registry and connector contract | Primary Maintainer | REVIEW | Issue #7 / source-registry branch |
-| BMI-P0-007 | Entity resolution strategy | Unassigned | READY | Issue #3 |
+| BMI-P0-006 | Source registry and connector contract | Primary Maintainer | DONE | Issue #7 / PR #8 |
+| BMI-P0-007 | Entity resolution strategy | Primary Maintainer | IN PROGRESS | Issue #3 |
 | BMI-P0-008 | Human review queue UX specification | Unassigned | READY | Issue #4 |
 
 ## Decisions Locked
@@ -64,41 +64,26 @@ Phase 0 is complete only when all of the following are approved and consistent:
 
 ## Completed Gates
 
-### Database Schema — BMI-P0-002
-Merged via PR #5.
+- `BMI-P0-002` Database Schema — PR #5
+- `BMI-P0-003` AI Contracts — PR #6, contract CI passed
+- `BMI-P0-006` Source Registry / Connector Contract — PR #8, contract CI passed
 
-### AI Contracts — BMI-P0-003
-Merged via PR #6. Contract CI passed before merge.
+## Current Work — Entity Resolution
 
-Key machine-readable contracts exist under `packages/contracts/`.
-
-## Review Gate — Source Registry / Connector Contract
-
-`BMI-P0-006` is review-ready on `agent/bmi-p0-006-source-registry`.
-
-Key outputs:
-- `docs/SOURCE-REGISTRY-CONTRACT.md`
-- source registry JSON Schema
-- connector poll request/result JSON Schemas
-- source registry example fixture
-- updated shared-contract README/validator
-- updated Supabase migration plan with `private.source_runtime_state`
+`BMI-P0-007` defines how Thai names, alternate spellings, camps, owners, locations, opponents, event context, and negative signals combine to propose a canonical identity without silently merging different bulls.
 
 ## Current Blockers
 
 - Supabase project has not yet been selected/created for this project.
 - The first real production source has not yet been selected and validated for access/compliance.
 
-## Parallel-Ready Tasks
+## Parallel-Ready Task
 
-- `BMI-P0-007` Entity Resolution Strategy can be assigned to another contributor.
-- `BMI-P0-008` Review Queue UX Specification can be assigned to another contributor.
-
-They must consume the merged schema/contracts rather than create competing payloads.
+`BMI-P0-008` Review Queue UX Specification remains available for another contributor and must consume the merged review/entity contracts.
 
 ## Next Integration Gate
 
-Run contract CI and merge `BMI-P0-006`, then finalize `BMI-P0-004`, `BMI-P0-005`, `BMI-P0-007`, and `BMI-P0-008`. Phase 1 begins only when these foundations agree.
+Complete `BMI-P0-007`, then finalize the Review Queue UX and reconcile PRD/Architecture before Phase 1.
 
 ## Handoff Rule
 
