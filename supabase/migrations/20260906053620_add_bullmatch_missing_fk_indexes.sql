@@ -1,0 +1,12 @@
+create index match_participants_camp_snapshot_idx on bullmatch.match_participants(camp_id_snapshot);
+create index match_participants_owner_snapshot_idx on bullmatch.match_participants(owner_id_snapshot);
+create index match_results_winner_participant_idx on bullmatch.match_results(winner_participant_id);
+create index review_cases_resolved_by_idx on bullmatch.review_cases(resolved_by);
+
+create index candidate_groups_extraction_run_idx on bullmatch_private.candidate_groups(extraction_run_id);
+create index entity_match_candidates_claim_idx on bullmatch_private.entity_match_candidates(claim_id);
+create index entity_source_mappings_review_action_idx on bullmatch_private.entity_source_mappings(review_action_id);
+create index extraction_runs_agent_run_idx on bullmatch_private.extraction_runs(agent_run_id);
+create index fact_provenance_review_action_idx on bullmatch_private.fact_provenance(review_action_id);
+create index identity_events_review_case_idx on bullmatch_private.identity_events(review_case_id);
+create index identity_events_review_action_idx on bullmatch_private.identity_events(review_action_id);
