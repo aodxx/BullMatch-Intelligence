@@ -32,12 +32,23 @@ Status: DONE — PR #24
 Status: DONE — PR #29
 
 ### BMI-P1-008 — Review Backend Foundation
-Status: READY — HIGHEST PRIORITY NEXT TASK
+Status: IN PROGRESS
+Owner: Primary Maintainer (ChatGPT autonomous run)
+Branch: `agent/bmi-p1-008-review-backend-foundation`
 
 Dependencies satisfied:
 - BMI-P1-011 DONE — PR #39
 - BMI-P1-012 DONE — PR #40
 - BMI-APP-004 implementation gate DONE — PR #41, #42, #46, #47, #48
+
+Active implementation slice:
+- controlled REVIEWER/ADMIN queue + detail API
+- controlled reviewer evidence access
+- idempotent review commands using `command_id`
+- optimistic `case_version` / expected-status checks
+- claim decisions: VERIFIED / REJECTED / CONFLICT / SUPERSEDED without direct canonical publication
+- append-only review action + private audit records
+- merge/split remains preview-only until an explicit destructive-operation slice
 
 Target scope:
 - review case API/domain operations
@@ -56,8 +67,6 @@ Required invariants:
 - evidence/provenance/audit are preserved
 - no majority-vote canonical truth
 - no betting/wallet/settlement/payout capability
-
-Exact next branch: `agent/bmi-p1-008-...`
 
 ### BMI-P1-009 — Thai Bullfighting Domain Rebaseline
 Status: DONE — PR #36
