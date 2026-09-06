@@ -1,0 +1,19 @@
+{
+  "name": "BullMatch Intelligence",
+  "short_name": "BullMatch",
+  "description": "ระบบข้อมูลและสถิติกีฬาวัวชนที่ตรวจสอบย้อนกลับได้",
+  "lang": "th",
+  "start_url": "/BullMatch-Intelligence/",
+  "scope": "/BullMatch-Intelligence/",
+  "display": "standalone",
+  "background_color": "#f5f1eb",
+  "theme_color": "#4b241c",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

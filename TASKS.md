@@ -52,9 +52,8 @@ Completed:
 - remote rollback-only security tests
 
 ### BMI-P1-006 — Manual Match Entry & Verification
-Owner: Primary Maintainer
-Status: REVIEW
-Tracking: Issue #23
+Status: DONE
+Tracking: Issue #23 / PR #24
 
 Completed:
 - Event create/update/verify/archive
@@ -65,12 +64,11 @@ Completed:
 - result entry and deterministic participant result synchronization
 - explicit match verification
 - explicit publish/unpublish
-- publication hardening: verified known result + >=2 participants + verified result + synchronized participant states
-- published facts cannot be edited until unpublish
-- factual participant edits invalidate prior verification
-- same-match winner guard preserved
-- rollback-only ADMIN/REVIEWER/VIEWER/non-member tests
-- no leaked test data
+- hardened publication integrity
+- published facts require unpublish before edit
+- participant factual edits invalidate prior verification
+- same-match winner guard
+- rollback-only authorization/integrity tests
 
 Key files:
 - `supabase/migrations/20260906061040_add_bullmatch_admin_event_match_crud.sql`
@@ -79,7 +77,7 @@ Key files:
 - `supabase/P1-006-VERIFICATION.md`
 
 ### BMI-P1-007 — Bull Profile & Basic Statistics
-Status: READY AFTER P1-006 MERGE
+Status: READY
 
 Scope:
 - published/verified match history by Bull
@@ -104,18 +102,26 @@ Scope:
 ## App / Frontend Track
 
 ### BMI-APP-001 — Frontend Foundation & First Screens
-Status: READY AFTER P1-006 MERGE
+Owner: Primary Maintainer
+Status: IN PROGRESS
+Tracking: Issue #25
+Branch: `agent/bmi-app-001-frontend-foundation`
 
 Scope:
+- React + TypeScript + Vite app under `apps/web`
 - mobile-first application shell
 - Dashboard
 - Bulls list/profile shell
 - Matches list/detail shell
 - Admin manual-entry shell
 - Review Queue shell
-- responsive navigation
-- empty/loading/error states
+- Profile/Settings shell
+- responsive desktop sidebar + mobile bottom navigation
+- loading/empty/error-friendly structure
+- PWA-ready manifest/icon
+- GitHub Actions build + Pages deployment workflow
 - no fake production data
+- no secrets
 - secure API boundary; do not expose BullMatch mutation functions directly
 
 ### BMI-APP-002 — Supabase Auth Login UI

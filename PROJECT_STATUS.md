@@ -8,9 +8,9 @@ Last structural update: 2026-09-06
 
 Repository: `aodxx/BullMatch-Intelligence`
 
-Current phase: **Phase 1 — Core Verified Database**
+Current phase: **Frontend Foundation + Core Verified Database**
 
-Overall status: **MANUAL MATCH WORKFLOW APPLIED / REVIEW READY**
+Overall status: **FIRST APP UI IN PROGRESS**
 
 ## Completed Gates
 
@@ -19,154 +19,99 @@ Overall status: **MANUAL MATCH WORKFLOW APPLIED / REVIEW READY**
 - BMI-P1-002 Core Database — DONE via PR #18
 - BMI-P1-004 Authorization Foundation — DONE via PR #20
 - BMI-P1-005 Controlled Domain CRUD — DONE via PR #22
+- BMI-P1-006 Manual Match Entry & Verification — DONE via PR #24
 
-Selected shared Supabase host:
+## Backend baseline
 
-**`aodxx's Project`**
+Shared Supabase host: **`aodxx's Project`**
 
-BullMatch owns only:
+BullMatch-owned schemas only:
 - `bullmatch`
 - `bullmatch_private`
 
 `freshmart` remains outside BullMatch scope.
 
-## Current Work — BMI-P1-006
+Manual trusted workflow is available at the database/domain layer:
 
-Status: **REVIEW**
-Tracking: Issue #23
-Branch: `agent/bmi-p1-006-manual-match`
+`Venue / Bulls -> Event -> Match -> Participants -> Result -> Verify -> Publish`
 
-### Applied migrations
+Historical participant snapshots, result synchronization, publication guards, ADMIN-only mutation rules and audit trail are tested against the real Supabase project.
 
-- `20260906061040` — Event/Match controlled CRUD
-- `20260906062919` — Participant/Result/Verification/Publication workflow
+Production Bulls/Matches remain intentionally empty; no fabricated data or fake ADMIN has been created.
 
-## Manual Workflow Now Available
+## Current Work — BMI-APP-001
 
-Trusted ADMIN flow:
+Status: **IN PROGRESS**
+Tracking: Issue #25
+Branch: `agent/bmi-app-001-frontend-foundation`
 
-`Venue / Bulls -> Event -> Match -> Match Participants -> Match Result -> Verify -> Publish`
+### Frontend stack
 
-### Historical snapshots
+- React 19
+- TypeScript
+- Vite 8
+- dependency-light CSS
+- Node 24 in CI
+- static/hash navigation compatible with GitHub Pages
 
-Each participant stores match-time values independently of the Bull's current profile:
-- display name
-- camp
-- owner
-- weight
-- estimated age
+### First screens implemented in the branch
 
-Changing a Bull's current canonical name does not rewrite past participant display snapshots.
-
-### Result synchronization
-
-A match result deterministically updates participant states:
-- WIN -> winner WIN, others LOSS
-- DRAW -> all DRAW
-- NO_RESULT -> all NO_RESULT
-- CANCELLED -> all CANCELLED
-
-Result type also synchronizes the match status.
-
-### Verification and publication
-
-Publication requires:
-- VERIFIED match
-- at least two participants
-- known result
-- verified result timestamp
-- status/result consistency
-- participant result consistency
-
-Published factual records must be unpublished before participant/result/match fact edits.
-
-Editing participant facts after verification invalidates the previous verification and clears result verification.
-
-## Security boundary
-
-- browser roles still have zero direct table write grants
-- every mutation uses the ACTIVE ADMIN boundary
-- REVIEWER / VIEWER / non-member mutation attempts fail
-- private audit data remains inaccessible to browser roles
-- no fake ADMIN or production data was created
-
-Important frontend rule:
-
-**Do not expose `bullmatch` mutation functions directly through the Data API.** Current Supabase guidance recommends carefully restricting `SECURITY DEFINER` functions. Frontend work must use a controlled API/server boundary or another explicitly designed exposed surface.
-
-## Verification
-
-`supabase/tests/p1_006_manual_match.sql` passed against the real shared Supabase project using rollback-only fixtures.
-
-Verified:
-- full manual event/match workflow
-- historical snapshot preservation
-- WIN/DRAW synchronization
-- publish-before-verify rejection
-- published-edit rejection
-- verification invalidation after edits
-- cross-match winner rejection
-- invalid non-WIN winner rejection
-- REVIEWER/VIEWER/non-member denial
-- private audit events
-
-After rollback:
-- leaked test Auth users: 0
-- leaked test memberships: 0
-- production Bulls: 0
-- production Matches: 0
-
-Verification artifact:
-- `supabase/P1-006-VERIFICATION.md`
-
-## Advisors
-
-### Security
-
-No WARN/ERROR findings introduced.
-
-Remaining `RLS Enabled No Policy` INFO items are confined to `bullmatch_private`, which intentionally has no browser usage/grants.
-
-### Performance
-
-No actionable WARN findings introduced.
-
-Remaining `unused_index` INFO is expected while the production dataset is empty.
-
-## Next Gates
-
-After P1-006 merge, two high-value tracks become available:
-
-1. **BMI-APP-001 — Frontend Foundation & First Screens**
-2. **BMI-P1-007 — Bull Profile & Basic Statistics**
-
-Priority: start **BMI-APP-001** first so the project becomes visibly usable, while keeping the statistics work isolated for parallel contribution if another team joins.
-
-## Frontend Direction
-
-Initial frontend should be:
-- mobile-first
-- Thai-first
-- installable/PWA-ready
-- free-tier friendly
-- GitHub-hosted source
-- clear separation between public statistics and Admin/Review operations
-
-First screens:
 - Dashboard
-- Bulls
-- Bull Profile
-- Matches
-- Match Detail
-- Manual Entry
-- Review Queue
-- Settings/Profile
+- Bulls list
+- Bull Profile shell
+- Matches list
+- Match Detail shell
+- Manual Match Entry shell
+- Review Queue shell
+- Profile / Settings shell
 
-## Still Deferred
+### UX direction
 
-- actual first production ADMIN activation (requires a real Auth account)
-- final production hosting choice
+- Thai-first
+- mobile-first
+- desktop sidebar + mobile bottom navigation
+- large readable typography and tap targets
+- sports intelligence / statistics tone
+- PWA-ready manifest/icon
+- no fake production records
+- explicit empty states until real data wiring exists
+
+### Security boundary
+
+The frontend currently contains **no Supabase secret and no data mutation wiring**.
+
+Do not expose the existing `bullmatch` SECURITY DEFINER mutation functions directly through the Data API just to connect the UI. APP-003 must use a controlled API/server boundary or separately designed exposed surface.
+
+## Build / deployment
+
+`.github/workflows/web.yml`:
+- installs pinned web dependencies
+- typechecks
+- builds the Vite production bundle
+- prepares GitHub Pages deployment on `main`
+
+Vite base path is `/BullMatch-Intelligence/`.
+
+The first CI run was created before the CSS commit and correctly failed on the missing stylesheet. A current-head PR build is required before APP-001 can merge.
+
+## Parallel-ready backend tasks
+
+- BMI-P1-007 — Bull Profile & Basic Statistics
+- BMI-P1-008 — Review Backend Foundation
+
+These remain isolated so another contributor can take one without editing APP-001 files.
+
+## Next after APP-001
+
+1. BMI-APP-002 — Supabase Auth Login UI
+2. Define secure API/read boundary
+3. BMI-APP-003 — Wire real BullMatch data/actions
+4. BMI-P1-007 — expose verified statistics through the chosen safe read boundary
+
+## Deferred
+
+- first production ADMIN activation (requires a real Auth account)
 - AI provider selection
 - first production source selection/compliance approval
 
-These do not block frontend foundation work.
+None block completing the visible app foundation.
