@@ -75,6 +75,7 @@ export type MatchParticipant = {
   bull_id: string
   side: string | null
   display_name: string
+  primary_image_ref: string | null
   weight_kg: number | null
   age_months_estimate: number | null
   result: string | null
