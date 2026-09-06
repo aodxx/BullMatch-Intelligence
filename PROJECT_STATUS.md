@@ -10,7 +10,7 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 1 — Core Verified Database + Frontend Integration**
 
-Overall status: **VERIFIED STATISTICS DONE / AUTH UI REVIEW READY**
+Overall status: **PRODUCTION READ API WIRED / APP-003 REVIEW**
 
 ## Completed Gates
 
@@ -22,10 +22,9 @@ Overall status: **VERIFIED STATISTICS DONE / AUTH UI REVIEW READY**
 - BMI-P1-006 Manual Match Entry & Verification — DONE via PR #24
 - BMI-P1-007 Bull Profile & Basic Statistics — DONE via PR #29
 - BMI-APP-001 Frontend Foundation & First Screens — DONE via PR #26
+- BMI-APP-002 Supabase Auth Login UI — DONE via PR #31
 
-Selected shared Supabase host:
-
-**`aodxx's Project`**
+Selected shared Supabase host: **`aodxx's Project`**
 
 BullMatch owns only:
 - `bullmatch`
@@ -33,81 +32,111 @@ BullMatch owns only:
 
 `freshmart` remains outside BullMatch scope.
 
-## Verified Statistics Foundation
-
-Applied migration:
-`20260906084340_add_bullmatch_verified_profile_statistics`
-
-Read models:
-- `bullmatch.published_bull_match_history`
-- `bullmatch.published_bull_opponent_history`
-- `bullmatch.bull_basic_stats`
-- `bullmatch.bull_recent_form`
-
-Authoritative statistics include only VERIFIED/PUBLISHED facts with verified results. Win rate is `wins / (wins + losses + draws)` and excludes NO_RESULT/CANCELLED. Recent form is latest five W/L/D.
-
-P1-007 rollback regression passed on shared Supabase with expected result 5 published matches, 1W/1L/1D, 1 no-result, 1 cancelled, 33.33% win rate, recent form LOSS/DRAW/WIN.
-
-## Current Work — BMI-APP-002
+## Current Work — BMI-APP-003
 
 Status: **REVIEW**
-Tracking: Issue #30
-Branch: `agent/bmi-app-002-auth-ui`
+Tracking: Issue #32
+Branch: `agent/bmi-app-003-api-data`
 
-Implemented:
-- Supabase Auth email/password login for pre-existing accounts
-- project publishable key only in browser
-- persistent local session
-- access-token validation
-- refresh-token renewal near expiry
-- local logout
-- Public mode for Dashboard/Bulls/Matches
-- Login gate for Manual Entry and Review Queue
-- return to intended protected screen after successful sign-in
-- Thai loading/error states
-- Settings shows actual signed-in email/session state
-- no public sign-up UI
+Applied migration:
+`20260906092707_add_bullmatch_controlled_api_bridge`
 
-## Authorization Rule
+Deployed Edge Function:
+- `bullmatch-api`
+- version 1
+- status ACTIVE
 
-Authentication is identity only.
+## API Boundary
 
-**SIGNED IN does not mean ADMIN.**
+The browser does not receive a service-role key and does not execute BullMatch database functions directly.
 
-APP-002 does not infer role from user metadata and does not grant data mutations. BullMatch role remains authoritative in `bullmatch.app_users` and must be resolved at the controlled server/API boundary in APP-003 before protected reads or writes become operational.
+Flow:
 
-## Security Boundary
+`GitHub Pages React app → bullmatch-api Edge Function → service-only public RPC bridge → bullmatch/bullmatch_private domain`
 
-- frontend contains no service-role/secret key
-- only Supabase publishable key is browser-visible
-- browser has zero direct domain table writes
-- `bullmatch_private` remains inaccessible to browser roles
-- privileged BullMatch RPCs are not wired directly to browser
-- statistics views remain service-role-only until controlled API wiring
-- authentication does not elevate application role
+The three bridge RPCs are:
+- `public.bullmatch_api_public_query`
+- `public.bullmatch_api_member`
+- `public.bullmatch_api_admin_command`
 
-## APP-002 Verification
+`PUBLIC`, `anon`, and `authenticated` have no EXECUTE permission on these functions. Only `service_role` may execute them.
 
-Current branch Web App workflow passed:
+Public API returns only verified/published read data. Protected requests validate the user's access token against Supabase Auth before resolving membership or accepting a command.
+
+ADMIN mutations are protected twice:
+1. Edge Function requires ACTIVE ADMIN membership.
+2. Existing BullMatch domain functions independently call `require_admin()` and write the private audit trail.
+
+The actor ID supplied to the database bridge is derived from the validated user token, never from browser JSON.
+
+## Production Data Wiring
+
+The deployed React application source now reads real API state for:
+- Dashboard counts
+- Bull list/search
+- Bull Profile
+- P1-007 statistics
+- recent form
+- Bull match history/opponents
+- published Matches list
+- Match Detail
+
+Signed-in role is resolved from `/me` using `bullmatch.app_users`.
+
+UI gates:
+- Manual Entry: ACTIVE ADMIN
+- Review shell: ACTIVE ADMIN or REVIEWER
+- authenticated alone grants no BullMatch application role
+
+Current Production records intentionally remain empty. The app therefore shows real zero/empty states rather than fabricated sample Bulls or Matches.
+
+## Verification
+
+### Database bridge
+Rollback-only test passed:
+- browser cannot invoke bridge RPC directly
+- service role can invoke bridge
+- membership lookup is server-owned
+- ACTIVE ADMIN command succeeds
+- REVIEWER mutation fails
+- audit actor/entity linkage is preserved
+- rollback leaves no fixture data
+
+Test: `supabase/tests/app_003_api_bridge.sql`
+
+### Production-network smoke test
+GitHub Actions Web App run #23 passed:
 - locked dependency install — PASS
-- TypeScript — PASS
-- Vite production build — PASS
+- TypeScript/Vite production build — PASS
+- Production Dashboard API — HTTP 200
+- expected Dashboard keys — PASS
+- `/me` without user token — HTTP 401
 
-Shared Supabase currently contains 0 production Auth users. No fake login/admin account was created just to make APP-002 pass.
+This proves the deployed Edge Function is reachable from external infrastructure and enforces the signed-out protected-route boundary.
+
+### Advisors
+Security: no WARN/ERROR introduced. Existing private-schema `RLS Enabled No Policy` INFO is intentional default deny.
+
+Reference: https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy
+
+Performance: no actionable WARN introduced. Existing `unused_index` INFO is expected before real workload accumulates.
+
+Reference: https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index
 
 ## Frontend Deployment
 
-Current production URL:
+Production URL:
 `https://aodxx.github.io/BullMatch-Intelligence/`
 
-APP-002 will deploy automatically after merge to `main` through the existing GitHub Pages workflow.
+APP-003 will deploy through the existing GitHub Pages workflow after merge to `main`.
 
 ## Next Gates
 
-1. Merge **BMI-APP-002** and verify Pages deployment
-2. Define/implement the controlled server/API boundary
-3. **BMI-APP-003 — Wire verified read data and ADMIN actions**
-4. Bootstrap the first real Auth account + BullMatch membership when operational access is required
+1. Merge/deploy **BMI-APP-003**
+2. Bootstrap the first real Auth user and add that exact UUID to `bullmatch.app_users` as ACTIVE ADMIN
+3. Add atomic operational forms for real data entry without partial multi-command writes
+4. **BMI-P1-008 — Review Backend Foundation**
+5. Phase 2 first permitted automated source connector
 
 ## Still Deferred
 
