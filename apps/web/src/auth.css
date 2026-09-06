@@ -1,0 +1,134 @@
+.notice-card.success {
+  border-color: #b8d8c7;
+  background: #edf7f1;
+  color: #275b43;
+}
+
+.user-button.signed-in {
+  background: #e1efe7;
+  border-color: #b8d8c7;
+  color: var(--success);
+}
+
+.auth-page {
+  min-height: calc(100vh - 130px);
+  display: grid;
+  place-items: center;
+  padding: 18px 0 30px;
+}
+
+.auth-card {
+  width: min(100%, 520px);
+  padding: 24px;
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.auth-brand .profile-avatar {
+  width: 72px;
+  height: 72px;
+  flex-basis: 72px;
+  border-radius: 22px;
+}
+
+.auth-brand h2 {
+  margin: 5px 0 0;
+  font-size: 26px;
+  color: var(--brand);
+}
+
+.auth-intro {
+  margin: 20px 0 18px;
+  color: var(--muted);
+  line-height: 1.75;
+  font-size: 14px;
+}
+
+.auth-form {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 7px;
+}
+
+.auth-form label > span {
+  color: #655750;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.auth-form input {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid #d9ccc1;
+  border-radius: 13px;
+  background: white;
+  color: var(--ink);
+  padding: 10px 13px;
+  outline: none;
+}
+
+.auth-form input:focus {
+  border-color: var(--brand-soft);
+  box-shadow: 0 0 0 3px rgba(123, 61, 45, .09);
+}
+
+.auth-error {
+  border: 1px solid #e4b8ae;
+  border-radius: 12px;
+  background: #fff1ee;
+  color: #8a382b;
+  padding: 11px 12px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.auth-submit {
+  width: 100%;
+  min-height: 50px;
+  margin-top: 2px;
+}
+
+.auth-note {
+  margin-top: 17px;
+  padding: 12px 13px;
+  border-radius: 13px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.secondary-button {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 13px;
+  border: 1px solid #ccb9ac;
+  background: var(--surface);
+  color: var(--brand);
+  font-weight: 800;
+}
+
+.secondary-button:hover {
+  border-color: var(--brand-soft);
+}
+
+@media (min-width: 760px) {
+  .auth-card {
+    padding: 30px;
+  }
+}
