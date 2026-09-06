@@ -1,0 +1,37 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+dist/
+build/
+coverage/
+
+# Local tooling
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Runtime/temp
+*.log
+.tmp/
+tmp/
+
+# Supabase local generated state
+.supabase/
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Local AI/output scratch
+.local-data/
+.local-evidence/
