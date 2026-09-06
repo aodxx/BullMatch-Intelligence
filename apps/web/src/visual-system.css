@@ -1,0 +1,532 @@
+/* BMI-APP-004 — Real Bull / Sports Intelligence / Motion visual rebaseline.
+   This file intentionally overrides the legacy component skin without changing API behavior. */
+
+:root {
+  --arena-0: #090807;
+  --arena-1: #12100e;
+  --arena-2: #1b1713;
+  --paper: #f3eee6;
+  --paper-strong: #fffaf2;
+  --ink-strong: #17120f;
+  --signal: #d7a33c;
+  --signal-soft: #f1c86f;
+  --oxide: #7b2f22;
+  --oxide-bright: #a64431;
+  --broadcast-line: rgba(255,255,255,.16);
+  --motion-fast: 180ms;
+  --motion-medium: 420ms;
+  --motion-slow: 14s;
+  --ease-arena: cubic-bezier(.2,.75,.2,1);
+  font-variant-numeric: tabular-nums;
+}
+
+html { background: #e9e1d6; }
+body {
+  background:
+    radial-gradient(circle at 80% -10%, rgba(123,47,34,.14), transparent 34rem),
+    linear-gradient(180deg, #eee7de 0%, #e7ded3 100%);
+}
+
+/* Brand: typography first; no mascot/cartoon mark. */
+.brand-mark {
+  position: relative;
+  overflow: hidden;
+  border-radius: 3px;
+  background: transparent !important;
+  border: 1px solid rgba(241,200,111,.42) !important;
+  color: var(--signal-soft) !important;
+}
+.brand-mark svg { display: none; }
+.brand-mark::before {
+  content: "BM";
+  font: 900 13px/1 system-ui, sans-serif;
+  letter-spacing: -.08em;
+}
+.brand strong {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -.035em;
+  text-transform: uppercase;
+}
+.brand span { letter-spacing: .22em; }
+
+.sidebar {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.1), rgba(0,0,0,.45)),
+    var(--arena-1);
+  border-right: 1px solid rgba(255,255,255,.07);
+}
+.side-nav button,
+.settings-button {
+  border-radius: 2px;
+  border-left: 2px solid transparent;
+  transition: background var(--motion-fast), color var(--motion-fast), border-color var(--motion-fast), transform var(--motion-fast);
+}
+.side-nav button:hover,
+.settings-button:hover { transform: translateX(2px); }
+.side-nav button.active,
+.settings-button.active {
+  background: linear-gradient(90deg, rgba(215,163,60,.14), transparent 82%);
+  border-left-color: var(--signal);
+  color: #fff4dc;
+}
+
+.topbar {
+  height: 66px;
+  background: rgba(238,231,222,.9);
+  border-bottom: 1px solid rgba(55,42,34,.14);
+  backdrop-filter: blur(18px) saturate(120%);
+}
+.user-button {
+  border-radius: 3px;
+  background: var(--arena-1);
+  color: var(--signal-soft);
+  border-color: rgba(0,0,0,.18);
+}
+
+main { max-width: 1240px; padding-top: 18px; }
+
+/* Hero is atmosphere, not bull identity. The CC0 source is documented in docs/VISUAL-SYSTEM.md. */
+.hero-card {
+  isolation: isolate;
+  min-height: clamp(320px, 46vw, 520px);
+  border-radius: 4px;
+  padding: clamp(28px, 5vw, 62px);
+  justify-content: flex-end;
+  background: var(--arena-0);
+  box-shadow: 0 24px 55px rgba(32,20,13,.22);
+}
+.hero-card::before {
+  content: "";
+  position: absolute;
+  inset: -3%;
+  z-index: -3;
+  background-image: url("https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/Bull_Fighting.jpg/1280px-Bull_Fighting.jpg");
+  background-size: cover;
+  background-position: 54% 47%;
+  filter: saturate(.72) contrast(1.13) brightness(.72);
+  transform: scale(1.045);
+  animation: arenaDrift var(--motion-slow) ease-in-out infinite alternate;
+}
+.hero-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, rgba(7,6,5,.95) 0%, rgba(7,6,5,.74) 42%, rgba(7,6,5,.24) 73%, rgba(7,6,5,.5) 100%),
+    linear-gradient(0deg, rgba(7,6,5,.92), transparent 62%);
+}
+.hero-card > div:first-child {
+  position: relative;
+  max-width: 760px;
+  padding-left: clamp(16px, 2.2vw, 28px);
+}
+.hero-card > div:first-child::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 3px;
+  bottom: 4px;
+  width: 3px;
+  background: var(--signal);
+  box-shadow: 0 0 26px rgba(215,163,60,.42);
+}
+.hero-card h1 {
+  max-width: 760px;
+  margin: 10px 0 12px;
+  font-size: clamp(38px, 6vw, 74px);
+  line-height: .98;
+  letter-spacing: -.055em;
+  font-weight: 950;
+  text-wrap: balance;
+  text-shadow: 0 4px 22px rgba(0,0,0,.38);
+}
+.hero-card p {
+  max-width: 650px;
+  color: rgba(255,255,255,.8);
+  font-size: clamp(14px, 1.7vw, 17px);
+}
+.hero-badge {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  border-radius: 2px;
+  border-color: rgba(255,255,255,.24);
+  background: rgba(10,9,8,.54);
+  backdrop-filter: blur(10px);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.eyebrow { letter-spacing: .18em; }
+.eyebrow.light { color: var(--signal-soft); }
+
+/* Scoreboard stats: no floating pastel cards. */
+.stat-grid {
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 1px;
+  margin: 1px 0 38px;
+  background: rgba(35,27,22,.16);
+  border: 1px solid rgba(35,27,22,.15);
+}
+.stat-card {
+  position: relative;
+  min-height: 148px;
+  border: 0;
+  border-radius: 0;
+  background: rgba(255,250,242,.9);
+  box-shadow: none;
+  padding: 22px 20px 18px;
+  overflow: hidden;
+  animation: scoreReveal .52s var(--ease-arena) both;
+}
+.stat-card:nth-child(2){animation-delay:.05s}
+.stat-card:nth-child(3){animation-delay:.1s}
+.stat-card:nth-child(4){animation-delay:.15s}
+.stat-card::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--oxide), var(--signal));
+  transform-origin: left;
+  transform: scaleX(.28);
+  transition: transform var(--motion-medium) var(--ease-arena);
+}
+.stat-card:hover::after { transform: scaleX(1); }
+.stat-card strong,
+.metric-panel strong {
+  color: var(--ink-strong);
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1;
+  letter-spacing: -.055em;
+  font-weight: 950;
+}
+.stat-card span,
+.metric-panel span { text-transform: uppercase; letter-spacing: .08em; font-weight: 800; font-size: 10px; }
+
+.section-title { margin-top: 36px; }
+.section-title h2 {
+  font-size: clamp(24px, 3vw, 36px);
+  letter-spacing: -.035em;
+  font-weight: 900;
+}
+
+/* Action rails replace generic tile language. */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 0;
+  border-top: 1px solid rgba(33,25,20,.22);
+  border-bottom: 1px solid rgba(33,25,20,.22);
+}
+.quick-card {
+  position: relative;
+  min-height: 112px;
+  border: 0;
+  border-right: 1px solid rgba(33,25,20,.16);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 18px 16px;
+  transition: background var(--motion-fast), transform var(--motion-fast);
+}
+.quick-card:last-child { border-right: 0; }
+.quick-card:hover {
+  border-color: rgba(33,25,20,.16);
+  background: rgba(255,250,242,.72);
+  transform: none;
+}
+.quick-icon {
+  border-radius: 2px;
+  background: var(--arena-1);
+  color: var(--signal-soft);
+}
+.quick-card strong { font-size: 17px; font-weight: 900; }
+
+/* General surfaces become editorial/data planes rather than identical rounded cards. */
+.panel {
+  border-radius: 4px;
+  border-color: rgba(49,37,30,.16);
+  background: rgba(255,250,242,.88);
+  box-shadow: 0 8px 24px rgba(49,31,20,.045);
+}
+.primary-button,
+.secondary-button,
+.search-box,
+.filter-button,
+.form-grid input,
+.form-grid select,
+.form-grid textarea,
+.segmented {
+  border-radius: 3px !important;
+}
+.primary-button {
+  background: var(--arena-1);
+  box-shadow: none;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.primary-button:hover:not(:disabled) { background: var(--oxide); }
+
+.empty-state { min-height: 220px; }
+.empty-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 3px;
+  background: var(--arena-1);
+  color: var(--signal-soft);
+}
+.empty-icon svg { display: none; }
+.empty-icon::before {
+  content: "DATA";
+  font-size: 10px;
+  letter-spacing: .16em;
+  font-weight: 950;
+}
+
+/* Bull profile: never imply identity with a generic/cartoon bull. */
+.profile-hero {
+  position: relative;
+  min-height: 250px;
+  align-items: flex-end;
+  gap: 24px;
+  padding: clamp(22px, 4vw, 42px);
+  overflow: hidden;
+  background:
+    linear-gradient(100deg, rgba(10,9,8,.98), rgba(20,17,14,.86)),
+    var(--arena-1);
+  color: white;
+}
+.profile-hero::after {
+  content: "VERIFIED PROFILE";
+  position: absolute;
+  top: 20px;
+  right: 22px;
+  color: rgba(255,255,255,.22);
+  font-size: clamp(18px, 3vw, 34px);
+  font-weight: 950;
+  letter-spacing: .04em;
+}
+.profile-hero .profile-avatar {
+  width: 124px;
+  height: 150px;
+  flex-basis: 124px;
+  border-radius: 2px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.18);
+  color: rgba(255,255,255,.68);
+  text-align: center;
+  padding: 10px;
+}
+.profile-hero .profile-avatar svg { display: none; }
+.profile-hero .profile-avatar::before {
+  content: "ยังไม่มี\A ภาพยืนยัน";
+  white-space: pre;
+  font-size: 10px;
+  line-height: 1.5;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.profile-copy h2 {
+  color: white;
+  font-size: clamp(30px, 5vw, 58px);
+  line-height: 1;
+  letter-spacing: -.055em;
+  font-weight: 950;
+}
+.profile-copy p { color: rgba(255,255,255,.68); }
+.profile-hero .status-chip.neutral {
+  background: var(--signal);
+  color: #1a1208;
+  border-radius: 2px;
+}
+
+.detail-grid { gap: 1px; background: rgba(44,33,26,.15); }
+.metric-panel {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 132px;
+}
+
+.data-list { gap: 1px; }
+.data-card,
+.history-card {
+  border-radius: 0 !important;
+  border-left: 3px solid transparent !important;
+  transition: background var(--motion-fast), border-color var(--motion-fast), transform var(--motion-fast);
+}
+.data-card:hover {
+  border-left-color: var(--signal) !important;
+  transform: translateX(3px);
+}
+.record-stats b { color: var(--oxide); }
+
+/* Match detail becomes an arena composition. Generic bull glyphs are deliberately removed. */
+.match-card {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(215,163,60,.15), transparent 22rem),
+    linear-gradient(120deg, #080706, #17120f 52%, #080706);
+  color: white;
+  border: 0;
+  min-height: 390px;
+  padding: clamp(22px, 4vw, 42px);
+}
+.match-card::before,
+.match-card::after {
+  content: "";
+  position: absolute;
+  inset: auto auto 0 50%;
+  width: 1px;
+  height: 78%;
+  background: linear-gradient(transparent, rgba(215,163,60,.44), transparent);
+}
+.match-card::after {
+  inset: 50% auto auto 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.11), transparent);
+}
+.match-meta { position: relative; z-index: 2; color: rgba(255,255,255,.64); }
+.match-meta .status-chip.neutral {
+  border-radius: 2px;
+  background: rgba(215,163,60,.16);
+  color: var(--signal-soft);
+  border: 1px solid rgba(215,163,60,.35);
+}
+.versus {
+  position: relative;
+  z-index: 2;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: clamp(56px,10vw,150px);
+  min-height: 250px;
+  padding: 38px 0;
+}
+.versus::after {
+  content: "VS";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%) skewX(-8deg);
+  color: var(--signal-soft);
+  font-size: clamp(34px, 6vw, 70px);
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: -.08em;
+  text-shadow: 0 0 28px rgba(215,163,60,.25);
+  animation: vsPulse 2.4s ease-in-out infinite;
+}
+.versus > div { min-width: 0; }
+.versus strong {
+  margin-top: 16px;
+  max-width: 260px;
+  color: white;
+  font-size: clamp(20px,3vw,36px);
+  line-height: 1.05;
+  font-weight: 950;
+  letter-spacing: -.035em;
+}
+.versus small { color: rgba(255,255,255,.58); font-size: 11px; }
+.bull-circle {
+  width: clamp(104px,15vw,168px);
+  height: clamp(104px,15vw,168px);
+  border-radius: 2px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.16);
+  color: rgba(255,255,255,.58);
+  padding: 10px;
+}
+.bull-circle svg { display: none; }
+.bull-circle::before {
+  content: "NO VERIFIED\A PHOTO";
+  white-space: pre;
+  font-size: 9px;
+  line-height: 1.45;
+  letter-spacing: .12em;
+  font-weight: 900;
+}
+.result-placeholder {
+  position: relative;
+  z-index: 2;
+  border-top-color: rgba(255,255,255,.14);
+  color: var(--signal-soft);
+  font-size: 15px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.notice-card { border-radius: 3px; }
+.step > span { border-radius: 2px; }
+.status-chip { border-radius: 2px; }
+
+.bottom-nav {
+  background: rgba(13,11,10,.96) !important;
+  border-top-color: rgba(255,255,255,.1) !important;
+  color: rgba(255,255,255,.58);
+  backdrop-filter: blur(18px);
+}
+.bottom-nav button { color: rgba(255,255,255,.58) !important; }
+.bottom-nav button.active { color: var(--signal-soft) !important; }
+
+@keyframes arenaDrift {
+  from { transform: scale(1.045) translate3d(-.5%,0,0); }
+  to { transform: scale(1.085) translate3d(1.2%,-.7%,0); }
+}
+@keyframes scoreReveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes vsPulse {
+  0%,100% { opacity: .72; transform: translate(-50%,-50%) skewX(-8deg) scale(.97); }
+  50% { opacity: 1; transform: translate(-50%,-50%) skewX(-8deg) scale(1.035); }
+}
+
+@media (max-width: 780px) {
+  .hero-card { min-height: 390px; padding: 26px 20px; }
+  .hero-card::before { background-position: 61% center; }
+  .hero-card::after {
+    background:
+      linear-gradient(0deg, rgba(7,6,5,.97) 0%, rgba(7,6,5,.72) 55%, rgba(7,6,5,.18) 100%),
+      linear-gradient(90deg, rgba(7,6,5,.65), transparent);
+  }
+  .hero-card h1 { font-size: clamp(36px, 12vw, 58px); }
+  .hero-badge { top: 14px; right: 14px; }
+  .stat-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .quick-grid { grid-template-columns: 1fr; }
+  .quick-card { border-right: 0; border-bottom: 1px solid rgba(33,25,20,.14); }
+  .quick-card:last-child { border-bottom: 0; }
+  .profile-hero { min-height: 230px; align-items: flex-end; }
+  .profile-hero::after { font-size: 17px; }
+  .profile-hero .profile-avatar { width: 88px; height: 112px; flex-basis: 88px; }
+  .match-card { min-height: 360px; padding: 20px 14px; }
+  .versus { gap: 52px; }
+  .versus strong { font-size: 19px; }
+}
+
+@media (max-width: 430px) {
+  main { padding-left: 10px; padding-right: 10px; }
+  .stat-card { min-height: 132px; padding: 17px 14px; }
+  .profile-hero { gap: 13px; }
+  .profile-copy h2 { font-size: 28px; }
+  .versus { gap: 46px; }
+  .bull-circle { width: 92px; height: 104px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+  .hero-card::before { transform: none; }
+}
