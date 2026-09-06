@@ -105,8 +105,8 @@ Deliverables completed:
 
 ### BMI-P0-007 — Entity Resolution Strategy
 Owner: Primary Maintainer
-Status: REVIEW
-Tracking: Issue #3
+Status: DONE
+Tracking: Issue #3 / PR #9
 
 Deliverables completed:
 - Thai-safe normalization rules
@@ -124,17 +124,22 @@ Deliverables completed:
 - contract validation coverage
 
 ### BMI-P0-008 — Review Queue UX Specification
-Owner: Unassigned
-Status: READY
+Owner: Primary Maintainer
+Status: IN PROGRESS
 Tracking: Issue #4
 
 Deliverables:
-- new match review
+- review information architecture and queue filters
+- new match/entity review
+- entity-match review
 - possible duplicate review
-- possible same-bull review
 - conflict review
 - evidence viewer requirements
-- approve/reject/edit/merge flows
+- approve/reject/edit/link/create actions
+- merge/split destructive workflows
+- optimistic concurrency/idempotent command rules
+- audit/history requirements
+- accessibility and mobile-review requirements
 
 ## Phase 1 — Core Verified Database
 
