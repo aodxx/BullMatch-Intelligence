@@ -20,10 +20,10 @@ Key tracking:
 ## Phase 1 — Core Verified Database / Community Rebaseline
 
 ### BMI-P1-001 — Shared Supabase Bootstrap
-Status: DONE — Issue #15 / PR #16
+Status: DONE — PR #16
 
 ### BMI-P1-002 — Core Database Migrations
-Status: DONE — Issue #17 / PR #18
+Status: DONE — PR #18
 
 ### BMI-P1-003 — Seed / Reference Data
 Status: DEFERRED — NO REQUIRED MVP SEED YET
@@ -33,127 +33,120 @@ Rules:
 - add only stable reference/config data when a real dependency exists
 
 ### BMI-P1-004 — Admin Authentication & Roles
-Status: DONE — Issue #19 / PR #20
+Status: DONE — PR #20
 
 ### BMI-P1-005 — Bull/Camp/Owner/Venue CRUD
-Status: DONE — Issue #21 / PR #22
+Status: DONE — PR #22
 
 ### BMI-P1-006 — Manual Match Entry & Verification
-Status: DONE — Issue #23 / PR #24
+Status: DONE — PR #24
 
 ### BMI-P1-007 — Bull Profile & Basic Statistics
-Status: DONE — Issue #28 / PR #29
+Status: DONE — PR #29
 
 ### BMI-P1-008 — Review Backend Foundation
 Status: BLOCKED / RE-SCOPED
 
 Reason:
-- the original operator-centric review assumptions are now too narrow
-- implementation must follow the Community Data Network + atomic-claim + contributor-trust redesign
+- original operator-centric review assumptions are too narrow
+- implementation must follow Community Data Network + atomic-claim + contributor-trust contracts
 
 Resume after:
-- BMI-P1-010 Product Rebaseline v0.3
 - BMI-P1-011 Database Schema v0.2
 - BMI-P1-012 Contribution & Trust Architecture
 
-Target scope when resumed:
+Target scope:
 - review case API/domain operations
 - idempotent review commands
 - optimistic concurrency
 - evidence access
-- claim-level accept/reject/conflict handling
+- claim-level accept/reject/conflict/supersede handling
 - contributor/community review context
 - merge/split preview foundation
 
-### BMI-P1-009 — Thai Bullfighting Domain Rebaseline & Open Contribution Readiness
+### BMI-P1-009 — Thai Bullfighting Domain Rebaseline
 Status: DONE — PR #36
-Owner: Primary Maintainer (ChatGPT)
-Branch: `agent/bmi-p1-009-thai-bullfighting-domain-rebaseline`
 
 Deliverables:
 - `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md`
 - `docs/THAI-BULLFIGHTING-FIELD-VALIDATION.md`
 
 Result:
-- BullMatch is no longer modeled as only bull + match + winner
-- bull identity, temporal affiliations, comparison day, pairing, program versions, result reasons, local terminology and evidence uncertainty are first-class product concerns
+- stable bull identity independent of name
+- temporal owner/camp/keeper context
+- traits/horn/yod/style observations
+- comparison day, pairing, program versions, actual match and result as separate domain concepts
+- evidence uncertainty and venue/rule variation treated explicitly
 
 ### BMI-P1-010 — Product Rebaseline v0.3: Community Big Data + Intelligence
 Status: DONE — PR #38
-Owner: Primary Maintainer (ChatGPT autonomous run)
-Branch: `agent/bmi-p1-010-product-rebaseline-v0-3`
 
 Result:
-- PRD v0.3 defines the three-layer product model: Community Data Network / Verified BullMatch Big Data / Intelligence Products
-- incorporates Thai bullfighting temporal/domain lifecycle and evidence-first atomic claims
-- defines contributor value exchange, multidimensional trust and `Contribute to Unlock` readiness
-- defines monetization lanes: Pro, reports, API, venue/camp/media tools and compatible sponsorship
-- preserves legal/product boundary: analytics/data platform, not bet-taking/wallet/settlement/payout service
-- defines Matchup Intelligence as explainable, evidence-aware analytics rather than guaranteed picks
-- makes real-bull / real-venue sports-intelligence imagery and purposeful motion a product requirement
-- defines BMI-P1-011 as the next additive schema contract
-
-Files:
-- `PRD.md`
-- `PROJECT_STATUS.md`
-- `TASKS.md`
-
-Validation:
-- documentation/product-contract only; no migration/API/runtime code changed
-- no production data fabricated
-- no secrets/personal credentials introduced
-- checked against `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md` and autonomous runbook
+- Community Data Network / Verified Big Data / Intelligence Products
+- atomic claims and evidence-first verification
+- contributor value exchange and multidimensional trust
+- monetization lanes without bet-taking/wallet/settlement/payout functionality
+- real-bull / sports-intelligence / motion design mandate
 
 ### BMI-P1-011 — Database Schema v0.2: Community Claims + Temporal Domain
-Status: IN PROGRESS
+Status: DONE — PR #39
 Owner: Primary Maintainer (ChatGPT autonomous run)
 Branch: `agent/bmi-p1-011-database-schema-v0-2`
 
-Dependencies satisfied:
-- BMI-P1-009 DONE
-- BMI-P1-010 DONE
-
-Scope:
-- additive schema plan for community submissions
-- atomic claims and claim evidence
-- temporal bull affiliations
-- physical/style observations
-- lineage claims
-- comparison sessions / pairing agreements / program versions
-- contributor reputation dimensions
-- anti-duplication / identity resolution compatibility
-- migration and backward-compatibility plan for current production schema
-
-Files/areas:
+Deliverables:
 - `docs/DATABASE-SCHEMA.md`
-- `docs/DATABASE-SCHEMA-NAMESPACE-OVERLAY.md`
-- `docs/THAI-BULLFIGHTING-DOMAIN-MODEL.md` (reference only unless a correction is required)
-- `supabase/migrations/` (inspection only in this contract-design task; no production migration unless separately justified)
-- `TASKS.md`
+- `docs/DATABASE-SCHEMA-V0.2-MIGRATION-PLAN.md`
+- `docs/DATABASE-SCHEMA-NAMESPACE-OVERLAY.md` updated to historical status
 - `PROJECT_STATUS.md`
+- `TASKS.md`
 
-No destructive rewrite of working production data without explicit migration/rollback design.
+Result:
+- additive/backward-compatible contract over active production schema
+- first-class community submissions/evidence origins
+- claims generalized beyond AI extraction
+- contributor participation separate from privileged app roles
+- temporal bull affiliations and relevant people/keeper/handler entities
+- real-bull media + private external identifiers
+- trait/horn/yod and `ทางชน` observations
+- lineage/parentage graph
+- first-class comparison session -> pairing -> program version -> actual match lifecycle
+- versioned venue/event rule profiles
+- multidimensional contributor reputation + profile claims + abuse signals
+- controlled promotion/provenance and explicit migration/rollback plan
+
+Validation:
+- inspected current production canonical/private migrations and service-only API bridge
+- no production migration/API/runtime changes in this contract task
+- no production data fabricated
+- no secrets introduced
+- shared-Supabase isolation preserved
 
 ### BMI-P1-012 — Contribution & Trust Architecture
-Status: BLOCKED — depends on BMI-P1-011
-Autonomous priority after P1-011.
+Status: READY — AUTONOMOUS PRIORITY 1
+
+Dependencies satisfied after P1-011 integration.
 
 Scope:
-- community submission flow
-- AI-assisted contribution from photos/programs/links/text
-- moderation and review lifecycle
+- field-friendly community submission flow
+- AI-assisted extraction + compact user confirmation
+- submission/claim/moderation/review lifecycle
 - contributor reputation by topic/venue/region/evidence quality
-- owner/camp profile claims without control over canonical adverse history
-- anti-spam, abuse and duplicate-submission controls
+- owner/camp/venue profile claims without control over canonical adverse history
+- anti-spam, duplicate flooding, evidence reuse and abuse controls
 - verified-contribution credit model
-- `Contribute to Unlock` readiness
+- `Contribute to Unlock` readiness without rewarding raw submission volume
+- contributor self-service API/security boundaries
+
+Expected deliverable:
+- `docs/CONTRIBUTION-TRUST-ARCHITECTURE.md`
+- updates to review/API/domain contracts as needed, without implementing production migrations unless a separate task explicitly owns them
 
 ---
 
 ## App / Frontend Track
 
 ### BMI-APP-001 — Frontend Foundation & First Screens
-Status: DONE — Issue #25 / PR #26
+Status: DONE — PR #26
 Deployment: GitHub Pages ACTIVE
 URL: `https://aodxx.github.io/BullMatch-Intelligence/`
 
@@ -162,45 +155,29 @@ Status: DONE — PR #31
 
 ### BMI-APP-003 — Controlled API + Production Data Wiring
 Status: DONE — PR #33
-Deployment: GitHub Pages run #26 PASS
 
 Completed:
-- migration `20260906092707_add_bullmatch_controlled_api_bridge`
-- service-role-only RPC bridge; browser roles have no EXECUTE
-- `bullmatch-api` Edge Function v1 ACTIVE
-- custom user-token validation for protected routes
-- public verified-data routes for Dashboard/Bulls/Bull/Matches/Match/Venues
-- `/me` server-owned BullMatch membership and role
-- ADMIN dispatcher derives actor from validated Auth user
-- database ADMIN checks/audit remain authoritative
-- Dashboard/Bulls/Bull Profile/Matches/Match Detail read Production API
-- Manual Entry gated by ACTIVE ADMIN
-- Review shell gated by ACTIVE ADMIN/REVIEWER
-- production API smoke test in GitHub Actions
+- service-role-only RPC bridge
+- `bullmatch-api` Edge Function ACTIVE
+- public verified-data routes
+- `/me` server-owned BullMatch membership/role
+- ADMIN command bridge with domain-level authorization/audit
+- production web app reads production API
 - no fake production Bull/Match data
 
-Key files:
-- `supabase/migrations/20260906092707_add_bullmatch_controlled_api_bridge.sql`
-- `supabase/functions/bullmatch-api/index.ts`
-- `supabase/tests/app_003_api_bridge.sql`
-- `supabase/APP-003-VERIFICATION.md`
-- `apps/web/src/api.ts`
-
 ### BMI-APP-004 — Visual Design Rebaseline: Real Bull / Sports Intelligence / Motion
-Status: BLOCKED — product requirement dependency BMI-P1-010 is satisfied; execution order remains after BMI-P1-012 unless independent design-system work is explicitly prioritized.
+Status: BLOCKED BY EXECUTION ORDER — product dependency satisfied; execute after BMI-P1-012 unless explicitly reprioritized.
 
 Mandate:
 - real bull and real venue imagery where rights/source permit
 - no cute/cartoon bull identity
-- no generic repeated dashboard/card template language
+- no generic repeated dashboard/card-template language
 - high-energy sports-intelligence / broadcast-graphics feel
 - real bull identity centered in profile and matchup experiences
 - strong typography, statistics, layered imagery and data visualization
 - purposeful transitions, stat reveals, matchup motion, timelines and micro-interactions
 - reduced-motion and mobile-performance behavior required
 - flagship `Matchup Intelligence` visual experience
-
-Deliverables should include reusable visual system rules, motion language, image treatment, typography hierarchy and implemented production-facing components rather than mockups only.
 
 ---
 
@@ -212,56 +189,30 @@ Status: DONE — Issue #27
 ### BMI-OPS-002 — Bootstrap First Production ADMIN
 Status: DONE
 
-Verified:
-- intended real Supabase Auth user located in project `kaanguobjhlusjvgbowt`
-- Auth email is confirmed
-- exact Auth UUID linked to `bullmatch.app_users`
-- role = `ADMIN`
-- status = `ACTIVE`
-- `bullmatch_api_member` returns member/ADMIN/ACTIVE
-- authenticated role check returns authorized = true
-- no password, token, email, or Auth UUID committed to the public repository
-
-Runbook: `docs/FIRST-ADMIN-BOOTSTRAP.md`
-
 ### BMI-OPS-003 — Autonomous Hourly Development Continuity
 Status: DONE
-
-Purpose:
-- allow scheduled runs to continue normal BullMatch development without requiring the owner to repeatedly type “continue”
-- make GitHub the durable source of next-step context instead of relying on chat memory alone
-
-Runbook:
-- `docs/AUTO-RUN-RUNBOOK.md`
-
-Rules:
-- autonomous runs read repository state before work
-- follow explicit priority order in the runbook
-- preserve Task ID/branch/test/handoff discipline
-- record blockers precisely and move to another safe task when possible
-- do not repeat the same unresolved external blocker every run
+Runbook: `docs/AUTO-RUN-RUNBOOK.md`
 
 ---
 
 ## Phase 2 — First Automated Collection Pipeline
 
-Status: PLANNED — follows stabilization of the community/domain contracts.
+Status: PLANNED — follows stabilization of community/domain/review contracts.
 
 Planned sequence:
 - select first permitted source
 - implement connector
-- raw source item/evidence persistence
-- AI structured extraction
+- raw source/evidence persistence
+- extraction
 - entity matching
 - duplicate detection
 - verification/review routing
-- scheduled collection run
+- scheduled collection
 - operator report
 
 ## Phase 3 — Multi-Source Expansion
 
 - additional approved connectors
-- YouTube metadata/transcripts where permitted
 - discovery engine
 - multi-source corroboration/conflicts
 - daily operations reporting
@@ -269,37 +220,36 @@ Planned sequence:
 ## Phase 4 — Intelligence Products
 
 - matchup intelligence
-- rankings and opponent-adjusted form
-- head-to-head / style-observation analysis
+- opponent-adjusted form
+- shared-opponent/style analysis
 - camp/venue analysis
 - historical trends
 - evidence completeness/confidence
 - advanced reports
-- API and B2B data surfaces
+- API/B2B data surfaces
 - natural-language analysis over verified data
 
 ## Autonomous Priority Reference
 
-Unless a production/security blocker is more urgent, use:
+Unless a production/security blocker is more urgent:
 
-1. BMI-P1-011 — Database Schema v0.2
-2. BMI-P1-012 — Contribution & Trust Architecture
-3. BMI-APP-004 — Visual Design Rebaseline
-4. BMI-P1-008 — Review Backend Foundation, re-scoped
-5. Community contribution implementation
-6. Automated collection pipeline
-7. Intelligence products
+1. BMI-P1-012 — Contribution & Trust Architecture
+2. BMI-APP-004 — Visual Design Rebaseline
+3. BMI-P1-008 — Review Backend Foundation, re-scoped
+4. Community contribution migration/API/UI implementation
+5. Automated collection pipeline
+6. Intelligence products
 
 Canonical autonomous operating instructions: `docs/AUTO-RUN-RUNBOOK.md`.
 
 ## Assignment Rule
 
-A contributor may claim only one READY Task ID at a time unless the primary maintainer explicitly coordinates non-overlapping work.
+A contributor may claim only one READY Task ID at a time unless the primary maintainer coordinates non-overlapping work.
 
 When a task starts:
 1. record owner
 2. mark IN PROGRESS
 3. create `agent/<task-id>-...` branch
 4. stay inside scope
-5. run checks/tests
+5. run relevant checks/tests
 6. submit PR/handoff
