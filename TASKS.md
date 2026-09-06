@@ -8,167 +8,89 @@ This file is the high-level project map. GitHub Issues/PRs track execution.
 Owner: Primary Maintainer
 Status: DONE
 
-Completed:
-- repository structure
-- `AGENTS.md`
-- multi-agent Task ID/branch/PR rules
-- issue/PR templates
-- shared status/handoff workflow
-- Google Drive handoff structure
-
 ### BMI-P0-002 — Database Schema v0.1
 Owner: Primary Maintainer
 Status: DONE
 Tracking: Issue #1 / PR #5
-
-Completed:
-- canonical domain model
-- source/evidence/candidate/review/provenance model
-- historical match snapshots
-- result integrity model
-- source idempotency strategy
-- indexes/constraints/RLS assumptions
-- merge/split identity history
-- migration plan
 
 ### BMI-P0-003 — AI Agent & Verification Contracts
 Owner: Primary Maintainer
 Status: DONE
 Tracking: Issue #2 / PR #6
 
-Completed:
-- normalized ingestion contract
-- extraction/claim contract
-- entity-match contract
-- duplicate-detection contract
-- verification contract
-- review subject reference
-- agent run/error contracts
-- provider abstraction
-- retry/idempotency/conflict rules
-- contract CI
-
 ### BMI-P0-004 — PRD v0.2
 Owner: Primary Maintainer
 Status: DONE
 
-Completed:
-- product goals/users
-- core workflows
-- MVP boundary
-- functional/non-functional requirements
-- automation requirements
-- shared Supabase requirements
-- success measures
-- phase plan
-
 ### BMI-P0-005 — Architecture v0.2
 Owner: Primary Maintainer
 Status: DONE
-
-Completed:
-- component/data-flow boundaries
-- trust zones
-- API/worker boundaries
-- scheduler/storage strategy
-- shared contract architecture
-- shared Supabase tenancy and isolation model
 
 ### BMI-P0-006 — Source Registry & Connector Contract
 Owner: Primary Maintainer
 Status: DONE
 Tracking: Issue #7 / PR #8
 
-Completed:
-- source policy vs health state
-- polling/cursor model
-- transactional cursor commit rule
-- rate-limit/backoff metadata
-- secret boundary
-- deterministic connector dedupe ownership
-- operator-upload/search-discovery boundaries
-- first-connector readiness checklist
-
 ### BMI-P0-007 — Entity Resolution Strategy
 Owner: Primary Maintainer
 Status: DONE
 Tracking: Issue #3 / PR #9
-
-Completed:
-- Thai-safe normalization
-- candidate generation
-- positive/negative/hard-conflict signals
-- conservative auto-link/review/no-match policy
-- source-native identity mapping
-- alias lifecycle
-- human-controlled reversible merge/split
-- calibration/golden fixture plan
 
 ### BMI-P0-008 — Review Queue UX Specification
 Owner: Primary Maintainer
 Status: DONE
 Tracking: Issue #4 / PR #12
 
-Completed:
-- queue/detail information architecture
-- evidence viewer
-- new match/entity review
-- entity-match/duplicate/conflict review
-- data-quality review
-- merge/split impact flows
-- idempotent review commands
-- optimistic concurrency
-- audit/reopen behavior
-- mobile/accessibility requirements
-
 ### BMI-P0-009 — Shared Supabase Tenancy Adaptation
 Owner: Primary Maintainer
 Status: DONE
 Tracking: Issue #10 / PR #11
 
-Completed:
-- selected existing `aodxx's Project` as BullMatch shared host
-- kept `freshmart` outside BullMatch scope
-- `bullmatch` / `bullmatch_private` namespace isolation
-- shared `auth.users` + app-scoped BullMatch membership
-- Data API/RLS/isolation rules
-- namespace overlay for original database schema
-- host inventory/advisor checks
-
 ### BMI-P0-010 — Phase 0 Sign-off
 Owner: Primary Maintainer
-Status: REVIEW
-Tracking: Issue #13
-
-Deliverables:
-- final PRD/status/task reconciliation
-- Phase 0 exit confirmation
-- Phase 1 handoff
+Status: DONE
+Tracking: Issue #13 / PR #14
 
 ---
 
 ## Phase 1 — Core Verified Database
 
 ### BMI-P1-001 — Shared Supabase Bootstrap
-Status: READY AFTER P0-010 MERGE
+Owner: Primary Maintainer
+Status: REVIEW
+Tracking: Issue #15
 
-Scope:
-- re-check shared host inventory
-- create `bullmatch` and `bullmatch_private` schemas through migration
-- create minimal app membership foundation
-- establish grants/RLS baseline
-- add isolation tests
-- run security/performance advisors
+Completed:
+- selected/rechecked shared host `aodxx's Project`
+- created `bullmatch` and `bullmatch_private` schemas through migration
+- created `bullmatch.app_users` linked to shared `auth.users`
+- enabled RLS on membership table
+- authenticated users can read only their own membership row through RLS
+- authenticated browser role has no direct membership write privileges
+- `anon`/`authenticated` have no usage on `bullmatch_private`
+- future default privileges are private-by-default and service-role accessible
+- isolation checks passed
+- Supabase Security Advisor passed with no findings
+- Supabase Performance Advisor passed with no findings
+- migration version recorded: `20260906052726`
+
+Key files:
+- `supabase/migrations/20260906052726_bootstrap_bullmatch_shared_tenancy.sql`
+- `supabase/tests/p1_001_shared_tenancy_isolation.sql`
+- `supabase/P1-001-VERIFICATION.md`
 
 ### BMI-P1-002 — Core Database Migrations
-Status: BLOCKED BY P1-001
+Status: READY AFTER P1-001 MERGE
 
 Scope:
-- owners/camps/bulls/venues/events + aliases
-- matches/participants/results
-- review workflow
-- source/evidence/agent/candidate/provenance/runtime tables
-- indexes/integrity helpers
+- owners/camps/bulls/venues/events + aliases in `bullmatch`
+- matches/participants/results in `bullmatch`
+- review cases/actions including concurrency/idempotency fields
+- source/evidence/agent/candidate/provenance/runtime tables in `bullmatch_private`
+- indexes and integrity helpers
+- explicit grants/RLS policies
+- migration/isolation/integrity tests
+- advisors after DDL
 
 ### BMI-P1-003 — Seed / Reference Data
 Status: BLOCKED BY P1-002
