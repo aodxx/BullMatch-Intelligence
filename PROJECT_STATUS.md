@@ -10,7 +10,7 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 1 — Core Verified Database**
 
-Overall status: **CONTROLLED DOMAIN CRUD APPLIED / REVIEW READY**
+Overall status: **MANUAL MATCH WORKFLOW APPLIED / REVIEW READY**
 
 ## Completed Gates
 
@@ -18,6 +18,7 @@ Overall status: **CONTROLLED DOMAIN CRUD APPLIED / REVIEW READY**
 - BMI-P1-001 Shared Supabase Bootstrap — DONE via PR #16
 - BMI-P1-002 Core Database — DONE via PR #18
 - BMI-P1-004 Authorization Foundation — DONE via PR #20
+- BMI-P1-005 Controlled Domain CRUD — DONE via PR #22
 
 Selected shared Supabase host:
 
@@ -29,152 +30,143 @@ BullMatch owns only:
 
 `freshmart` remains outside BullMatch scope.
 
-## Current Work — BMI-P1-005
+## Current Work — BMI-P1-006
 
 Status: **REVIEW**
-Tracking: Issue #21
-Branch: `agent/bmi-p1-005-domain-crud`
+Tracking: Issue #23
+Branch: `agent/bmi-p1-006-manual-match`
 
 ### Applied migrations
 
-- `20260906055912` — Owner/Camp CRUD + security/validation/audit helpers
-- `20260906060030` — Bull/Venue CRUD + archive/verification/alias operations
+- `20260906061040` — Event/Match controlled CRUD
+- `20260906062919` — Participant/Result/Verification/Publication workflow
 
-## Controlled Mutation Model
+## Manual Workflow Now Available
 
-Browser roles still have **zero direct table write grants** in `bullmatch`.
+Trusted ADMIN flow:
 
-State changes occur only through ADMIN mutation functions.
+`Venue / Bulls -> Event -> Match -> Match Participants -> Match Result -> Verify -> Publish`
 
-Each exposed mutation:
-- is `SECURITY DEFINER`
-- uses `search_path = ''`
-- immediately verifies current `auth.uid()` through internal `bullmatch.require_admin()`
-- requires ACTIVE ADMIN membership in `bullmatch.app_users`
-- validates allowed input fields
-- writes an audit event to `bullmatch_private.audit_log`
+### Historical snapshots
 
-Internal helpers are not executable by browser roles.
+Each participant stores match-time values independently of the Bull's current profile:
+- display name
+- camp
+- owner
+- weight
+- estimated age
 
-## Domain Operations Available
+Changing a Bull's current canonical name does not rewrite past participant display snapshots.
 
-### Owner
-- create
-- update
-- archive
-- verification state
-- alias upsert / alias verification
+### Result synchronization
 
-### Camp
-- create
-- update
-- archive
-- verification state
-- alias upsert / alias verification
+A match result deterministically updates participant states:
+- WIN -> winner WIN, others LOSS
+- DRAW -> all DRAW
+- NO_RESULT -> all NO_RESULT
+- CANCELLED -> all CANCELLED
 
-### Bull
-- create
-- update
-- archive
-- verification state
-- alias upsert / alias verification
+Result type also synchronizes the match status.
 
-### Venue
-- create
-- update
-- archive
-- verification state
-- alias upsert / alias verification
+### Verification and publication
 
-New canonical entities start `UNVERIFIED`. An ADMIN must explicitly choose a verification transition.
+Publication requires:
+- VERIFIED match
+- at least two participants
+- known result
+- verified result timestamp
+- status/result consistency
+- participant result consistency
 
-## Normalization
+Published factual records must be unpublished before participant/result/match fact edits.
 
-`bullmatch.normalize_entity_name` preserves Thai semantic marks.
+Editing participant facts after verification invalidates the previous verification and clears result verification.
 
-It only:
-- trims outer whitespace
-- collapses repeated whitespace
-- applies lowercase/case folding where applicable
+## Security boundary
 
-Displayed canonical names remain unchanged except for explicit ADMIN edits.
+- browser roles still have zero direct table write grants
+- every mutation uses the ACTIVE ADMIN boundary
+- REVIEWER / VIEWER / non-member mutation attempts fail
+- private audit data remains inaccessible to browser roles
+- no fake ADMIN or production data was created
 
-## Audit
+Important frontend rule:
 
-All successful mutations write private audit records containing:
-- Auth actor UUID
-- action
-- entity type / entity ID
-- before/after or operation metadata
-
-The browser cannot read `bullmatch_private.audit_log` directly.
+**Do not expose `bullmatch` mutation functions directly through the Data API.** Current Supabase guidance recommends carefully restricting `SECURITY DEFINER` functions. Frontend work must use a controlled API/server boundary or another explicitly designed exposed surface.
 
 ## Verification
 
-Remote rollback-only integration tests passed on the actual shared Supabase database.
+`supabase/tests/p1_006_manual_match.sql` passed against the real shared Supabase project using rollback-only fixtures.
 
 Verified:
-- ADMIN creates Owner/Camp/Bull/Venue
-- Owner/Camp references validate active linked records
-- new entity defaults UNVERIFIED
-- Thai whitespace normalization works
-- update works
-- explicit entity verification works
-- alias create/verification works
-- soft archive works
-- audit events are created
-- REVIEWER mutation rejected
-- VIEWER mutation rejected
-- non-member mutation rejected
-- private audit read blocked while impersonating browser role
-- trusted context can inspect audit trail
-- rollback leaves no test users/memberships/domain rows
+- full manual event/match workflow
+- historical snapshot preservation
+- WIN/DRAW synchronization
+- publish-before-verify rejection
+- published-edit rejection
+- verification invalidation after edits
+- cross-match winner rejection
+- invalid non-WIN winner rejection
+- REVIEWER/VIEWER/non-member denial
+- private audit events
 
-Post-test:
-- leaked temporary Auth users: 0
-- leaked temporary memberships: 0
-- browser direct write grants: 0
-- authenticated private-schema usage: false
+After rollback:
+- leaked test Auth users: 0
+- leaked test memberships: 0
+- production Bulls: 0
+- production Matches: 0
 
-Artifacts:
-- `supabase/tests/p1_005_domain_crud.sql`
-- `supabase/P1-005-VERIFICATION.md`
+Verification artifact:
+- `supabase/P1-006-VERIFICATION.md`
 
-## Advisor Review
+## Advisors
 
 ### Security
 
-No WARN/ERROR security findings introduced.
+No WARN/ERROR findings introduced.
 
-Private-schema `RLS Enabled No Policy` INFO remains intentional because `bullmatch_private` has no browser schema access/grants.
+Remaining `RLS Enabled No Policy` INFO items are confined to `bullmatch_private`, which intentionally has no browser usage/grants.
 
 ### Performance
 
-No new actionable WARN findings.
+No actionable WARN findings introduced.
 
-Remaining `unused_index` INFO is expected on the empty/new database; defer removal until real query statistics exist.
+Remaining `unused_index` INFO is expected while the production dataset is empty.
 
-## Production Data
+## Next Gates
 
-No production BullMatch entities or users were added.
+After P1-006 merge, two high-value tracks become available:
 
-This project intentionally avoids fabricated seed data. Real records should originate from trusted manual entry or later verified collection.
+1. **BMI-APP-001 — Frontend Foundation & First Screens**
+2. **BMI-P1-007 — Bull Profile & Basic Statistics**
 
-## Next Integration Gate
+Priority: start **BMI-APP-001** first so the project becomes visibly usable, while keeping the statistics work isolated for parallel contribution if another team joins.
 
-Merge BMI-P1-005, then start:
+## Frontend Direction
 
-### BMI-P1-006 — Manual Match Entry & Verification
+Initial frontend should be:
+- mobile-first
+- Thai-first
+- installable/PWA-ready
+- free-tier friendly
+- GitHub-hosted source
+- clear separation between public statistics and Admin/Review operations
 
-This will provide controlled event/match creation, participant historical snapshots, result entry, verification and publication operations while preserving existing database integrity guards.
-
-After P1-006, **BMI-P1-007 Bull Profile & Basic Statistics** can use real verified match structure.
+First screens:
+- Dashboard
+- Bulls
+- Bull Profile
+- Matches
+- Match Detail
+- Manual Entry
+- Review Queue
+- Settings/Profile
 
 ## Still Deferred
 
-- actual first ADMIN activation (requires a real Auth account)
-- frontend/login UI and hosting choice
+- actual first production ADMIN activation (requires a real Auth account)
+- final production hosting choice
 - AI provider selection
 - first production source selection/compliance approval
 
-These do not block the database/domain workflow implementation.
+These do not block frontend foundation work.
