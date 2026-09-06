@@ -4,10 +4,12 @@ on:
   push:
     paths:
       - 'apps/web/**'
+      - 'supabase/functions/bullmatch-api/**'
       - '.github/workflows/web.yml'
   pull_request:
     paths:
       - 'apps/web/**'
+      - 'supabase/functions/bullmatch-api/**'
       - '.github/workflows/web.yml'
 
 permissions:
@@ -38,6 +40,25 @@ jobs:
       - name: Typecheck and build
         working-directory: apps/web
         run: npm run build
+
+      - name: Smoke controlled production API
+        shell: bash
+        run: |
+          set -euo pipefail
+          API='https://kaanguobjhlusjvgbowt.supabase.co/functions/v1/bullmatch-api'
+          dashboard_status="$(curl --fail-with-body --silent --show-error --output /tmp/bmi-dashboard.json --write-out '%{http_code}' "$API?resource=dashboard")"
+          test "$dashboard_status" = '200'
+          python - <<'PY'
+          import json
+          with open('/tmp/bmi-dashboard.json', encoding='utf-8') as f:
+              body=json.load(f)
+          data=body.get('data')
+          assert isinstance(data, dict), body
+          for key in ('bulls','published_matches','venues','last_published_at'):
+              assert key in data, (key, body)
+          PY
+          me_status="$(curl --silent --show-error --output /tmp/bmi-me.json --write-out '%{http_code}' "$API?resource=me")"
+          test "$me_status" = '401'
 
       - name: Configure Pages
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
