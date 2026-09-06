@@ -34,7 +34,7 @@ Status: DONE — PR #29
 ### BMI-P1-008 — Review Backend Foundation
 Status: IN PROGRESS
 Owner: Primary Maintainer (ChatGPT autonomous run)
-Current branch: `agent/bmi-p1-008-identity-impact-preview`
+Current branch: `agent/bmi-p1-008-verified-claim-promotion`
 
 Dependencies satisfied:
 - BMI-P1-011 DONE — PR #39
@@ -43,7 +43,7 @@ Dependencies satisfied:
 
 Completed/deployed slices:
 
-**Foundation — PR #50 / migration `20260906211732_add_bullmatch_review_backend_foundation`**
+**Review foundation — PR #50 / migration `20260906211732_add_bullmatch_review_backend_foundation`**
 - controlled REVIEWER/ADMIN queue + detail API
 - controlled reviewer evidence access
 - idempotent review commands using `command_id`
@@ -52,40 +52,52 @@ Completed/deployed slices:
 - append-only review action + private audit records
 - MERGE/SPLIT execution blocked
 
-**Identity impact preview — migration `20260906212825_add_bullmatch_identity_impact_preview` / Edge v7**
+**Bull identity impact preview — PR #51 / migration `20260906212825_add_bullmatch_identity_impact_preview` / Edge v7**
 - deterministic read-only `MERGE_SPLIT` preview for Bull identities
-- source/target Bull summaries
-- impact counts for aliases, match participation, published matches, source mappings, provenance and identity events
+- source/target Bull summaries and impact counts
 - same-match distinct-Bull hard-conflict detection
-- unverified/archived source warnings
-- deterministic impact-preview fingerprint
+- deterministic preview fingerprint
 - `execution_enabled: false`
-- name similarity explicitly not accepted as merge authority
-- rollback-only Production validation passed and retained no fixtures
-- direct RPC ACL verified: anon/authenticated denied, service_role allowed
-- verification: `supabase/P1-008-IDENTITY-PREVIEW-VERIFICATION.md`
+- name similarity is not merge authority
+- rollback-only Production validation passed with zero retained fixtures
 
-Current target scope still remaining:
-- narrowly scoped verified-claim -> canonical promotion with provenance/audit
-- safe claim-action semantics for link/create/duplicate/edit operations
+**Guarded VERIFIED claim promotion — migration `20260906214802_add_bullmatch_verified_claim_promotion` / Edge v9**
+- separate ADMIN-only promotion operation; `APPROVE` itself still does not mutate canonical data
+- claim must be linked, VERIFIED, EXPLICIT and evidence-backed
+- target must be existing active VERIFIED Bull
+- optimistic resolved-case version gate
+- command-id idempotency
+- strict first allowlist: `home_province`, `home_district`, `color_description`, `breed_description`
+- canonical name/aliases, owner/camp, lineage, media, lifecycle, match history/results, identity and merge/split remain excluded
+- successful promotion writes `PROMOTE_CLAIM`, claim/evidence `fact_provenance`, private audit and canonical before/after context atomically
+- rollback Production test passed including idempotent replay and blocked `canonical_name`
+- direct RPC ACL: anon/authenticated denied; service_role only
+- verification: `supabase/P1-008-CLAIM-PROMOTION-VERIFICATION.md`
+
+Remaining BMI-P1-008 scope:
+- safe entity link / duplicate-decision semantics
+- guarded new-entity semantics with duplicate checks
+- selected EDIT semantics that cannot bypass claim verification/promotion
 - production Review Queue UI wiring
-- destructive merge/split only as a later separately confirmed slice after preview/provenance/reassignment safeguards
+- destructive merge/split only in a later separately confirmed slice
 
 Required invariants:
 - canonical history remains closed to direct community writes
-- ACTIVE ADMIN/REVIEWER authorization is enforced server-side/database-side
-- review operations are idempotent and concurrency-safe
+- claim verification and canonical promotion remain separate steps
+- ACTIVE ADMIN/REVIEWER authorization is enforced server-side/database-side; canonical promotion is ADMIN-only in current policy
+- review/promote operations are idempotent and concurrency-safe
 - evidence/provenance/audit are preserved
 - no majority-vote canonical truth
 - name similarity alone never proves Bull identity
 - unresolved/conflicted claims are not published
 - no betting/wallet/settlement/payout capability
 
-Exact next BMI-P1-008 implementation slice after the identity-preview PR merges:
-1. strict verified-claim -> canonical promotion allowlists with `fact_provenance`, review-action linkage and audit
-2. `LINK_ENTITY`, `CREATE_ENTITY`, `CONFIRM_DUPLICATE`, `MARK_NOT_DUPLICATE`, selected `EDIT`
-3. Review Queue UI wiring
-4. separately designed merge/split execution only after the above safeguards
+Exact next BMI-P1-008 implementation slice after the current promotion PR merges:
+1. `LINK_ENTITY`, `CONFIRM_DUPLICATE`, `MARK_NOT_DUPLICATE` with idempotent review actions and candidate-table audit/provenance
+2. `CREATE_ENTITY` only after explicit candidate/duplicate safeguards
+3. selected `EDIT` semantics only where they cannot bypass verified-claim promotion
+4. Review Queue UI wiring
+5. separately designed merge/split execution only after all above safeguards
 
 ### BMI-P1-009 — Thai Bullfighting Domain Rebaseline
 Status: DONE — PR #36
@@ -159,14 +171,6 @@ Delivered:
 - reduced-motion + mobile responsive safeguards
 - reusable Data Coverage rail based only on actual VERIFIED/PUBLISHED/sample/image state
 - no fabricated prediction confidence, odds, wallet or payout UI
-
-Validation:
-- relevant PR typecheck/build PASS
-- controlled Production API smoke PASS
-- production-facing merged UI increments GitHub Pages deploy PASS
-- participant-image RPC ACL/security boundary directly verified
-- Supabase security/performance advisors run; no participant-image-specific security exposure found
-- no fake Production Bull/Match data introduced
 
 Deferred QA — NOT A BLOCKER:
 - Production currently has no real VERIFIED/PUBLISHED Bull/Match rows, so canonical real-image states cannot yet be visually demonstrated end-to-end.
