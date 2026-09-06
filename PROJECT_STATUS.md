@@ -32,7 +32,7 @@ Phase 0 is complete only when all of the following are approved and consistent:
 | Task ID | Work | Owner | Status | Tracking |
 |---|---|---|---|---|
 | BMI-P0-001 | Repository and collaboration foundation | Primary Maintainer | DONE | root docs + `.github/` |
-| BMI-P0-002 | Initial database model | Unassigned | READY | Issue #1 |
+| BMI-P0-002 | Initial database model | Primary Maintainer | REVIEW | Issue #1 / schema branch |
 | BMI-P0-003 | AI collection and verification contracts | Unassigned | READY | Issue #2 |
 | BMI-P0-004 | Product requirements / MVP boundaries | Primary Maintainer | REVIEW | `PRD.md` v0.1 |
 | BMI-P0-005 | System architecture | Primary Maintainer | REVIEW | `ARCHITECTURE.md` v0.1 |
@@ -50,10 +50,14 @@ Phase 0 is complete only when all of the following are approved and consistent:
 6. Raw evidence and provenance must survive extraction/review decisions.
 7. Entity resolution is a first-class subsystem, not a simple name match.
 8. Connector integrations must use shared normalized contracts instead of source-specific writes into verified business tables.
+9. Database trust boundary is split between authoritative `public` application data and non-public `private` ingestion/AI/provenance data.
+10. Match results are modeled separately from matches/participants so winner references do not create cyclic migration dependencies.
+11. Source ingestion uses a deterministic per-source `dedupe_key` as the canonical idempotency boundary.
+12. Public statistics exclude unverified, review-required, conflict, rejected, or unpublished matches by default.
 
 ## Collaboration Foundation
 
-Operational files now available:
+Operational files available:
 
 - `AGENTS.md`
 - `TASKS.md`
@@ -61,18 +65,27 @@ Operational files now available:
 - `.github/ISSUE_TEMPLATE/task.md`
 - `.github/pull_request_template.md`
 
-Google Drive also contains `06_Team-Handoffs` for non-code handoff artifacts when needed.
+Google Drive contains `06_Team-Handoffs` for non-code handoff artifacts when needed.
+
+## Database Schema Gate
+
+`BMI-P0-002` is review-ready on `agent/bmi-p0-002-database-schema`.
+
+Key outputs:
+- `docs/DATABASE-SCHEMA.md`
+- `supabase/MIGRATION-PLAN.md`
+
+No production Supabase DDL has been applied.
 
 ## Current Blockers
 
 - Supabase project has not yet been selected/created for this project.
-- Database schema draft exists but BMI-P0-002 must finalize it before production migrations.
-- AI agent draft exists but BMI-P0-003 must finalize shared contracts before collector implementation.
+- AI agent draft must be finalized under `BMI-P0-003` before collector implementation.
 - First real source connectors have not yet been selected and validated for access/compliance.
 
 ## Next Integration Gate
 
-Do not start production scraping/collection code until `BMI-P0-002` and `BMI-P0-003` establish the common evidence, source-item, entity candidate, and review contracts.
+Merge/approve `BMI-P0-002`, then finalize `BMI-P0-003`. Do not start production scraping/collection code until both establish the common evidence, source-item, entity candidate, and review contracts.
 
 ## Handoff Rule
 
