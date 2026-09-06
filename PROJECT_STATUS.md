@@ -10,7 +10,7 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 1 — Core Verified Database + Frontend Integration**
 
-Overall status: **VERIFIED STATISTICS APPLIED / AUTH NEXT**
+Overall status: **VERIFIED STATISTICS DONE / AUTH UI REVIEW READY**
 
 ## Completed Gates
 
@@ -20,6 +20,7 @@ Overall status: **VERIFIED STATISTICS APPLIED / AUTH NEXT**
 - BMI-P1-004 Authorization Foundation — DONE via PR #20
 - BMI-P1-005 Controlled Domain CRUD — DONE via PR #22
 - BMI-P1-006 Manual Match Entry & Verification — DONE via PR #24
+- BMI-P1-007 Bull Profile & Basic Statistics — DONE via PR #29
 - BMI-APP-001 Frontend Foundation & First Screens — DONE via PR #26
 
 Selected shared Supabase host:
@@ -32,14 +33,10 @@ BullMatch owns only:
 
 `freshmart` remains outside BullMatch scope.
 
-## Current Work — BMI-P1-007
-
-Status: **REVIEW**
-Tracking: Issue #28
-Branch: `agent/bmi-p1-007-bull-stats`
-Applied migration: `20260906084340_add_bullmatch_verified_profile_statistics`
-
 ## Verified Statistics Foundation
+
+Applied migration:
+`20260906084340_add_bullmatch_verified_profile_statistics`
 
 Read models:
 - `bullmatch.published_bull_match_history`
@@ -47,88 +44,73 @@ Read models:
 - `bullmatch.bull_basic_stats`
 - `bullmatch.bull_recent_form`
 
-Authoritative statistics include only:
-- VERIFIED matches
-- published matches
-- non-archived matches
-- verified known results
-- verified, non-archived Bull entities
+Authoritative statistics include only VERIFIED/PUBLISHED facts with verified results. Win rate is `wins / (wins + losses + draws)` and excludes NO_RESULT/CANCELLED. Recent form is latest five W/L/D.
 
-### Win rate
+P1-007 rollback regression passed on shared Supabase with expected result 5 published matches, 1W/1L/1D, 1 no-result, 1 cancelled, 33.33% win rate, recent form LOSS/DRAW/WIN.
 
-`wins / (wins + losses + draws) * 100`
+## Current Work — BMI-APP-002
 
-NO_RESULT and CANCELLED remain visible as separate counts/history but do not affect win rate.
+Status: **REVIEW**
+Tracking: Issue #30
+Branch: `agent/bmi-app-002-auth-ui`
 
-### Recent form
+Implemented:
+- Supabase Auth email/password login for pre-existing accounts
+- project publishable key only in browser
+- persistent local session
+- access-token validation
+- refresh-token renewal near expiry
+- local logout
+- Public mode for Dashboard/Bulls/Matches
+- Login gate for Manual Entry and Review Queue
+- return to intended protected screen after successful sign-in
+- Thai loading/error states
+- Settings shows actual signed-in email/session state
+- no public sign-up UI
 
-Latest five W/L/D results only. NO_RESULT and CANCELLED are excluded.
+## Authorization Rule
 
-### Historical integrity
+Authentication is identity only.
 
-Statistics history uses the match-time participant snapshot. Editing a Bull's current canonical name does not rewrite historical `display_name_snapshot` values.
+**SIGNED IN does not mean ADMIN.**
+
+APP-002 does not infer role from user metadata and does not grant data mutations. BullMatch role remains authoritative in `bullmatch.app_users` and must be resolved at the controlled server/API boundary in APP-003 before protected reads or writes become operational.
 
 ## Security Boundary
 
-- browser roles have zero direct table write grants
-- all state-changing commands enforce ACTIVE ADMIN membership
-- REVIEWER / VIEWER / non-member mutation attempts fail
-- private audit data remains inaccessible to browser roles
-- frontend contains no service-role secret
-- BullMatch mutation functions are not wired directly to the browser
-- statistics views currently grant SELECT only to `service_role`
-- all statistics views use `security_invoker = true`
+- frontend contains no service-role/secret key
+- only Supabase publishable key is browser-visible
+- browser has zero direct domain table writes
+- `bullmatch_private` remains inaccessible to browser roles
+- privileged BullMatch RPCs are not wired directly to browser
+- statistics views remain service-role-only until controlled API wiring
+- authentication does not elevate application role
 
-## Verification
+## APP-002 Verification
 
-Remote rollback-only P1-007 regression test passed on the real shared Supabase project.
+Current branch Web App workflow passed:
+- locked dependency install — PASS
+- TypeScript — PASS
+- Vite production build — PASS
 
-Fixture result:
-- published matches: 5
-- statistical matches: 3
-- W/L/D: 1/1/1
-- no-result: 1
-- cancelled: 1
-- win rate: 33.33%
-- recent form: LOSS, DRAW, WIN
+Shared Supabase currently contains 0 production Auth users. No fake login/admin account was created just to make APP-002 pass.
 
-Also verified:
-- unpublished match excluded
-- unverified Bull excluded
-- opponent history available for future H2H
-- historical snapshot survives current-name edits
-- anon/authenticated cannot directly SELECT stats views
-- rollback leaves no fixture data
+## Frontend Deployment
 
-Artifact:
-- `supabase/P1-007-VERIFICATION.md`
-
-## Advisors
-
-Security: no WARN/ERROR introduced. Existing private-schema `RLS Enabled No Policy` INFO remains intentional.
-Reference: https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy
-
-Performance: no actionable WARN introduced. Remaining `unused_index` INFO is expected before real workload statistics exist.
-Reference: https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index
-
-## Frontend
-
-Production URL:
+Current production URL:
 `https://aodxx.github.io/BullMatch-Intelligence/`
 
-Current app shell includes Dashboard, Bulls, Bull Profile, Matches, Match Detail, Manual Entry, Review Queue and Settings/Profile.
-
-Real-data surfaces intentionally remain empty until secure Auth/API wiring is implemented.
+APP-002 will deploy automatically after merge to `main` through the existing GitHub Pages workflow.
 
 ## Next Gates
 
-1. Merge **BMI-P1-007**
-2. **BMI-APP-002 — Supabase Auth Login UI**
-3. Define/implement controlled API boundary
-4. **BMI-APP-003 — Wire verified read data and ADMIN actions**
+1. Merge **BMI-APP-002** and verify Pages deployment
+2. Define/implement the controlled server/API boundary
+3. **BMI-APP-003 — Wire verified read data and ADMIN actions**
+4. Bootstrap the first real Auth account + BullMatch membership when operational access is required
 
 ## Still Deferred
 
-- actual first production ADMIN activation using a real Auth account
+- first real production ADMIN activation
 - AI provider selection
 - first production source selection/compliance approval
