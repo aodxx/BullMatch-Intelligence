@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bullmatch.local/contracts/review-command/1.0.0",
+  "title": "ReviewCommand",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "command_id",
+    "review_case_id",
+    "action",
+    "expected_case_status",
+    "expected_case_version",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "command_id": { "type": "string", "format": "uuid" },
+    "review_case_id": { "type": "string", "format": "uuid" },
+    "action": {
+      "enum": [
+        "CLAIM",
+        "UNCLAIM",
+        "APPROVE",
+        "REJECT",
+        "EDIT",
+        "LINK_ENTITY",
+        "CREATE_ENTITY",
+        "CONFIRM_DUPLICATE",
+        "MARK_NOT_DUPLICATE",
+        "RESOLVE_CONFLICT",
+        "MERGE",
+        "SPLIT",
+        "COMMENT",
+        "REOPEN"
+      ]
+    },
+    "expected_case_status": {
+      "enum": ["OPEN", "IN_REVIEW", "RESOLVED", "REJECTED", "CANCELLED"]
+    },
+    "expected_case_version": { "type": "integer", "minimum": 1 },
+    "payload": { "type": "object", "additionalProperties": true },
+    "note": { "type": ["string", "null"], "maxLength": 4000 },
+    "impact_preview_fingerprint": { "type": ["string", "null"] }
+  }
+}
