@@ -9,7 +9,7 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 2 — Source-Agnostic Automated Collection Pipeline Foundation**
 
-Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / BMI-P2-001 IN PROGRESS / POSTGRES+PERSISTED RUN-STATE SLICE VALIDATED IN PR #68**
+Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / BMI-P2-001 IN PROGRESS / POSTGRES ADAPTER MERGED / ROLLBACK-ONLY DB CONFORMANCE VALIDATED**
 
 ## Product Direction / Truth Boundary
 
@@ -52,118 +52,88 @@ No fake Production Bull/Match/review/community data has been retained for testin
 Status: **IMPLEMENTATION GATE COMPLETE**  
 Contract: `docs/COMMUNITY-CONTRIBUTION-V1.md`
 
-V1 supports evidence-backed correction/observation for an existing VERIFIED Bull using a public HTTP(S) reference for:
+V1 supports evidence-backed correction/observation for an existing VERIFIED Bull using a public HTTP(S) reference for `home_province`, `home_district`, `color_description`, and `breed_description`.
 
-- `home_province`
-- `home_district`
-- `color_description`
-- `breed_description`
+Delivered through PR #59–#62 with server-derived actor identity, REVIEW_REQUIRED atomic claims first, separate controlled promotion, idempotent intake and no AI auto-publish.
 
-Delivered:
-
-- PR #59 community origin/storage compatibility
-- PR #60 controlled authenticated submission API
-- PR #61 own-record-only `MY_SUBMISSIONS` projection
-- PR #62 mobile Community contribution UI deployed to GitHub Pages
-
-Preserved boundaries:
-
-- actor derived server-side
-- no contributor ADMIN/REVIEWER privilege
-- no direct private/canonical browser writes
-- REVIEW_REQUIRED atomic claims first; canonical promotion separate
-- idempotent intake
-- no AI auto-publish
-
-Deferred:
-
-- public self-signup/onboarding policy
-- direct image/file evidence upload
-- program/result/comparison-day/new-Bull contribution types
-- genuine success-path UI verification until real VERIFIED canonical Bull data exists
+Deferred: public self-signup/onboarding policy, direct image/file evidence upload, broader contribution types, and real-data success-path UI QA when genuine VERIFIED data exists.
 
 ## BMI-P2-001 — Source-Agnostic Collection Pipeline Foundation
 
 Status: **IN PROGRESS**  
 Owner: Primary Maintainer  
-Current PR: **#68 — `[BMI-P2-001] Add PostgreSQL ingestion and persisted run-state adapters`**  
-Current branch: `agent/bmi-p2-001-postgres-adapter`  
-Previous merged PR: **#66 — atomic ingestion persistence boundary**  
+Latest merged PR: **#68 — PostgreSQL ingestion + persisted run-state adapters**  
+Current branch: `agent/bmi-p2-001-db-conformance`  
 Contract note: `docs/COLLECTION-PIPELINE-FOUNDATION.md`
 
-### Merged connector baseline — PR #64
-
-Delivered source-agnostic connector execution, APPROVED/ACTIVE/polling policy gates, source/run/correlation identity enforcement, per-poll dedupe rejection, safe checkpoint advancement, deterministic tests and shared-contract CI.
-
-### Merged registry/run-state slice — PR #65
-
-Delivered approved runtime source registry, pollability gates, persistence-neutral `CollectionRunState`, SOURCE_MONITORING AgentRun contract reuse, source-policy request caps, deterministic run metrics/terminal states and standards-resolvable AgentRun -> AgentError contract reference.
-
-### Merged atomic persistence slice — PR #66
+### Merged connector foundation — PR #64–#66
 
 Delivered:
 
-- persistence-neutral `IngestionPersistenceAdapter` / `IngestionTransaction`
-- normalized item + evidence staging before checkpoint commit
+- source-agnostic connector execution
+- APPROVED/ACTIVE/polling gates
+- source/run/correlation/connector identity checks
+- safe checkpoint advancement
+- approved-only runtime registry
+- persistence-neutral SOURCE_MONITORING run state
+- atomic normalized item + evidence + checkpoint persistence contract
 - `(source_id, dedupe_key)` idempotency
 - exact replay without duplicate evidence
-- conflicting same-key payload rejection
-- unsafe-checkpoint evidence persistence with old cursor retained
-- stale expected cursor rejection before staging
-- side-effect-free transaction begin and full rollback on failure
-- request-compatible cursor shape (`strategy + value` only)
-- deterministic in-memory conformance adapter
+- conflicting replay rejection
+- stale cursor rejection and full rollback
 
-Required persistence invariant:
+Required invariant:
 
 `validated normalized items + evidence + safe checkpoint -> one atomic transaction`
 
-### Validated PostgreSQL + persisted run-state slice — PR #68
+### PostgreSQL + persisted run-state mapping — PR #68 — MERGED
 
-Implemented:
+Implemented and CI-validated:
 
-- `PostgresIngestionPersistence` mapped to existing `bullmatch_private.sources`, `source_runtime_state`, `source_items` and `evidence`
+- `PostgresIngestionPersistence` mapped to existing `bullmatch_private.sources`, `source_runtime_state`, `source_items`, and `evidence`
 - `PostgresCollectionRunStore` mapped to existing `bullmatch_private.agent_runs`
-- persistence-time source policy recheck: APPROVED + ACTIVE + polling enabled
-- source/runtime locks for checkpoint serialization
-- stale expected cursor rejection before item staging
-- first-poll runtime row is not created at `begin()`; checkpoint state is staged only inside the atomic transaction
-- source item + evidence + checkpoint share one database transaction
-- normalized-envelope fingerprint stored privately in `raw_metadata._bullmatch.normalized_envelope_fingerprint`
-- `source_items.content_hash` remains reserved for actual source-content hashing
-- legacy existing rows lacking the normalized fingerprint fail closed rather than being guessed as an exact replay
-- ingested evidence remains `PENDING`, never VERIFIED/PUBLISHED
-- CollectionRunState input/output references preserved in private AgentRun metrics namespace without a migration
-- adapter has no SQL path to canonical Bull/Match/history, review decisions, verification, promotion or publication
+- persistence-time APPROVED + ACTIVE + polling-enabled recheck
+- source/runtime row locking and stale-cursor rejection
+- source item + evidence + checkpoint in one DB transaction
+- normalized-envelope fingerprint under private `raw_metadata._bullmatch.normalized_envelope_fingerprint`
+- `source_items.content_hash` preserved for actual source-content hashing
+- evidence inserted as `PENDING`, not verified/published
+- CollectionRunState input/output refs preserved in AgentRun metrics without migration
+- no canonical Bull/Match/history, review, verification, promotion or publication write path
 
-Deterministic fake-DB conformance coverage:
-
-- new item/evidence/checkpoint commit
-- content-hash semantic preservation
-- conflicting replay full rollback
-- stale checkpoint rejection before staging
-- source-policy recheck
-- CollectionRunState -> AgentRun -> CollectionRunState round trip
-- non-SOURCE_MONITORING AgentRun rejection
-
-Validation on PR #68 implementation head:
+PR #68 head validation:
 
 - shared schema/example validation — PASS
-- connector runner/registry/orchestration/persistence tests — PASS
-- PostgreSQL/run-store conformance tests — PASS
+- connector conformance suite — PASS
+- PostgreSQL/run-store fake-DB tests — PASS
 
-No Production database connection, real source polling, migration, secret or fabricated canonical record is used by this slice.
+### Rollback-only real-schema conformance — CURRENT SLICE
+
+File: `supabase/tests/p2_001_collection_persistence_rollback.sql`
+
+The harness was executed against the active BullMatch Supabase PostgreSQL schema using only fixed synthetic UUIDs and `.invalid` URLs.
+
+It verifies:
+
+- deployed `sources`, `source_runtime_state`, `source_items`, `evidence`, and `agent_runs` accept the intended adapter storage shape
+- source item + evidence + checkpoint mutations inside an intentionally failed PostgreSQL subtransaction are all restored together
+- the successful staging shape satisfies deployed constraints
+- SOURCE_MONITORING AgentRun mapping satisfies the deployed table
+- the outer transaction always rolls back
+- after rollback, fixture counts in `sources`, `source_items`, `evidence`, and `agent_runs` are all **0**
+
+No Production Bull/Match/canonical record, migration, grant, policy or persistent fixture was created.
 
 ## Exact Next Safe Slices Inside BMI-P2-001
 
-After PR #68 integration:
+After the rollback-only harness is integrated:
 
-1. rollback-only SQL/database conformance harness against the actual BullMatch-private schema, leaving no synthetic rows
-2. reusable connector fixture helpers so future source connectors inherit common conformance tests
-3. operational orchestration wrapper linking approved registry -> persisted run state -> connector -> atomic persistence without selecting a real source
-4. persisted source-registry provider when required by the operational wrapper
+1. reusable connector fixture/conformance helpers
+2. operational orchestration wrapper: approved registry -> checkpoint -> persisted run state -> connector -> atomic persistence
+3. persisted source-registry provider if required by the wrapper
+4. task sign-off for the source-agnostic foundation once the end-to-end synthetic orchestration path is deterministic
 
-A real source-specific connector remains outside this foundation until an explicit source/compliance decision identifies permitted access method, rate limits, retention/rights constraints and source-specific tests.
+A real source-specific connector remains outside BMI-P2-001 until an explicit source/compliance decision identifies permitted access method, rate limits, retention/rights constraints and source-specific tests.
 
 ## Deferred / External-Decision Items
 
@@ -179,4 +149,4 @@ A real source-specific connector remains outside this foundation until an explic
 
 ## Exact Next Autonomous Action
 
-Check PR #68 integration state. If merged, continue `BMI-P2-001` on a fresh branch from `main` with the rollback-only database conformance harness and reusable fixture helpers. Do **not** select, scrape or poll a real external source inside BMI-P2-001.
+Integrate the rollback-only conformance harness, then continue `BMI-P2-001` on a fresh branch from `main` with reusable connector fixture helpers and the source-agnostic operational orchestration wrapper. Do **not** select, scrape or poll a real external source.
