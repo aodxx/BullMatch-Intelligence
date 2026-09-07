@@ -62,26 +62,9 @@ Runbook: `docs/AUTO-RUN-RUNBOOK.md`.
 ### BMI-P2-001 — Source-Agnostic Collection Pipeline Foundation
 
 Status: **DONE — IMPLEMENTATION GATE**  
-Owner: Primary Maintainer  
-Merged PRs: **#64–#72**  
-Contracts: `docs/COLLECTION-PIPELINE-FOUNDATION.md`, `docs/COLLECTION-OPERATIONAL-ORCHESTRATION.md`
+Merged PRs: **#64–#73**
 
-Delivered:
-
-- source-agnostic validated connector runner
-- APPROVED + ACTIVE + polling gates
-- connector/source/run/correlation identity checks
-- duplicate-key rejection and safe checkpoint advancement
-- approved-only runtime registry
-- persistence-neutral `CollectionRunState` using SOURCE_MONITORING AgentRun
-- atomic normalized source item + evidence + checkpoint persistence
-- replay idempotency, conflicting replay rejection and stale-cursor protection
-- PostgreSQL ingestion + persisted run-state adapters
-- rollback-only real-schema conformance with zero retained fixtures
-- reusable synthetic connector conformance fixtures
-- operational one-poll orchestration from registry/checkpoint through atomic persistence
-- read-only PostgreSQL checkpoint reader
-- shared-contract and complete connector test suite passing in CI
+Delivered the validated connector runner, source approval gates, SOURCE_MONITORING run state, atomic source-item/evidence/checkpoint persistence, PostgreSQL adapters, replay/stale-cursor protection, rollback-only real-schema conformance, reusable synthetic fixtures, operational orchestration and read-only PostgreSQL checkpoint retrieval.
 
 Project-wide invariants:
 
@@ -93,32 +76,53 @@ Project-wide invariants:
 6. deterministic fixtures never remain in Production
 7. a real source connector requires a separate explicit source/compliance decision
 
-No real source was selected, scraped or polled under BMI-P2-001.
-
 ### BMI-P2-002 — Persisted Source Policy Registry Alignment
 
+Status: **DONE — IMPLEMENTATION GATE**  
+Merged PR: **#74**  
+Production migration: `20260907025225_align_bullmatch_source_policy_registry`
+
+Delivered:
+
+- additive nullable source policy storage for polling timezone, active windows, max-items-per-run and rate-limit policy
+- no fabricated/default backfill for existing rows
+- read-only PostgreSQL `SourceRegistryProvider`
+- complete rows reconstruct `source-registry-entry/1.0.0`
+- incomplete APPROVED rows fail shared-contract validation before polling
+- rollback-only DDL verification before Production migration
+- Production schema/history verification after migration
+- GitHub shared-contract + connector CI PASS
+- no source activated, selected, scraped or polled
+
+### BMI-P2-003 — First Source Compliance Evaluation Framework
+
 Status: **READY**  
-Priority: highest current non-blocked internal engineering task.  
-Dependencies: BMI-P2-001.
+Priority: highest safe internal task.  
+Dependencies: BMI-P2-001, BMI-P2-002.
 
-Problem:
+Goal: build a deterministic evaluation contract/checklist for candidate Thai bullfighting sources before any source receives `APPROVED` policy status.
 
-`bullmatch_private.sources` does not currently contain every value required to reconstruct `source-registry-entry/1.0.0` deterministically. Dedicated storage is missing for at least polling timezone, active windows, max-items-per-run and the complete rate-limit policy object.
+Required dimensions:
 
-Goal:
+- source/operator identity and purpose
+- permitted/public access method
+- terms/robots/API compatibility where applicable
+- rate-limit/poll-window basis
+- evidence storage/retention/attribution rights
+- authentication/secret requirements
+- initial cursor and dedupe semantics
+- provenance/reliability tier rationale
+- withdrawal/failure handling
+- decision state: REVIEW_REQUIRED / APPROVED / BLOCKED
 
-- compare the shared source registry contract to the deployed private source table
-- design the smallest additive/reversible storage alignment
-- avoid undocumented defaults or hidden `connector_config` conventions
-- implement a read-only PostgreSQL `SourceRegistryProvider`
-- validate full contract reconstruction with deterministic fake-DB and schema tests
-- preserve service-role/private-schema boundary
-- do not select/contact a real source
-- do not add canonical Bull/Match/history writes
+Constraints:
 
-Expected branch: `agent/bmi-p2-002-source-policy-registry`.
+- evaluation/research only; a framework must not auto-approve a real source
+- do not poll/scrape or create credentials during evaluation
+- do not ingest candidate Bull/Match facts as part of source approval research
+- first Production source activation remains an explicit owner/compliance decision
 
-A first Production source connector remains blocked until an explicit source/compliance decision defines permitted access method, rights/retention, rate limits, authentication/secret handling and source-specific tests.
+Expected branch: `agent/bmi-p2-003-source-compliance-framework`.
 
 ## Phase 3 — Multi-Source Expansion
 
@@ -134,15 +138,15 @@ Includes Matchup Intelligence, opponent-adjusted form, shared-opponent/style ana
 
 ## Autonomous Priority Reference
 
-1. **BMI-P2-002 — Persisted Source Policy Registry Alignment** — READY
-2. first permitted Production source connector — BLOCKED on explicit source/compliance selection
+1. **BMI-P2-003 — First Source Compliance Evaluation Framework** — READY
+2. first permitted Production source connector — BLOCKED on explicit source/compliance approval
 3. Intelligence Products / Matchup Intelligence — wait for sufficient verified data depth
 4. deferred APP-004 real-data visual QA — wait for genuine verified data
 5. destructive identity operations — separate safety approval required
 
 ## Deferred / External-Decision Items
 
-- first Production source selection/compliance approval
+- first Production source approval/activation
 - public contributor signup/onboarding policy
 - AI provider selection
 - destructive Bull identity merge/split execution

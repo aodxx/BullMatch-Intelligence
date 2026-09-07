@@ -7,9 +7,9 @@ Last structural update: 2026-09-07
 **BullMatch Intelligence**  
 Repository: `aodxx/BullMatch-Intelligence`
 
-Current phase: **Phase 2 — Automated Collection Readiness**
+Current phase: **Phase 2 — First Source Compliance Readiness**
 
-Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / BMI-P2-001 SOURCE-AGNOSTIC FOUNDATION COMPLETE / FIRST REAL SOURCE NOT YET AUTHORIZED**
+Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / SOURCE-AGNOSTIC COLLECTION + PERSISTED POLICY REGISTRY COMPLETE / NO REAL SOURCE AUTHORIZED**
 
 ## Product Direction / Truth Boundary
 
@@ -40,13 +40,14 @@ Neither contributors nor automated collectors may directly overwrite canonical B
 - BMI-P1-011 Database Schema v0.2 — DONE — PR #39
 - BMI-P1-012 Contribution & Trust Architecture — DONE — PR #40
 - BMI-P1-013 Community Contribution Intake V1 — COMPLETE — PR #59–#62
-- BMI-P2-001 Source-Agnostic Collection Pipeline Foundation — COMPLETE — PR #64–#72
+- BMI-P2-001 Source-Agnostic Collection Pipeline Foundation — COMPLETE — PR #64–#73
+- BMI-P2-002 Persisted Source Policy Registry Alignment — COMPLETE — PR #74
 - BMI-APP-001 through BMI-APP-004 — COMPLETE implementation gates
 - BMI-OPS-001 through BMI-OPS-003 — COMPLETE
 
 Production app: `https://aodxx.github.io/BullMatch-Intelligence/`
 
-No fake Production Bull/Match/review/community data has been retained for testing.
+No fake Production Bull/Match/review/community/source records have been retained for testing.
 
 ## BMI-P1-013 — Community Contribution V1
 
@@ -62,26 +63,10 @@ Deferred: public self-signup/onboarding policy, direct image/file evidence uploa
 ## BMI-P2-001 — Source-Agnostic Collection Pipeline Foundation
 
 Status: **IMPLEMENTATION GATE COMPLETE**  
-Owner: Primary Maintainer  
-Merged PRs: **#64–#72**  
+Merged PRs: **#64–#73**  
 Contracts: `docs/COLLECTION-PIPELINE-FOUNDATION.md`, `docs/COLLECTION-OPERATIONAL-ORCHESTRATION.md`
 
-Delivered:
-
-- source-agnostic connector execution and shared contract validation
-- APPROVED/ACTIVE/polling gates and connector/source/run/correlation identity checks
-- safe checkpoint advancement and duplicate-key rejection
-- approved-only runtime registry
-- persistence-neutral `CollectionRunState` mapped to `SOURCE_MONITORING` AgentRun
-- atomic normalized source item + PENDING evidence + checkpoint persistence contract
-- `(source_id, dedupe_key)` replay idempotency, conflicting replay rejection and stale-cursor rejection
-- PostgreSQL ingestion adapter over existing BullMatch-private ingestion/runtime tables
-- persisted PostgreSQL AgentRun store
-- rollback-only conformance against the deployed BullMatch PostgreSQL schema with zero retained fixtures
-- reusable synthetic connector fixtures using fixed UUIDs and `.invalid` URLs only
-- operational one-poll wrapper: approved registry -> persisted checkpoint -> run state -> connector -> atomic persistence -> terminal run
-- read-only `PostgresCheckpointReader` over `bullmatch_private.source_runtime_state`
-- CI coverage for schemas/examples and the complete connector conformance suite
+Delivered source-agnostic contract validation, APPROVED/ACTIVE gates, run/correlation identity, safe checkpoints, atomic normalized source-item + PENDING evidence persistence, replay/stale-cursor protection, PostgreSQL adapters, rollback-only real-schema conformance, reusable synthetic fixtures, one-poll operational orchestration and a read-only PostgreSQL checkpoint reader.
 
 Required invariant remains:
 
@@ -89,49 +74,68 @@ Required invariant remains:
 
 Collection code has no canonical Bull/Match/history, review, verification, promotion or publication write path.
 
-### Latest validation
+## BMI-P2-002 — Persisted Source Policy Registry Alignment
 
-- PR #71 `Validate shared contracts` run #29 — PASS
-- PR #72 `Validate shared contracts` run #32 — PASS
-- schema/example validation — PASS
-- full connector unittest discovery including operational orchestration and PostgreSQL checkpoint-reader tests — PASS
+Status: **IMPLEMENTATION GATE COMPLETE**  
+Merged PR: **#74**  
+Production migration: **20260907025225_align_bullmatch_source_policy_registry**
 
-### Persisted source-registry storage gap
+Delivered:
 
-The deployed `bullmatch_private.sources` table does **not** currently store every field required to reconstruct `source-registry-entry/1.0.0` deterministically. Missing dedicated storage includes at least:
+- additive nullable storage for `polling_timezone`, `polling_active_windows`, `max_items_per_run`, and complete `rate_limit` policy
+- no guessed backfill/defaults for existing source rows
+- basic database constraints for JSON shape and positive max-items
+- read-only `PostgresSourceRegistryProvider`
+- full reconstruction of `source-registry-entry/1.0.0` for complete rows
+- fail-closed shared-schema validation when an APPROVED row lacks required policy
+- no credentials in source registry contracts
+- no source activation or network polling
 
-- polling timezone
-- polling active windows
-- polling max-items-per-run
-- complete rate-limit policy object
+Validation:
 
-These values must not be guessed from defaults or silently invented from `connector_config`.
+- current Supabase migration guidance reviewed before deployment
+- rollback-only DDL trial against active BullMatch PostgreSQL schema — PASS
+- post-rollback aligned-column count — 0
+- Production migration applied through Supabase migration history — PASS
+- post-migration schema verification — PASS
+- Production source registry after migration: APPROVED sources = 0; APPROVED+ACTIVE+polling sources = 0
+- final GitHub shared-contract/connector CI run #36 — PASS
+- Supabase security/performance advisors run after DDL; no new task-specific issue identified
 
-This gap does not invalidate the source-agnostic foundation because the operational wrapper consumes the already-defined `SourceRegistryProvider` abstraction, but a real Production source must not be enabled until source-policy storage is explicitly aligned.
+Existing advisor notices remain separate backlog/security operations concerns: private-schema RLS-with-no-policy INFO notices, unused-index INFO notices, and leaked-password-protection WARN. No access was broadened by BMI-P2-002.
 
 ## Next Engineering Task
 
-### BMI-P2-002 — Persisted Source Policy Registry Alignment
+### BMI-P2-003 — First Source Compliance Evaluation Framework
 
 Status: **READY**  
-Priority: highest non-blocked internal engineering task.
+Priority: highest safe task that does not authorize a source by itself.
 
-Goal: define and implement an additive, deterministic storage mapping for the complete `source-registry-entry/1.0.0` polling/rate-limit policy, then provide a read-only PostgreSQL `SourceRegistryProvider` with conformance tests.
+Goal: create a source-evaluation dossier/template and evidence checklist so candidate Thai bullfighting sources can be assessed consistently before any connector is configured.
+
+Required evaluation dimensions:
+
+- source identity/operator and public purpose
+- access method/API/RSS/public-page basis
+- terms/robots/API policy compatibility where applicable
+- polling/rate-limit expectations
+- evidence storage/retention and attribution rights
+- authentication/secret requirements
+- source-specific cursor/dedupe semantics
+- provenance/reliability tier rationale
+- failure/withdrawal policy
+- explicit decision state: REVIEW_REQUIRED / APPROVED / BLOCKED
 
 Constraints:
 
-- additive/reversible migration only if columns are required
-- do not encode undocumented policy defaults
-- no real source selection, scraping or polling
-- no credentials in registry payloads
-- preserve service-role/private-schema boundary
-- no canonical data writes
-
-After BMI-P2-002, a first real source connector remains blocked on an explicit source/compliance decision covering permitted access method, rate limits, rights/retention, authentication and source-specific tests.
+- research/evaluation only; no automatic APPROVED decision
+- no real source polling or credential creation
+- do not ingest factual Bull/Match records during evaluation
+- owner/compliance approval remains required before first Production source is enabled
 
 ## Deferred / External-Decision Items
 
-- first Production source selection and compliance approval
+- first Production source approval and connector activation
 - open/public contributor signup/onboarding policy
 - AI provider selection
 - destructive Bull identity merge/split execution
@@ -143,4 +147,4 @@ After BMI-P2-002, a first real source connector remains blocked on an explicit s
 
 ## Exact Next Autonomous Action
 
-Start `BMI-P2-002` from fresh `main`: inspect the `source-registry-entry/1.0.0` contract against `bullmatch_private.sources`, design the smallest additive policy-storage migration, implement a read-only PostgreSQL `SourceRegistryProvider`, and prove mapping/validation with deterministic tests. Do not select or contact a real external source.
+Start `BMI-P2-003` from fresh `main` and build the source/compliance evaluation contract, checklist and deterministic decision-record format. It may research candidate source categories, but must not mark a real source APPROVED, store credentials, scrape/poll it, or create canonical Bull/Match data without an explicit source/compliance decision.
