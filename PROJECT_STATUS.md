@@ -9,7 +9,7 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 2 — First Source Compliance Readiness**
 
-Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / SOURCE-AGNOSTIC COLLECTION + PERSISTED POLICY REGISTRY + SOURCE COMPLIANCE FRAMEWORK COMPLETE / NO REAL SOURCE AUTHORIZED**
+Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / SOURCE-AGNOSTIC COLLECTION + PERSISTED POLICY REGISTRY + SOURCE COMPLIANCE FRAMEWORK COMPLETE / CANDIDATE DOSSIER RESEARCH ACTIVE / NO REAL SOURCE AUTHORIZED**
 
 ## Product Direction / Truth Boundary
 
@@ -81,29 +81,7 @@ Status: **IMPLEMENTATION GATE COMPLETE**
 Merged PR: **#74**  
 Production migration: **20260907025225_align_bullmatch_source_policy_registry**
 
-Delivered:
-
-- additive nullable storage for `polling_timezone`, `polling_active_windows`, `max_items_per_run`, and complete `rate_limit` policy
-- no guessed backfill/defaults for existing source rows
-- basic database constraints for JSON shape and positive max-items
-- read-only `PostgresSourceRegistryProvider`
-- full reconstruction of `source-registry-entry/1.0.0` for complete rows
-- fail-closed shared-schema validation when an APPROVED row lacks required policy
-- no credentials in source registry contracts
-- no source activation or network polling
-
-Validation:
-
-- current Supabase migration guidance reviewed before deployment
-- rollback-only DDL trial against active BullMatch PostgreSQL schema — PASS
-- post-rollback aligned-column count — 0
-- Production migration applied through Supabase migration history — PASS
-- post-migration schema verification — PASS
-- Production source registry after migration: APPROVED sources = 0; APPROVED+ACTIVE+polling sources = 0
-- final GitHub shared-contract/connector CI run #36 — PASS
-- Supabase security/performance advisors run after DDL; no new task-specific issue identified
-
-Existing advisor notices remain separate backlog/security operations concerns: private-schema RLS-with-no-policy INFO notices, unused-index INFO notices, and leaked-password-protection WARN. No access was broadened by BMI-P2-002.
+Delivered additive source policy storage, no guessed backfill/defaults for existing source rows, fail-closed shared-schema validation and a read-only PostgreSQL source-registry provider. Production migration and post-migration schema checks passed. Production source registry remained at APPROVED sources = 0 and APPROVED+ACTIVE+polling sources = 0.
 
 ## BMI-P2-003 — First Source Compliance Evaluation Framework
 
@@ -119,36 +97,30 @@ Decision safety:
 - every unresolved candidate remains `REVIEW_REQUIRED`
 - `APPROVED` requires an explicit `OWNER_OR_COMPLIANCE` decision actor/time, at least one decision-basis reference and zero blockers
 - `BLOCKED` requires a recorded blocking reason
-- the framework itself cannot create or activate a Production source
+- the framework cannot create or activate a Production source
 - synthetic example uses `.invalid`; no real Bull/Match/source facts are retained as fixture data
 
-Validation:
+## BMI-P2-004 — Candidate Source Dossier Research
 
-- shared-contract validation CI run #38 — PASS
-- deterministic source-compliance contract tests — PASS through CI
-- no migration, Production API, auth, browser grant or source-registry activation impact
+Status: **IN PROGRESS — FIRST-PARTY EVIDENCE FOLLOW-UP**  
+Initial shortlist merged: **PR #79**  
+Active branch: `agent/bmi-p2-004-first-party-evidence`
 
-## Next Engineering Task
+Current candidate set:
 
-### BMI-P2-004 — Candidate Source Dossier Research
+- **wuachon.co** — strongest direct domain relevance in the shortlist. Manual browser research confirms the public homepage is accessible and visibly program-oriented, but no reliable first-party operator identity, terms, robots, automation policy or reuse/license basis was established. It remains `REVIEW_REQUIRED`, reliability `UNKNOWN`, cross-check `REQUIRED`, and `polling_enabled=false`.
+- **Thailand Sports Almanac** — official government sports reference with possible provenance/context value. No new first-party automation/reuse policy was established in the current follow-up, so its dossier remains intentionally unchanged and `REVIEW_REQUIRED`.
+- **Surat Thani Provincial Government** — first-party About evidence strengthens official operator provenance for provincial content. This does not establish permission for recurring automated retrieval or content reuse; the candidate remains an episodic corroboration source and `REVIEW_REQUIRED`.
 
-Status: **READY**  
-Priority: highest safe next task that advances first-source readiness without authorizing a source.
+Evidence log: `docs/SOURCE-EVIDENCE-RESEARCH-NOTES.md`.
 
-Goal: identify a small shortlist of plausible Thai bullfighting information-source candidates and prepare `REVIEW_REQUIRED` dossiers using the BMI-P2-003 contract.
-
-Research boundaries:
-
-- manual/browser public-web research only; no connector polling or bulk scraping
-- record public source/operator identity, access-policy surfaces, rights/attribution evidence and unresolved questions
-- propose source-specific runtime policy only where public evidence supports it; do not invent rates/windows
-- do not collect candidate Bull/Match facts as fixtures or write Production records
-- do not create credentials
-- do not mark any candidate `APPROVED`
+No connector polling, bulk scraping, credential creation, private source-registry activation, Bull/Match fixture ingestion or Production canonical write occurred.
 
 ## External Decision Blocker
 
-The **first Production source connector and activation remain BLOCKED** because BullMatch currently has no explicit owner/compliance-approved real source. The minimum external action later required is an explicit `APPROVED` decision for one completed source dossier under `source-compliance-evaluation/1.0.0`. Until that exists, no connector may be enabled against a real source and no source row may be activated merely to continue development.
+The **first Production source connector and activation remain BLOCKED** because BullMatch currently has no explicit owner/compliance-approved real source.
+
+The minimum external action later required is an explicit `APPROVED` decision for one sufficiently evidenced dossier under `source-compliance-evaluation/1.0.0`. Until that exists, no connector may be enabled against a real source and no source row may be activated merely to continue development.
 
 ## Deferred / External-Decision Items
 
@@ -164,4 +136,4 @@ The **first Production source connector and activation remain BLOCKED** because 
 
 ## Exact Next Autonomous Action
 
-Start `BMI-P2-004` from fresh `main`. Research a small number of plausible real source candidates using public browser-accessible policy/operator evidence, create only `REVIEW_REQUIRED` dossiers, and leave the approval decision to the owner/compliance authority. Do not poll, scrape at connector scale, create credentials, activate the private source registry, or ingest Bull/Match facts during this research task.
+Complete validation and PR handoff for the BMI-P2-004 first-party evidence follow-up. If the dossiers remain contract-valid and non-approved, merge the research update. After that, do not implement or activate a real connector unless new first-party policy/rights evidence resolves the relevant blockers and an explicit `OWNER_OR_COMPLIANCE` approval exists. If no such evidence/decision exists, record the source-approval blocker as the Phase 2 boundary and move to the next safe task that does not depend on fabricated data or unauthorized collection.
