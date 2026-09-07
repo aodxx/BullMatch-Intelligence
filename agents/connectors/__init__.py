@@ -18,6 +18,7 @@ from .persistence import (
 )
 from .postgres_adapter import PostgresCollectionRunStore, PostgresIngestionPersistence
 from .postgres_readers import PostgresCheckpointReader
+from .postgres_registry import PostgresSourceRegistryProvider
 from .registry import ApprovedSourceRegistry, InMemorySourceRegistryProvider, SourceRegistryError
 from .runner import Connector, ContractError, PollExecution, run_connector_poll
 
@@ -39,6 +40,7 @@ __all__ = [
     "PostgresCheckpointReader",
     "PostgresCollectionRunStore",
     "PostgresIngestionPersistence",
+    "PostgresSourceRegistryProvider",
     "RunStateError",
     "SourceRegistryError",
     "StagedItem",
