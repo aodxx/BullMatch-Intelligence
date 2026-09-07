@@ -9,7 +9,7 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 2 — Source-Agnostic Automated Collection Pipeline Foundation**
 
-Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / BMI-P2-001 IN PROGRESS**
+Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / BMI-P2-001 IN PROGRESS / REGISTRY+RUN-STATE SLICE VALIDATED**
 
 ## Product Direction / Truth Boundary
 
@@ -82,60 +82,69 @@ Deferred:
 
 Status: **IN PROGRESS**
 Owner: Primary Maintainer
-Branch: `agent/bmi-p2-001-collection-foundation`
-PR: **#64 — `[BMI-P2-001] Make connector contracts executable and checkpoint-safe`**
+Current branch: `agent/bmi-p2-001-registry-run-state`
+Current PR: **#65 — `[BMI-P2-001] Add approved registry loader and collection run state`**
 Contract note: `docs/COLLECTION-PIPELINE-FOUNDATION.md`
 
-### Discovery during implementation
+### Previous merged baseline — PR #64
 
-Phase 0 already defined the required JSON Schemas under `packages/contracts/`:
-- source registry entry
-- connector poll request/result
-- normalized ingestion envelope
-- agent errors/runs
-- extraction/resolution/verification contracts
+Phase 0 already defined the required JSON Schemas under `packages/contracts/`. PR #64 made the connector boundary executable without creating a competing schema family.
 
-Therefore BMI-P2-001 does not create a competing schema family. It turns the existing contracts into an executable connector boundary.
-
-### First implementation baseline
-
-PR #64 adds:
-- standards-resolvable cross-schema `$ref` values for connector poll request/result while preserving 1.0.0 payload meaning
-- source-agnostic Python `Connector` protocol
+Delivered:
+- standards-resolvable connector request/result cross-schema references
+- source-agnostic `Connector` protocol
 - `run_connector_poll()` contract/invariant validation
 - source policy gates: APPROVED + ACTIVE + polling enabled
 - connector-key binding
 - source/run/correlation identity enforcement
 - normalized-item connector name/version enforcement
 - duplicate `dedupe_key` rejection per poll result
-- checkpoint rule: cursor advances only after valid output and only when `checkpoint_safe=true`
-- deterministic in-memory conformance tests
-- shared-contract CI coverage for connector runtime
+- checkpoint rule: cursor advances only after valid output and `checkpoint_safe=true`
+- deterministic connector conformance tests
+- shared-contract CI coverage
 
-The runner intentionally has:
-- no real-source connector
-- no network access
-- no Production persistence
-- no canonical Bull/Match write capability
+### Current validated slice — PR #65
+
+Delivered on branch:
+- `ApprovedSourceRegistry` validates shared source-registry entries
+- runtime view contains only policy-APPROVED sources
+- duplicate source IDs rejected
+- approved-but-paused/polling-disabled sources remain non-pollable
+- connector filtering returns only ACTIVE + poll-enabled approved sources
+- persistence-neutral `CollectionRunState`
+- existing `AgentRun` contract reused with `agent_type=SOURCE_MONITORING`
+- schema-valid poll requests bound to run/correlation/source identity
+- item/request limits capped by source policy
+- deterministic metrics/output references accumulated from validated `PollExecution`
+- terminal health/error mapping to SUCCEEDED/PARTIAL/FAILED
+- explicit contract-valid SOURCE_MONITORING failure path
+- AgentRun -> AgentError cross-schema `$ref` repaired to the canonical 1.0.0 `$id`
+
+Validation on latest implementation head:
+- shared JSON Schema validation — PASS
+- contract examples — PASS
+- connector cross-schema resolution — PASS
+- existing connector conformance tests — PASS
+- new source-registry/run-state integration tests — PASS
+
+Safety preserved:
+- no real external source selected or contacted
+- no network connector added
+- no Production persistence or migration
+- no source secret values loaded
+- no canonical Bull/Match/history write capability
+- fixtures use synthetic UUIDs and `.invalid` URLs only in test memory
 - no AI-provider dependency
 
-### Validation
+## Exact Next Safe Slices Inside BMI-P2-001
 
-PR #64 shared-contract CI: **PASS**
-- JSON Schema validation PASS
-- example validation PASS
-- connector cross-schema resolution PASS
-- connector conformance unit tests PASS
+After PR #65 integration:
 
-Test fixtures use synthetic identifiers and `.invalid` URLs only in test memory. They are not Bull history and are never persisted to Production.
-
-### Exact next safe slices inside BMI-P2-001
-
-1. approved source-registry loader
-2. orchestration/run-state abstraction compatible with existing agent-run contract
-3. deterministic persistence adapter interfaces for source-item/evidence staging
-4. transaction boundary for dedupe + safe checkpoint persistence
-5. reusable connector conformance fixture helpers
+1. deterministic persistence adapter interfaces for source-item/evidence staging
+2. transactional boundary for dedupe + evidence persistence + safe checkpoint commit
+3. persisted run-state adapter compatible with `CollectionRunState`
+4. reusable connector conformance fixture helpers
+5. database adapter conformance tests without retaining synthetic Production rows
 
 A real source-specific connector remains outside this foundation until an explicit source/compliance decision identifies permitted access method, rate limits, retention/rights constraints and source-specific tests.
 
@@ -153,6 +162,4 @@ A real source-specific connector remains outside this foundation until an explic
 
 ## Exact Next Autonomous Action
 
-Continue `BMI-P2-001` from PR #64 after checking whether the PR merged and whether another active branch has claimed a non-overlapping slice.
-
-If PR #64 is merged, implement the source-registry loader + run-state abstraction next. Do **not** select or poll a real external source in BMI-P2-001.
+Check PR #65 integration state. If merged, continue `BMI-P2-001` on a fresh branch from `main` with the deterministic persistence adapter interfaces and transactional dedupe/evidence/checkpoint contract. Do **not** select or poll a real external source inside BMI-P2-001.
