@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
+from referencing import Registry, Resource
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_DIR = ROOT / "packages" / "contracts" / "schemas"
@@ -33,14 +34,17 @@ def main() -> None:
         raise SystemExit("No contract schemas found")
 
     schemas: dict[str, dict] = {}
+    registry = Registry()
     for path in schema_files:
         schema = load_json(path)
         Draft202012Validator.check_schema(schema)
         if schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
             raise SystemExit(f"{path.name}: unexpected $schema")
-        if not schema.get("$id"):
+        schema_id = schema.get("$id")
+        if not schema_id:
             raise SystemExit(f"{path.name}: missing $id")
         schemas[path.name] = schema
+        registry = registry.with_resource(schema_id, Resource.from_contents(schema))
         print(f"schema ok: {path.relative_to(ROOT)}")
 
     checker = FormatChecker()
@@ -49,7 +53,7 @@ def main() -> None:
         if not example_path.exists():
             raise SystemExit(f"Missing example: {example_name}")
         payload = load_json(example_path)
-        validator = Draft202012Validator(schemas[schema_name], format_checker=checker)
+        validator = Draft202012Validator(schemas[schema_name], registry=registry, format_checker=checker)
         errors = sorted(validator.iter_errors(payload), key=lambda error: list(error.path))
         if errors:
             formatted = "\n".join(
@@ -57,6 +61,12 @@ def main() -> None:
             )
             raise SystemExit(formatted)
         print(f"example ok: {example_path.relative_to(ROOT)}")
+
+    # Resolve every cross-schema reference even when an example does not yet exist.
+    for schema_name in ("connector-poll-request.schema.json", "connector-poll-result.schema.json"):
+        validator = Draft202012Validator(schemas[schema_name], registry=registry, format_checker=checker)
+        validator.check_schema(schemas[schema_name])
+        print(f"cross-schema refs ok: {schema_name}")
 
     print(f"Validated {len(schema_files)} schemas and {len(EXAMPLE_SCHEMA_MAP)} examples")
 
