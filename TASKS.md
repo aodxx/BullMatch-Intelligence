@@ -82,21 +82,13 @@ Status: **DONE — IMPLEMENTATION GATE**
 Merged PR: **#74**  
 Production migration: `20260907025225_align_bullmatch_source_policy_registry`
 
-Delivered:
-
-- additive nullable source policy storage for polling timezone, active windows, max-items-per-run and rate-limit policy
-- no fabricated/default backfill for existing rows
-- read-only PostgreSQL `SourceRegistryProvider`
-- complete rows reconstruct `source-registry-entry/1.0.0`
-- incomplete APPROVED rows fail shared-contract validation before polling
-- rollback-only DDL verification before Production migration
-- Production schema/history verification after migration
-- GitHub shared-contract + connector CI PASS
-- no source activated, selected, scraped or polled
+Delivered additive source policy storage, no fabricated/default backfill, a read-only PostgreSQL `SourceRegistryProvider`, fail-closed contract validation, rollback-only DDL verification, Production migration verification, and passing shared-contract/connector CI. No source was activated, selected, scraped or polled.
 
 ### BMI-P2-003 — First Source Compliance Evaluation Framework
 
-Status: **READY**  
+Status: **IN PROGRESS**  
+Owner: Primary Maintainer (ChatGPT autonomous run)  
+Branch: `agent/bmi-p2-003-source-compliance-framework`  
 Priority: highest safe internal task.  
 Dependencies: BMI-P2-001, BMI-P2-002.
 
@@ -117,12 +109,10 @@ Required dimensions:
 
 Constraints:
 
-- evaluation/research only; a framework must not auto-approve a real source
+- evaluation/research only; the framework must not auto-approve a real source
 - do not poll/scrape or create credentials during evaluation
 - do not ingest candidate Bull/Match facts as part of source approval research
 - first Production source activation remains an explicit owner/compliance decision
-
-Expected branch: `agent/bmi-p2-003-source-compliance-framework`.
 
 ## Phase 3 — Multi-Source Expansion
 
@@ -138,7 +128,7 @@ Includes Matchup Intelligence, opponent-adjusted form, shared-opponent/style ana
 
 ## Autonomous Priority Reference
 
-1. **BMI-P2-003 — First Source Compliance Evaluation Framework** — READY
+1. **BMI-P2-003 — First Source Compliance Evaluation Framework** — IN PROGRESS
 2. first permitted Production source connector — BLOCKED on explicit source/compliance approval
 3. Intelligence Products / Matchup Intelligence — wait for sufficient verified data depth
 4. deferred APP-004 real-data visual QA — wait for genuine verified data

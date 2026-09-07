@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bullmatch.local/contracts/source-compliance-evaluation/1.0.0",
+  "title": "SourceComplianceEvaluation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evaluation_id",
+    "candidate_key",
+    "evaluated_at",
+    "source_identity",
+    "access_review",
+    "rights_review",
+    "runtime_policy_proposal",
+    "provenance_review",
+    "operational_review",
+    "decision"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "evaluation_id": { "type": "string", "format": "uuid" },
+    "candidate_key": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,79}$" },
+    "evaluated_at": { "type": "string", "format": "date-time" },
+    "source_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "operator_name", "source_type", "base_url", "public_purpose", "identity_evidence_refs"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "operator_name": { "type": ["string", "null"], "minLength": 1 },
+        "source_type": { "enum": ["WEBSITE", "RSS", "SITEMAP", "API", "YOUTUBE", "OPERATOR_UPLOAD", "SEARCH_DISCOVERY", "OTHER"] },
+        "base_url": { "type": ["string", "null"], "format": "uri" },
+        "public_purpose": { "type": ["string", "null"] },
+        "identity_evidence_refs": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "access_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proposed_access_method", "terms_reviewed", "robots_reviewed", "api_policy_reviewed", "access_evidence_refs", "notes"],
+      "properties": {
+        "proposed_access_method": { "enum": ["PUBLIC_PAGE", "RSS_FEED", "PUBLIC_API", "AUTHENTICATED_API", "OPERATOR_UPLOAD", "SEARCH_RESULT", "UNKNOWN"] },
+        "terms_reviewed": { "type": "boolean" },
+        "robots_reviewed": { "type": "boolean" },
+        "api_policy_reviewed": { "type": "boolean" },
+        "access_evidence_refs": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" },
+          "uniqueItems": true
+        },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "rights_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference_allowed", "retention_class", "attribution_required", "derivative_normalization_allowed", "rights_evidence_refs", "notes"],
+      "properties": {
+        "reference_allowed": { "enum": ["YES", "NO", "UNCLEAR"] },
+        "retention_class": { "enum": ["REFERENCE_ONLY", "NORMALIZED_TEXT", "MEDIA_WITH_PERMISSION", "OPERATOR_PROVIDED", "UNKNOWN"] },
+        "attribution_required": { "enum": ["YES", "NO", "UNCLEAR"] },
+        "derivative_normalization_allowed": { "enum": ["YES", "NO", "UNCLEAR"] },
+        "rights_evidence_refs": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" },
+          "uniqueItems": true
+        },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "runtime_policy_proposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["polling_enabled", "interval_minutes", "timezone", "active_windows", "max_items_per_run", "rate_limit", "initial_cursor_strategy", "dedupe_basis"],
+      "properties": {
+        "polling_enabled": { "type": "boolean" },
+        "interval_minutes": { "type": ["integer", "null"], "minimum": 60 },
+        "timezone": { "type": ["string", "null"] },
+        "active_windows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["start", "end"],
+            "properties": {
+              "start": { "type": "string", "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$" },
+              "end": { "type": "string", "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$" }
+            }
+          }
+        },
+        "max_items_per_run": { "type": ["integer", "null"], "minimum": 1 },
+        "rate_limit": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["min_request_interval_ms", "max_requests_per_run", "max_concurrency", "cooldown_seconds", "respect_retry_after"],
+          "properties": {
+            "min_request_interval_ms": { "type": "integer", "minimum": 0 },
+            "max_requests_per_run": { "type": "integer", "minimum": 1 },
+            "max_concurrency": { "type": "integer", "minimum": 1 },
+            "cooldown_seconds": { "type": "integer", "minimum": 0 },
+            "respect_retry_after": { "type": "boolean" }
+          }
+        },
+        "initial_cursor_strategy": { "enum": ["NONE", "TIMESTAMP", "EXTERNAL_ID", "PAGE_TOKEN", "ETAG", "CUSTOM", "UNDECIDED"] },
+        "dedupe_basis": { "type": ["string", "null"] }
+      }
+    },
+    "provenance_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proposed_reliability_tier", "rationale", "cross_check_expectation"],
+      "properties": {
+        "proposed_reliability_tier": { "enum": ["OFFICIAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
+        "rationale": { "type": ["string", "null"] },
+        "cross_check_expectation": { "enum": ["NONE", "PREFERRED", "REQUIRED"] }
+      }
+    },
+    "operational_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["secret_requirements", "withdrawal_policy", "failure_policy", "source_specific_tests_required"],
+      "properties": {
+        "secret_requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "required", "purpose"],
+            "properties": {
+              "key": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" },
+              "required": { "type": "boolean" },
+              "purpose": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "withdrawal_policy": { "type": ["string", "null"] },
+        "failure_policy": { "type": ["string", "null"] },
+        "source_specific_tests_required": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "decided_at", "decided_by", "authority", "decision_basis_refs", "blocking_reasons", "notes"],
+      "properties": {
+        "status": { "enum": ["REVIEW_REQUIRED", "APPROVED", "BLOCKED"] },
+        "decided_at": { "type": ["string", "null"], "format": "date-time" },
+        "decided_by": { "type": ["string", "null"], "minLength": 1 },
+        "authority": { "enum": ["UNASSIGNED", "OWNER_OR_COMPLIANCE"] },
+        "decision_basis_refs": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" },
+          "uniqueItems": true
+        },
+        "blocking_reasons": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "notes": { "type": ["string", "null"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "APPROVED" } }, "required": ["status"] },
+          "then": {
+            "properties": {
+              "decided_at": { "type": "string", "format": "date-time" },
+              "decided_by": { "type": "string", "minLength": 1 },
+              "authority": { "const": "OWNER_OR_COMPLIANCE" },
+              "decision_basis_refs": { "minItems": 1 },
+              "blocking_reasons": { "maxItems": 0 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "const": "REVIEW_REQUIRED" } }, "required": ["status"] },
+          "then": {
+            "properties": {
+              "authority": { "const": "UNASSIGNED" },
+              "decided_at": { "type": "null" },
+              "decided_by": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "const": "BLOCKED" } }, "required": ["status"] },
+          "then": { "properties": { "blocking_reasons": { "minItems": 1 } } }
+        }
+      ]
+    }
+  }
+}
