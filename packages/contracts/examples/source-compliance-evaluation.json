@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "66666666-6666-4666-8666-666666666666",
+  "candidate_key": "synthetic-thai-bull-source",
+  "evaluated_at": "2026-09-07T03:00:00Z",
+  "source_identity": {
+    "name": "Synthetic Thai bullfighting source candidate",
+    "operator_name": null,
+    "source_type": "OTHER",
+    "base_url": "https://example.invalid/bullmatch-source-evaluation",
+    "public_purpose": "Synthetic contract example only; not a real source or factual data provider.",
+    "identity_evidence_refs": []
+  },
+  "access_review": {
+    "proposed_access_method": "UNKNOWN",
+    "terms_reviewed": false,
+    "robots_reviewed": false,
+    "api_policy_reviewed": false,
+    "access_evidence_refs": [],
+    "notes": "No real access assessment has been performed for this synthetic fixture."
+  },
+  "rights_review": {
+    "reference_allowed": "UNCLEAR",
+    "retention_class": "UNKNOWN",
+    "attribution_required": "UNCLEAR",
+    "derivative_normalization_allowed": "UNCLEAR",
+    "rights_evidence_refs": [],
+    "notes": "Rights remain unresolved; therefore the candidate cannot be approved."
+  },
+  "runtime_policy_proposal": {
+    "polling_enabled": false,
+    "interval_minutes": null,
+    "timezone": null,
+    "active_windows": [],
+    "max_items_per_run": null,
+    "rate_limit": null,
+    "initial_cursor_strategy": "UNDECIDED",
+    "dedupe_basis": null
+  },
+  "provenance_review": {
+    "proposed_reliability_tier": "UNKNOWN",
+    "rationale": "No source-specific reliability evidence has been reviewed.",
+    "cross_check_expectation": "REQUIRED"
+  },
+  "operational_review": {
+    "secret_requirements": [],
+    "withdrawal_policy": null,
+    "failure_policy": null,
+    "source_specific_tests_required": [
+      "connector identity and contract validation",
+      "rate-limit and checkpoint safety",
+      "source-specific dedupe semantics"
+    ]
+  },
+  "decision": {
+    "status": "REVIEW_REQUIRED",
+    "decided_at": null,
+    "decided_by": null,
+    "authority": "UNASSIGNED",
+    "decision_basis_refs": [],
+    "blocking_reasons": [
+      "Source identity, access policy and rights have not been reviewed."
+    ],
+    "notes": "Synthetic example stays REVIEW_REQUIRED and cannot authorize polling."
+  }
+}
