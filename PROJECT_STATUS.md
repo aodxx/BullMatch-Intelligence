@@ -7,9 +7,9 @@ Last structural update: 2026-09-07
 **BullMatch Intelligence**  
 Repository: `aodxx/BullMatch-Intelligence`
 
-Current phase: **Phase 2 — First Source Compliance Readiness**
+Current phase: **Phase 2 — Source Compliance Boundary Reached**
 
-Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / SOURCE-AGNOSTIC COLLECTION + PERSISTED POLICY REGISTRY + SOURCE COMPLIANCE FRAMEWORK COMPLETE / CANDIDATE DOSSIER RESEARCH ACTIVE / NO REAL SOURCE AUTHORIZED**
+Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / SOURCE-AGNOSTIC COLLECTION + PERSISTED POLICY REGISTRY + SOURCE COMPLIANCE FRAMEWORK + CANDIDATE DOSSIER RESEARCH COMPLETE / NO REAL SOURCE AUTHORIZED**
 
 ## Product Direction / Truth Boundary
 
@@ -43,6 +43,7 @@ Neither contributors nor automated collectors may directly overwrite canonical B
 - BMI-P2-001 Source-Agnostic Collection Pipeline Foundation — COMPLETE — PR #64–#73
 - BMI-P2-002 Persisted Source Policy Registry Alignment — COMPLETE — PR #74
 - BMI-P2-003 First Source Compliance Evaluation Framework — COMPLETE — PR #77
+- BMI-P2-004 Candidate Source Dossier Research — COMPLETE research gate — PR #79–#80
 - BMI-APP-001 through BMI-APP-004 — COMPLETE implementation gates
 - BMI-OPS-001 through BMI-OPS-003 — COMPLETE
 
@@ -50,24 +51,9 @@ Production app: `https://aodxx.github.io/BullMatch-Intelligence/`
 
 No fake Production Bull/Match/review/community/source records have been retained for testing.
 
-## BMI-P1-013 — Community Contribution V1
+## Phase 2 Collection Foundation
 
-Status: **IMPLEMENTATION GATE COMPLETE**  
-Contract: `docs/COMMUNITY-CONTRIBUTION-V1.md`
-
-V1 supports evidence-backed correction/observation for an existing VERIFIED Bull using a public HTTP(S) reference for `home_province`, `home_district`, `color_description`, and `breed_description`.
-
-Delivered through PR #59–#62 with server-derived actor identity, REVIEW_REQUIRED atomic claims first, separate controlled promotion, idempotent intake and no AI auto-publish.
-
-Deferred: public self-signup/onboarding policy, direct image/file evidence upload, broader contribution types, and real-data success-path UI QA when genuine VERIFIED data exists.
-
-## BMI-P2-001 — Source-Agnostic Collection Pipeline Foundation
-
-Status: **IMPLEMENTATION GATE COMPLETE**  
-Merged PRs: **#64–#73**  
-Contracts: `docs/COLLECTION-PIPELINE-FOUNDATION.md`, `docs/COLLECTION-OPERATIONAL-ORCHESTRATION.md`
-
-Delivered source-agnostic contract validation, APPROVED/ACTIVE gates, run/correlation identity, safe checkpoints, atomic normalized source-item + PENDING evidence persistence, replay/stale-cursor protection, PostgreSQL adapters, rollback-only real-schema conformance, reusable synthetic fixtures, one-poll operational orchestration and a read-only PostgreSQL checkpoint reader.
+BMI-P2-001 through BMI-P2-003 delivered the source-agnostic connector runtime, atomic evidence/checkpoint persistence, PostgreSQL adapters, persisted source-policy registry alignment and the explicit source-compliance decision contract.
 
 Required invariant remains:
 
@@ -75,56 +61,37 @@ Required invariant remains:
 
 Collection code has no canonical Bull/Match/history, review, verification, promotion or publication write path.
 
-## BMI-P2-002 — Persisted Source Policy Registry Alignment
-
-Status: **IMPLEMENTATION GATE COMPLETE**  
-Merged PR: **#74**  
-Production migration: **20260907025225_align_bullmatch_source_policy_registry**
-
-Delivered additive source policy storage, no guessed backfill/defaults for existing source rows, fail-closed shared-schema validation and a read-only PostgreSQL source-registry provider. Production migration and post-migration schema checks passed. Production source registry remained at APPROVED sources = 0 and APPROVED+ACTIVE+polling sources = 0.
-
-## BMI-P2-003 — First Source Compliance Evaluation Framework
-
-Status: **IMPLEMENTATION GATE COMPLETE**  
-Merged PR: **#77**  
-Contract: `source-compliance-evaluation/1.0.0`  
-Guide: `docs/SOURCE-COMPLIANCE-EVALUATION.md`
-
-Delivered a deterministic pre-approval dossier covering source/operator identity, access method and policy evidence, retention/attribution rights, proposed polling/rate-limit/cursor/dedupe policy, provenance/reliability rationale, secret requirement names, withdrawal/failure behavior and source-specific validation expectations.
-
-Decision safety:
-
-- every unresolved candidate remains `REVIEW_REQUIRED`
-- `APPROVED` requires an explicit `OWNER_OR_COMPLIANCE` decision actor/time, at least one decision-basis reference and zero blockers
-- `BLOCKED` requires a recorded blocking reason
-- the framework cannot create or activate a Production source
-- synthetic example uses `.invalid`; no real Bull/Match/source facts are retained as fixture data
+A source is not executable merely because it is public. Real-source activation requires an APPROVED source-registry/compliance decision.
 
 ## BMI-P2-004 — Candidate Source Dossier Research
 
-Status: **IN PROGRESS — FIRST-PARTY EVIDENCE FOLLOW-UP**  
-Initial shortlist merged: **PR #79**  
-Active branch: `agent/bmi-p2-004-first-party-evidence`
+Status: **RESEARCH GATE COMPLETE**  
+PRs: **#79–#80**  
+Evidence log: `docs/SOURCE-EVIDENCE-RESEARCH-NOTES.md`
 
-Current candidate set:
+Candidate findings:
 
-- **wuachon.co** — strongest direct domain relevance in the shortlist. Manual browser research confirms the public homepage is accessible and visibly program-oriented, but no reliable first-party operator identity, terms, robots, automation policy or reuse/license basis was established. It remains `REVIEW_REQUIRED`, reliability `UNKNOWN`, cross-check `REQUIRED`, and `polling_enabled=false`.
-- **Thailand Sports Almanac** — official government sports reference with possible provenance/context value. No new first-party automation/reuse policy was established in the current follow-up, so its dossier remains intentionally unchanged and `REVIEW_REQUIRED`.
-- **Surat Thani Provincial Government** — first-party About evidence strengthens official operator provenance for provincial content. This does not establish permission for recurring automated retrieval or content reuse; the candidate remains an episodic corroboration source and `REVIEW_REQUIRED`.
+- **wuachon.co** — strongest direct domain relevance. Public browser accessibility and program-oriented publication are confirmed, but operator identity, terms/robots/automation policy, reuse/license basis and runtime policy remain unresolved. `REVIEW_REQUIRED`, reliability `UNKNOWN`, cross-check `REQUIRED`, `polling_enabled=false`.
+- **Thailand Sports Almanac** — official government sports-reference candidate with potential provenance/context value, but Bull-specific coverage depth and automation/reuse policy remain unresolved. `REVIEW_REQUIRED`, `polling_enabled=false`.
+- **Surat Thani Provincial Government** — first-party About evidence strengthens official operator provenance. The source remains an episodic corroboration candidate; recurring automated access/reuse permission and source-specific runtime policy are unresolved. `REVIEW_REQUIRED`, `polling_enabled=false`.
 
-Evidence log: `docs/SOURCE-EVIDENCE-RESEARCH-NOTES.md`.
+All dossiers retain `authority=UNASSIGNED` and explicit blocking reasons. No connector polling, bulk scraping, credential creation, Production source activation, Bull/Match fixture ingestion or canonical write occurred.
 
-No connector polling, bulk scraping, credential creation, private source-registry activation, Bull/Match fixture ingestion or Production canonical write occurred.
+Validation for PR #80: shared schema/examples and connector conformance tests **PASS** in workflow run #43. The contracts workflow now includes `docs/source-evaluations/**`, so future dossier edits automatically run these safety checks.
 
-## External Decision Blocker
+## External Decision Boundary
 
-The **first Production source connector and activation remain BLOCKED** because BullMatch currently has no explicit owner/compliance-approved real source.
+The **first Production source connector and activation are BLOCKED** because BullMatch has no explicit owner/compliance-approved real source.
 
-The minimum external action later required is an explicit `APPROVED` decision for one sufficiently evidenced dossier under `source-compliance-evaluation/1.0.0`. Until that exists, no connector may be enabled against a real source and no source row may be activated merely to continue development.
+Minimum external action required:
 
-## Deferred / External-Decision Items
+1. resolve enough first-party operator/access/rights/runtime evidence for a selected dossier;
+2. record an explicit `OWNER_OR_COMPLIANCE` `APPROVED` decision under `source-compliance-evaluation/1.0.0` with decision-basis references and zero blockers.
 
-- first Production source approval and connector activation
+Until that exists, no real connector may be enabled and no private source row may be activated merely to preserve development momentum.
+
+## Other Deferred / External-Decision Items
+
 - open/public contributor signup/onboarding policy
 - AI provider selection
 - destructive Bull identity merge/split execution
@@ -136,4 +103,6 @@ The minimum external action later required is an explicit `APPROVED` decision fo
 
 ## Exact Next Autonomous Action
 
-Complete validation and PR handoff for the BMI-P2-004 first-party evidence follow-up. If the dossiers remain contract-valid and non-approved, merge the research update. After that, do not implement or activate a real connector unless new first-party policy/rights evidence resolves the relevant blockers and an explicit `OWNER_OR_COMPLIANCE` approval exists. If no such evidence/decision exists, record the source-approval blocker as the Phase 2 boundary and move to the next safe task that does not depend on fabricated data or unauthorized collection.
+There is currently **no additional READY engineering task** that can safely cross the Phase 2 boundary without one of: explicit source approval, genuine verified data depth, or a separate owner policy decision.
+
+Do not repeatedly redo the same source-policy search or invent a connector. Resume when new first-party evidence or an explicit owner/compliance decision exists; then start a dedicated first-source connector Task ID from fresh `main` and keep normalized collection output on the evidence/review path rather than canonical history.
