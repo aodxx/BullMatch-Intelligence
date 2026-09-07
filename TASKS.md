@@ -63,73 +63,57 @@ Runbook: `docs/AUTO-RUN-RUNBOOK.md`.
 ### BMI-P2-001 — Source-Agnostic Collection Pipeline Foundation
 Status: **IN PROGRESS**
 Owner: Primary Maintainer (ChatGPT autonomous run)
-Active branch: `agent/bmi-p2-001-persistence-contract`
-Current PR: **#66 — `[BMI-P2-001] Define atomic ingestion persistence boundary`**
-Previous merged slices:
+Latest merged slices:
 - PR #64 — executable connector contracts + checkpoint safety
 - PR #65 — approved source registry loader + SOURCE_MONITORING run state
+- PR #66 — atomic ingestion persistence boundary
 Priority: highest current non-blocked engineering task.
 Contract reference: `docs/COLLECTION-PIPELINE-FOUNDATION.md`
 
 Goal:
 Make the existing Phase 0 source/connector/normalized-ingestion contracts executable and persistence-ready before any real Production source is selected.
 
-### Delivered baseline — PR #64
+### PR #64 — connector execution baseline — MERGED
 
-- existing `packages/contracts` schemas reused instead of introducing competing contracts
-- connector request/result cross-schema `$ref` repair against canonical schema `$id`s
-- source-agnostic `Connector` protocol and validated `run_connector_poll()`
+- existing shared schemas reused
+- source-agnostic `Connector` protocol + validated `run_connector_poll()`
 - APPROVED + ACTIVE + polling-enabled policy gates
 - connector/source/run/correlation identity enforcement
-- duplicate `dedupe_key` rejection inside one poll result
-- checkpoint advances only after valid output and `checkpoint_safe=true`
-- deterministic in-memory conformance tests
-- shared-contract CI coverage
-- no network, Production persistence or canonical write capability
+- duplicate `dedupe_key` rejection within one poll
+- checkpoint advances only after valid output + `checkpoint_safe=true`
+- deterministic tests + CI
 
-### Delivered registry/run-state slice — PR #65
+### PR #65 — registry/run-state — MERGED
 
-- validated `ApprovedSourceRegistry` runtime loader
-- `REVIEW_REQUIRED`/`BLOCKED` sources excluded from runtime view
+- approved-only runtime source registry
 - duplicate source IDs rejected
-- approved-but-paused/polling-disabled sources blocked from polling
-- connector-key filtering returns only ACTIVE + poll-enabled approved sources
-- persistence-neutral `CollectionRunState` using existing `AgentRun` contract
-- schema-valid SOURCE_MONITORING run state
-- poll request construction bound to run/correlation/source identity
-- requested item/request limits capped by source registry policy
-- connector execution metrics/output references recorded deterministically
-- health/error terminal mapping to SUCCEEDED/PARTIAL/FAILED
-- explicit contract-valid SOURCE_MONITORING failure path
-- AgentRun -> AgentError `$ref` repaired to canonical 1.0.0 `$id`
+- paused/poll-disabled approved sources remain non-pollable
+- persistence-neutral `CollectionRunState`
+- existing AgentRun contract reused for SOURCE_MONITORING
+- poll item/request limits capped by source policy
+- deterministic run metrics/output refs + terminal states
+- standards-resolvable AgentRun -> AgentError reference
 
-Validation for PR #65:
-- shared contract schema/example validation — PASS
-- connector runner tests — PASS
-- registry/run-state integration tests — PASS
+### PR #66 — atomic persistence contract — MERGED
 
-### Current persistence slice — PR #66
-
-Implemented:
-- `IngestionPersistenceAdapter` and `IngestionTransaction` protocols
-- `persist_poll_execution()` transaction boundary after validated connector output
-- source/correlation identity rechecked at persistence boundary
-- normalized item/evidence staging before checkpoint commit
-- `(source_id, dedupe_key)` idempotency key
-- exact replay does not duplicate stored item/evidence
-- same dedupe key with different normalized payload is rejected instead of overwritten
-- unsafe checkpoint may persist evidence while retaining the previous cursor
+- `IngestionPersistenceAdapter` / `IngestionTransaction` protocols
+- `persist_poll_execution()` after validated connector output
+- source/correlation identity recheck at persistence boundary
+- normalized item + evidence staging before checkpoint commit
+- `(source_id, dedupe_key)` idempotency
+- exact replay without duplicate evidence
+- conflicting same-key normalized payload rejected instead of overwritten
+- unsafe checkpoint may persist evidence while retaining prior cursor
 - stale expected cursor rejected before staging
-- transaction begin is side-effect free
-- any staging/checkpoint exception rolls back the full batch
-- deterministic in-memory adapter models atomic semantics only for tests
+- transaction begin is side-effect free; any error rolls full batch back
+- persisted cursor shape is request-compatible `strategy + value`; transient `checkpoint_safe` is not stored
+- deterministic in-memory conformance adapter only; no Production DB writes
 
-Persistence invariants:
-1. source item + evidence + checkpoint visibility is atomic
-2. invalid/conflicting data never advances checkpoint
-3. replay is idempotent only when normalized payload is identical
-4. persistence layer has no canonical Bull/Match/history write operation
-5. no Production adapter or migration is introduced in this slice
+Validation before PR #66 merge:
+- schema/example validation — PASS
+- connector runner tests — PASS
+- registry/run-state tests — PASS
+- atomic persistence tests — PASS
 
 Required project-wide invariants:
 1. normalized source output remains untrusted evidence/candidate input
@@ -140,13 +124,13 @@ Required project-wide invariants:
 6. test fixtures are deterministic and never persisted to Production
 7. a real source connector requires a separate explicit source/compliance decision
 
-### Exact next safe slices inside BMI-P2-001 after PR #66
+### Exact next safe slices inside BMI-P2-001
 
 1. persisted AgentRun/run-state adapter compatible with `CollectionRunState`
-2. PostgreSQL/Supabase adapter mapping to existing private ingestion tables
-3. rollback-only database conformance tests for source item/evidence/checkpoint atomicity
+2. PostgreSQL/Supabase adapter mapping to existing `bullmatch_private` ingestion/runtime tables
+3. rollback-only database conformance tests for item/evidence/checkpoint atomicity
 4. reusable connector conformance fixture helpers
-5. orchestration wrapper connecting registry -> run state -> connector -> persistence without selecting a real source
+5. operational orchestration wrapper connecting registry -> run state -> connector -> persistence without selecting a real source
 
 Explicitly not authorized in BMI-P2-001:
 - selecting or scraping the first real Production source
