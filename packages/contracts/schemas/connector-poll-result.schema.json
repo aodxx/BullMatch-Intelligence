@@ -24,7 +24,7 @@
     "source_id": { "type": "string", "format": "uuid" },
     "items": {
       "type": "array",
-      "items": { "$ref": "normalized-ingestion-envelope.schema.json" }
+      "items": { "$ref": "https://bullmatch.local/contracts/normalized-ingestion-envelope/1.0.0" }
     },
     "next_cursor": {
       "type": "object",
@@ -60,7 +60,7 @@
     "metrics": { "type": "object", "additionalProperties": true },
     "errors": {
       "type": "array",
-      "items": { "$ref": "agent-error.schema.json" }
+      "items": { "$ref": "https://bullmatch.local/contracts/agent-error/1.0.0" }
     }
   }
 }

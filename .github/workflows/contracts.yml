@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'packages/contracts/**'
+      - 'agents/connectors/**'
       - 'docs/AI-AGENT-SPEC.md'
       - 'scripts/validate_contracts.py'
       - '.github/workflows/contracts.yml'
@@ -11,6 +12,7 @@ on:
     branches: [main]
     paths:
       - 'packages/contracts/**'
+      - 'agents/connectors/**'
       - 'docs/AI-AGENT-SPEC.md'
       - 'scripts/validate_contracts.py'
       - '.github/workflows/contracts.yml'
@@ -31,3 +33,6 @@ jobs:
 
       - name: Validate schemas and examples
         run: python3 scripts/validate_contracts.py
+
+      - name: Run connector conformance tests
+        run: python3 -m unittest discover -s agents/connectors/tests -v

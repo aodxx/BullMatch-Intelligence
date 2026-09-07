@@ -9,7 +9,7 @@
     "schema_version": { "const": "1.0.0" },
     "correlation_id": { "type": "string", "format": "uuid" },
     "run_id": { "type": "string", "format": "uuid" },
-    "source": { "$ref": "source-registry-entry.schema.json" },
+    "source": { "$ref": "https://bullmatch.local/contracts/source-registry-entry/1.0.0" },
     "cursor": {
       "type": "object",
       "additionalProperties": false,
