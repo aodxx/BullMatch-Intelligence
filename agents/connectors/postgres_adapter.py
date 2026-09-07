@@ -1,17 +1,21 @@
-"""PostgreSQL mapping for the source-agnostic ingestion persistence contract.
+"""PostgreSQL mapping for BullMatch source-agnostic collection contracts.
 
-This adapter targets the already-deployed BullMatch-private ingestion tables.
-It expects a server-side/direct PostgreSQL connection supplied by the runtime;
-connection credentials are intentionally outside this module. The adapter has
-no canonical Bull/Match/history write SQL.
+This module targets the already-deployed ``bullmatch_private`` ingestion,
+runtime-state and AgentRun tables. A server-side/direct PostgreSQL connection
+is supplied by the runtime; credentials are intentionally outside this module.
+
+The adapter exposes no SQL for canonical Bulls, Matches, verification,
+promotion or publication.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+from datetime import datetime
 from typing import Any, Callable, Mapping, Protocol, Sequence
 
+from .orchestration import CollectionRunState
 from .persistence import IngestionPersistenceAdapter, PersistenceError, StagedItem
 from .runner import JsonObject
 
@@ -32,6 +36,9 @@ class DbConnection(Protocol):
 
 ConnectionFactory = Callable[[], DbConnection]
 
+_NORMALIZED_FINGERPRINT_KEY = "normalized_envelope_fingerprint"
+_RUN_REFS_KEY = "_bullmatch_run_refs"
+
 
 def normalized_envelope_fingerprint(envelope: Mapping[str, Any]) -> str:
     """Stable SHA-256 fingerprint of the complete normalized envelope."""
@@ -49,6 +56,28 @@ def _json(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
+def _iso(value: Any) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.isoformat()
+    return str(value)
+
+
+def _storage_raw_metadata(envelope: Mapping[str, Any], fingerprint: str) -> JsonObject:
+    """Add a private idempotency fingerprint without overloading content_hash.
+
+    ``source_items.content_hash`` remains available for a future source-content
+    hash. The normalized-envelope fingerprint is implementation metadata only.
+    """
+
+    metadata = dict(envelope.get("raw_metadata") or {})
+    internal = dict(metadata.get("_bullmatch") or {})
+    internal[_NORMALIZED_FINGERPRINT_KEY] = fingerprint
+    metadata["_bullmatch"] = internal
+    return metadata
+
+
 def _evidence_metadata(evidence: Mapping[str, Any]) -> JsonObject:
     metadata = dict(evidence.get("metadata") or {})
     source_ref = evidence.get("source_ref")
@@ -57,6 +86,120 @@ def _evidence_metadata(evidence: Mapping[str, Any]) -> JsonObject:
         internal["source_ref"] = source_ref
         metadata["_bullmatch"] = internal
     return metadata
+
+
+class PostgresCollectionRunStore:
+    """Persist/restore ``CollectionRunState`` through ``agent_runs``.
+
+    Contract-only fields that do not have dedicated database columns are kept
+    inside ``metrics._bullmatch_run_refs``. This is additive and requires no
+    migration. The store never mutates source items, evidence or canonical data.
+    """
+
+    def __init__(self, connection_factory: ConnectionFactory) -> None:
+        self.connection_factory = connection_factory
+
+    def save(self, state: CollectionRunState) -> None:
+        payload = state.as_contract()
+        metrics = dict(payload["metrics"])
+        metrics[_RUN_REFS_KEY] = {
+            "input_refs": list(payload["input_refs"]),
+            "output_refs": list(payload["output_refs"]),
+        }
+        items_scanned = int(metrics.get("items_emitted", 0))
+        items_created = int(metrics.get("items_persisted_created", 0))
+
+        connection = self.connection_factory()
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                """
+                insert into bullmatch_private.agent_runs(
+                  id, agent_type, agent_version, source_id, correlation_id,
+                  started_at, completed_at, status, items_scanned, items_created,
+                  review_cases_created, error_count, metrics, errors
+                ) values (
+                  %s, 'SOURCE_MONITORING', %s, %s, %s,
+                  %s, %s, %s, %s, %s,
+                  0, %s, %s::jsonb, %s::jsonb
+                )
+                on conflict (id) do update set
+                  agent_version = excluded.agent_version,
+                  source_id = excluded.source_id,
+                  correlation_id = excluded.correlation_id,
+                  completed_at = excluded.completed_at,
+                  status = excluded.status,
+                  items_scanned = excluded.items_scanned,
+                  items_created = excluded.items_created,
+                  review_cases_created = excluded.review_cases_created,
+                  error_count = excluded.error_count,
+                  metrics = excluded.metrics,
+                  errors = excluded.errors
+                """,
+                (
+                    payload["run_id"],
+                    payload["agent_version"],
+                    payload["source_id"],
+                    payload["correlation_id"],
+                    payload["started_at"],
+                    payload["completed_at"],
+                    payload["status"],
+                    items_scanned,
+                    items_created,
+                    len(payload["errors"]),
+                    _json(metrics),
+                    _json(payload["errors"]),
+                ),
+            )
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            cursor.close()
+            connection.close()
+
+    def load(self, run_id: str) -> CollectionRunState | None:
+        connection = self.connection_factory()
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                """
+                select id, agent_type, agent_version, source_id, correlation_id,
+                       started_at, completed_at, status, metrics, errors
+                from bullmatch_private.agent_runs
+                where id = %s
+                """,
+                (run_id,),
+            )
+            row = cursor.fetchone()
+            if row is None:
+                return None
+            if row[1] != "SOURCE_MONITORING":
+                raise PersistenceError("agent run is not a SOURCE_MONITORING run")
+            if row[3] is None or row[4] is None:
+                raise PersistenceError("SOURCE_MONITORING run is missing source/correlation identity")
+
+            metrics = dict(row[8] or {})
+            refs = dict(metrics.pop(_RUN_REFS_KEY, {}) or {})
+            state = CollectionRunState(
+                source_id=str(row[3]),
+                agent_version=str(row[2]),
+                started_at=_iso(row[5]) or "",
+                run_id=str(row[0]),
+                correlation_id=str(row[4]),
+                status=str(row[7]),
+                completed_at=_iso(row[6]),
+                input_refs=list(refs.get("input_refs") or [f"source:{row[3]}"]),
+                output_refs=list(refs.get("output_refs") or []),
+                metrics=metrics,
+                errors=[dict(error) for error in (row[9] or [])],
+            )
+            state.as_contract()
+            return state
+        finally:
+            cursor.close()
+            connection.close()
 
 
 class PostgresIngestionPersistence(IngestionPersistenceAdapter):
@@ -76,12 +219,14 @@ class PostgresIngestionPersistence(IngestionPersistenceAdapter):
         connection = self.connection_factory()
         cursor = connection.cursor()
         try:
+            # Serialize source persistence. If runtime state does not exist yet,
+            # this source-row lock also prevents competing first-poll inserts.
             cursor.execute(
                 """
                 select policy_status, status, polling_enabled
                 from bullmatch_private.sources
                 where id = %s
-                for share
+                for update
                 """,
                 (source_id,),
             )
@@ -91,16 +236,6 @@ class PostgresIngestionPersistence(IngestionPersistenceAdapter):
             if tuple(source_row) != ("APPROVED", "ACTIVE", True):
                 raise PersistenceError("source must remain APPROVED, ACTIVE and polling-enabled at persistence time")
 
-            strategy = str(expected_cursor["strategy"])
-            value = expected_cursor.get("value")
-            cursor.execute(
-                """
-                insert into bullmatch_private.source_runtime_state(source_id, cursor_strategy, cursor)
-                values (%s, %s, %s::jsonb)
-                on conflict (source_id) do nothing
-                """,
-                (source_id, strategy, _json(value)),
-            )
             cursor.execute(
                 """
                 select cursor_strategy, cursor
@@ -111,9 +246,11 @@ class PostgresIngestionPersistence(IngestionPersistenceAdapter):
                 (source_id,),
             )
             runtime_row = cursor.fetchone()
-            if runtime_row is None:
-                raise PersistenceError("source runtime state could not be initialized")
-            stored_cursor = {"strategy": runtime_row[0], "value": runtime_row[1]}
+            stored_cursor = (
+                {"strategy": runtime_row[0], "value": runtime_row[1]}
+                if runtime_row is not None
+                else dict(expected_cursor)
+            )
             if stored_cursor != dict(expected_cursor):
                 raise PersistenceError("stored checkpoint does not match expected cursor")
 
@@ -167,7 +304,7 @@ class PostgresIngestionTransaction:
         dedupe_key = payload["dedupe_key"]
         self.cursor.execute(
             """
-            select id, content_hash
+            select id, raw_metadata #>> '{_bullmatch,normalized_envelope_fingerprint}'
             from bullmatch_private.source_items
             where source_id = %s and dedupe_key = %s
             for update
@@ -177,6 +314,8 @@ class PostgresIngestionTransaction:
         existing = self.cursor.fetchone()
         if existing is not None:
             item_id, stored_fingerprint = existing[0], existing[1]
+            if stored_fingerprint is None:
+                raise PersistenceError("existing source item lacks normalized-envelope fingerprint")
             if stored_fingerprint != fingerprint:
                 raise PersistenceError("dedupe_key already exists with different normalized payload")
             self.cursor.execute(
@@ -212,10 +351,10 @@ class PostgresIngestionTransaction:
                 dedupe_key,
                 payload.get("published_at"),
                 payload["retrieved_at"],
-                fingerprint,
+                None,
                 payload.get("title"),
                 payload.get("normalized_text"),
-                _json(payload.get("raw_metadata") or {}),
+                _json(_storage_raw_metadata(payload, fingerprint)),
                 connector["name"],
                 connector["version"],
             ),
@@ -270,14 +409,16 @@ class PostgresIngestionTransaction:
             raise PersistenceError("non-advanced PostgreSQL checkpoint must equal expected cursor")
         self.cursor.execute(
             """
-            update bullmatch_private.source_runtime_state
-            set cursor_strategy = %s,
-                cursor = %s::jsonb,
-                last_attempt_at = now(),
-                updated_at = now()
-            where source_id = %s
+            insert into bullmatch_private.source_runtime_state(
+              source_id, cursor_strategy, cursor, last_attempt_at, updated_at
+            ) values (%s, %s, %s::jsonb, now(), now())
+            on conflict (source_id) do update set
+              cursor_strategy = excluded.cursor_strategy,
+              cursor = excluded.cursor,
+              last_attempt_at = excluded.last_attempt_at,
+              updated_at = excluded.updated_at
             """,
-            (next_cursor["strategy"], _json(next_cursor.get("value")), self.source_id),
+            (self.source_id, next_cursor["strategy"], _json(next_cursor.get("value"))),
         )
 
     def commit(self) -> None:
