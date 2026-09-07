@@ -1,5 +1,11 @@
 """Source-agnostic connector runtime for BullMatch Intelligence."""
 
+from .operational import (
+    CheckpointReader,
+    CollectionRunStore,
+    OperationalRunResult,
+    run_collection_once,
+)
 from .orchestration import CollectionRunState, RunStateError
 from .persistence import (
     InMemoryIngestionPersistence,
@@ -16,13 +22,16 @@ from .runner import Connector, ContractError, PollExecution, run_connector_poll
 
 __all__ = [
     "ApprovedSourceRegistry",
+    "CheckpointReader",
     "CollectionRunState",
+    "CollectionRunStore",
     "Connector",
     "ContractError",
     "InMemoryIngestionPersistence",
     "InMemorySourceRegistryProvider",
     "IngestionPersistenceAdapter",
     "IngestionTransaction",
+    "OperationalRunResult",
     "PersistenceError",
     "PersistenceResult",
     "PollExecution",
@@ -32,5 +41,6 @@ __all__ = [
     "SourceRegistryError",
     "StagedItem",
     "persist_poll_execution",
+    "run_collection_once",
     "run_connector_poll",
 ]
