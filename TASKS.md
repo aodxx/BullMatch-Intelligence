@@ -1,6 +1,6 @@
 # Task Registry
 
-This file is the high-level project map. GitHub Issues/PRs track execution.
+This file is the high-level project map. GitHub Issues/PRs are the canonical execution/handoff records.
 
 ## Phase 0 — Foundation & Architecture — COMPLETE
 
@@ -8,7 +8,7 @@ BMI-P0-001 through BMI-P0-010: **DONE**.
 
 ---
 
-## Phase 1 — Core Verified Database / Community Rebaseline
+## Phase 1 — Verified Database / Community Foundation — COMPLETE GATES
 
 ### BMI-P1-001 — Shared Supabase Bootstrap
 Status: DONE — PR #16
@@ -17,7 +17,7 @@ Status: DONE — PR #16
 Status: DONE — PR #18
 
 ### BMI-P1-003 — Seed / Reference Data
-Status: DEFERRED — NO REQUIRED MVP SEED YET
+Status: DEFERRED — NO REQUIRED MVP SEED; never fabricate Production history.
 
 ### BMI-P1-004 — Admin Authentication & Roles
 Status: DONE — PR #20
@@ -33,84 +33,30 @@ Status: DONE — PR #29
 
 ### BMI-P1-008 — Review Backend Foundation
 Status: DONE — IMPLEMENTATION GATE COMPLETE
-Merged/deployed slices: PR #50, #51, #52, #53, #54, #55, #56
+Merged/deployed slices: PR #50, #51, #52, #53, #54, #55, #56.
 
 Delivered:
+- controlled REVIEWER/ADMIN queue/detail and evidence projection
+- idempotent commands + optimistic concurrency
+- atomic claim decisions and append-only audit/provenance
+- read-only Bull MERGE/SPLIT impact preview; destructive execution remains disabled
+- narrow ADMIN-only promotion for evidence-backed VERIFIED Bull facts
+- guarded duplicate/entity decisions; name-only identity proof is blocked
+- guarded UNVERIFIED Bull identity-container creation
+- Production Review Queue UI
+- safe review-routing metadata EDIT limited to priority/summary
 
-**Review foundation — PR #50 / migration `20260906211732_add_bullmatch_review_backend_foundation`**
-- controlled REVIEWER/ADMIN queue + detail API
-- controlled evidence access with access-class redaction
-- idempotent review commands + optimistic case version
-- claim VERIFIED/REJECTED/CONFLICT/SUPERSEDED decisions
-- append-only review actions + private audit
-
-**Bull identity impact preview — PR #51 / migration `20260906212825_add_bullmatch_identity_impact_preview`**
-- deterministic read-only MERGE/SPLIT preview
-- same-match distinct-Bull hard-conflict detection
-- deterministic fingerprint
-- execution disabled
-- name similarity is not merge authority
-
-**Guarded VERIFIED claim promotion — PR #52 / migration `20260906214802_add_bullmatch_verified_claim_promotion`**
-- ADMIN-only canonical promotion separate from claim APPROVE
-- evidence-backed EXPLICIT VERIFIED Bull claims only
-- first allowlist: `home_province`, `home_district`, `color_description`, `breed_description`
-- identity/name/alias, affiliation, lineage, media, lifecycle, match history/results and merge/split excluded
-- provenance + review action + audit + idempotency
-
-**Reviewed entity/duplicate decisions — PR #53 / migration `20260906215917_add_bullmatch_reviewed_entity_decisions`**
-- `LINK_ENTITY`, `CONFIRM_DUPLICATE`, `MARK_NOT_DUPLICATE`
-- ACTIVE ADMIN/REVIEWER authorization
-- command-id idempotency + optimistic case version
-- verified/nonarchived link targets
-- Bull non-name-only identity basis; `NAME_ONLY` blocked
-- duplicate decisions do not merge canonical entities
-- `canonical_mutation: false`
-
-**Guarded reviewed Bull CREATE_ENTITY — PR #54 / migration `20260906224832_add_bullmatch_guarded_review_create_entity`**
-- policy `BMI-P1-008-BULL-CREATE-V1`
-- ACTIVE ADMIN only
-- completed candidate search + duplicate search + search policy version required
-- strong creation basis required; `NAME_ONLY` blocked
-- unresolved/confirmed duplicate candidate blocks creation
-- active same-normalized-name Bull blocks creation conservatively
-- successful path creates canonical name only and leaves Bull `UNVERIFIED`
-- no owner/camp/lineage/media/descriptive/match fields written
-- idempotent replay + audit/provenance safeguards
-
-**Production Review Queue UI — PR #55**
-- authenticated reviewer control room wired to existing Production review APIs
-- queue, case detail, atomic claims, evidence, candidate signals and append-only audit history
-- CLAIM / UNCLAIM / COMMENT / APPROVE / REJECT controls use fresh command IDs and optimistic case status/version
-- APPROVE is clearly separated from canonical promotion
-- read-only MERGE/SPLIT impact preview; no destructive identity controls
-- responsive sports-intelligence UI and valid empty-Production state without fake fixtures
-- Web CI + controlled Production API smoke + GitHub Pages deployment passed
-
-**Safe review metadata EDIT — PR #56 / migration `20260906225757_add_bullmatch_review_metadata_edit` / Edge v12**
-- policy `BMI-P1-008-REVIEW-METADATA-EDIT-V1`
-- only `priority` and `summary` review-routing metadata are editable
-- subject/claim/evidence/canonical fields cannot be changed through EDIT
-- idempotent command + optimistic case version + reviewer note
-- `canonical_mutation: false`
-- rollback-only Production regression and security review passed
-
-Required invariants preserved:
-- canonical history remains closed to direct community writes
-- claim verification and canonical promotion remain separate
-- UNVERIFIED entity creation is not publication/verification
-- ACTIVE ADMIN/REVIEWER authorization is server/database enforced
-- review operations are idempotent and concurrency-safe
-- evidence/provenance/audit are preserved
-- no majority-vote canonical truth
-- name similarity alone never proves Bull identity
-- unresolved/conflicted claims are not published
+Preserved invariants:
+- canonical history closed to direct community writes
+- APPROVE and canonical promotion are separate operations
+- no majority-vote truth or name-similarity auto-merge
 - no betting/wallet/settlement/payout capability
 
-Explicitly deferred outside the BMI-P1-008 implementation gate:
-- destructive Bull identity MERGE/SPLIT execution; future work must require an unchanged impact-preview fingerprint plus explicit reassignment/provenance safeguards
-- broad/high-risk canonical EDIT or promotion for Bull identity/name/aliases, owner/camp affiliations, lineage, media and match history
-- distinct-Bull same-name creation escalation policy
+Deferred outside this gate:
+- destructive identity MERGE/SPLIT
+- broad/high-risk identity/name/alias promotion
+- owner/camp affiliation, lineage/media and match-history promotion
+- distinct-Bull same-name escalation policy
 
 ### BMI-P1-009 — Thai Bullfighting Domain Rebaseline
 Status: DONE — PR #36
@@ -120,32 +66,19 @@ Status: DONE — PR #38
 
 ### BMI-P1-011 — Database Schema v0.2
 Status: DONE — PR #39
-
-Deliverables:
-- `docs/DATABASE-SCHEMA.md`
-- `docs/DATABASE-SCHEMA-V0.2-MIGRATION-PLAN.md`
+Deliverables: `docs/DATABASE-SCHEMA.md`, `docs/DATABASE-SCHEMA-V0.2-MIGRATION-PLAN.md`.
 
 ### BMI-P1-012 — Contribution & Trust Architecture
 Status: DONE — PR #40
-
-Deliverable:
-- `docs/CONTRIBUTION-TRUST-ARCHITECTURE.md`
-
-Core contract:
-- mobile/field-friendly contribution entry points
-- AI as form assistant, never auto-publisher
-- atomic claims and identity/duplicate safeguards
-- evidence quality separate from contributor reputation
-- community review risk tiers; no majority-vote truth
-- Data Credit is not money/betting value
+Deliverable: `docs/CONTRIBUTION-TRUST-ARCHITECTURE.md`.
 
 ### BMI-P1-013 — Community Contribution Intake Foundation
-Status: IN PROGRESS
-Owner: Primary Maintainer (ChatGPT autonomous run)
-Current branch: `agent/bmi-p1-013-my-submissions`
+Status: DONE — **V1 IMPLEMENTATION GATE COMPLETE**
+Owner: Primary Maintainer
 Contract: `docs/COMMUNITY-CONTRIBUTION-V1.md`
+Merged/deployed slices: PR #59, #60, #61, #62.
 
-Selected first V1 input:
+Selected V1 input:
 **Evidence-backed correction/observation for an existing VERIFIED Bull profile using a public HTTP(S) source reference.**
 
 V1 atomic field allowlist:
@@ -154,60 +87,65 @@ V1 atomic field allowlist:
 - `color_description`
 - `breed_description`
 
-Completed increments:
+Delivered:
 
-**Community-origin foundation — PR #59 / Production migrations `20260906232656` + `20260906232826`**
+**PR #59 — Community-origin foundation**
+- Production migrations `20260906232656` + `20260906232826`
 - contributor profiles and private community submissions
 - generalized evidence/claim origin while preserving source-extraction compatibility
-- service-role-only storage and browser default-deny
-- rollback-only compatibility/access regression PASS
-- no retained fixture rows
+- service-role-only storage / browser default-deny
+- rollback-only isolation regression PASS; no retained fixtures
 
-**Controlled correction submission API — PR #60 / Production migration `20260906234150` / Edge v13**
+**PR #60 — Controlled Bull correction submission API**
+- Production migration `20260906234150`
+- `bullmatch-api` Edge v13
 - actor derived from validated bearer token, never payload
 - existing VERIFIED/nonarchived Bull required
-- four-field V1 allowlist and public HTTP(S) evidence reference
+- public HTTP(S) evidence required
 - deterministic idempotency/dedupe/value fingerprints
 - creates submission + evidence + atomic REVIEW_REQUIRED claim + OPEN DATA_QUALITY review case
-- claim confidence NULL; no AI auto-publish
+- confidence stays NULL; no AI auto-publish
 - canonical Bull unchanged in rollback regression
 - direct RPC execution revoked from PUBLIC/anon/authenticated
-- GitHub Typecheck/Build + controlled Production API smoke PASS
 
-**Contributor `MY_SUBMISSIONS` safe projection — current branch / Production migration `20260906235014_add_bullmatch_my_submissions_query` / Edge v14**
-- authenticated GET resource `MY_SUBMISSIONS`; actor derived from bearer token
-- service-role-only database query uses security invoker
-- scoped explicitly to `submitter_user_id = actor`
-- returns only submission type/status/timestamps, safe public Bull id/name, proposed field/value and high-level outcome
-- maps VERIFIED claim -> ACCEPTED; REJECTED/CONFLICT/SUPERSEDED/WITHDRAWN remain explicit; other states -> PENDING_REVIEW
-- does not expose source URL, contributor note, reviewer identity, reviewer notes, review-case internals, moderation metadata, audit history or other contributors
-- rollback-only projection regression PASS; private sentinel strings did not leak
-- no retained fixture rows
+**PR #61 — Safe `MY_SUBMISSIONS` contributor projection**
+- Production migration `20260906235014_add_bullmatch_my_submissions_query`
+- `bullmatch-api` Edge v14
+- authenticated actor derived server-side
+- own-record-only projection
+- exposes safe submission state, public Bull identity and claim outcome only
+- does not expose source URL/note, reviewer identity/notes, moderation/audit internals or other contributors
+- rollback-only leak/isolation regression PASS
 
-Required invariants:
-- authenticated actor ID derived server-side, never trusted from payload
-- contributor does not require ADMIN/REVIEWER role and gains no privileged role
-- submission/evidence/claim/review tables remain server-mediated
-- one submission produces atomic `REVIEW_REQUIRED` claims, never canonical mutation
-- existing source-ingestion evidence/claims remain valid and retain IDs
-- idempotency key retry cannot create duplicate submission/evidence/claim/review case
-- canonical Bull row must remain unchanged after contribution
-- contributor self-service is own-record-only and never leaks private reviewer/audit data
+**PR #62 — Mobile community contribution experience**
+- authenticated `contribute` route for ordinary registered contributors
+- Dashboard/navigation Community entry
+- `เสนอแก้ไขข้อมูล` action from VERIFIED Bull Profile
+- existing VERIFIED Bull selection only; no V1 identity creation
+- four-field atomic correction UI + required public source URL
+- explicit REVIEW_REQUIRED / review-before-canonical-promotion messaging
+- “การส่งข้อมูลของฉัน” feedback view from `MY_SUBMISSIONS`
+- pending/accepted/rejected/conflict/superseded/withdrawn states
+- sports-intelligence mobile styling, loading/error/empty/success states and reduced-motion support
+- PR TypeScript/build PASS
+- controlled Production API smoke PASS
+- main GitHub Pages deployment PASS
+
+Required invariants preserved:
+- contributor actor identity is server-derived
+- ordinary contributor gains no ADMIN/REVIEWER privilege
+- browser cannot write private submission/evidence/claim/review or canonical tables directly
+- submission creates REVIEW_REQUIRED atomic claims, never canonical mutation
+- idempotent replay cannot create duplicate intake records
+- contributor self-service is own-record-only
 - no AI auto-publish
-- no betting/wallet/settlement/payout fields or flow
+- no betting/wallet/settlement/payout flow
 
-Validation limitation:
-- Production currently has no genuine VERIFIED/PUBLISHED Bull row suitable for retained success-path contribution testing.
-- Database behavior is verified with rollback-only temporary Bulls/submissions; no fake canonical or community record is retained merely for UI screenshots.
-- GitHub workflow Production API smoke is the authoritative external-network validation path because this execution runtime cannot resolve the Supabase hostname directly.
-
-Exact next slice:
-1. merge `MY_SUBMISSIONS` after GitHub CI / Production API smoke passes
-2. implement the mobile V1 contribution UI using existing authenticated routes
-3. UI must force selection of an existing VERIFIED Bull, show the four allowed fact types, require public source URL and explain that submission enters review rather than changing the profile immediately
-4. add “การส่งข้อมูลของฉัน” status view from `MY_SUBMISSIONS`
-5. preserve real-bull sports-intelligence visual language, empty/loading/error states and no fake production data
-6. after UI deployment/validation, assess whether BMI-P1-013 V1 implementation gate can close before starting broader contribution types
+Known V1 limitations / intentionally deferred:
+- Production currently has no genuine VERIFIED/PUBLISHED Bull suitable for a retained success-path contribution fixture. Rollback-only DB tests were used; no fake canonical/community rows were retained for screenshots.
+- Public self-signup/onboarding is not part of this V1 gate. The current app supports provisioned authenticated users; any open-registration policy requires a separate abuse/privacy/auth design task.
+- V1 supports public URL evidence references only, not photo/file upload.
+- program/result/comparison-day/new-Bull contribution types remain future slices.
 
 ---
 
@@ -226,11 +164,11 @@ Status: DONE — PR #33
 
 ### BMI-APP-004 — Visual Design Rebaseline
 Status: DONE — IMPLEMENTATION GATE COMPLETE
-Merged increments: PR #41, #42, #46, #47, #48
+Merged increments: PR #41, #42, #46, #47, #48.
 
-Delivered real-bull/sports-intelligence visual system, safe verified imagery, explicit no-image fallback, Data Coverage/Trust Signals, reduced motion/mobile protection and no betting/payout UI.
+Delivered real-bull/sports-intelligence visual system, safe verified imagery, explicit no-image fallback, Data Coverage/Trust Signals, reduced-motion/mobile protection and no betting/payout UI.
 
-Deferred non-blocking QA: run real-data visual verification when genuine canonical records exist; never fabricate them for screenshots.
+Deferred non-blocking QA: verify real-image states when genuine canonical records exist; never fabricate them for screenshots.
 
 ---
 
@@ -248,30 +186,74 @@ Runbook: `docs/AUTO-RUN-RUNBOOK.md`
 
 ---
 
-## Phase 2 — First Automated Collection Pipeline
-Status: PLANNED — follows community contribution stabilization.
+## Phase 2 — Automated Collection Pipeline
+
+### BMI-P2-001 — Source-Agnostic Collection Pipeline Foundation
+Status: **READY / UNCLAIMED**
+Priority: highest next non-blocked engineering task.
+
+Goal:
+Build the reusable, source-agnostic ingestion boundary now that community/review contracts are stable, without selecting or scraping an unapproved Production source.
+
+Required first slice:
+1. define/version the normalized ingestion envelope used by every future connector
+2. define source registry + connector interface + run/result contracts
+3. persist source URL/identifier, retrieved timestamp, published timestamp when known, connector name/version and raw evidence reference
+4. emit evidence/claims through the established unverified/review pipeline; never write canonical Bull/Match/history directly
+5. preserve `DISCOVERED -> EXTRACTED -> UNVERIFIED/REVIEW_REQUIRED -> VERIFIED -> PUBLISHED`
+6. preserve conflicts rather than choosing a winner automatically
+7. add idempotency/dedupe and deterministic test fixtures in tests only
+8. add unit/contract tests without retaining fabricated Production data
+9. document how a later source-specific connector plugs in after source/compliance approval
+
+Explicit boundary:
+- **Do not choose or scrape the first Production source inside BMI-P2-001.** First Production source selection/compliance remains separately deferred.
+- No AI provider decision is required for the initial deterministic envelope/runner foundation.
+- No canonical publication from connector output.
+
+Expected areas:
+- `agents/connectors/`
+- `agents/extraction/` only for shared interfaces if necessary
+- `packages/contracts/` for versioned shared contracts if appropriate
+- `docs/`
+- tests/scripts required for deterministic validation
+
+Dependencies: BMI-P1-008 DONE, BMI-P1-011 DONE, BMI-P1-012 DONE, BMI-P1-013 V1 DONE.
 
 ## Phase 3 — Multi-Source Expansion
-Status: PLANNED
+Status: PLANNED — after one approved source connector proves the Phase 2 contracts.
 
 ## Phase 4 — Intelligence Products
 Status: PLANNED
-
 Includes Matchup Intelligence, opponent-adjusted form, shared-opponent/style analysis, camp/venue analysis, evidence completeness/confidence, advanced reports and API/B2B surfaces.
+
+---
 
 ## Autonomous Priority Reference
 
-1. **BMI-P1-013 — Community Contribution Intake Foundation**
-2. Automated collection pipeline after contribution/review contracts stabilize in production
-3. Intelligence products
+1. **BMI-P2-001 — Source-Agnostic Collection Pipeline Foundation**
+2. first permitted Production source connector after explicit source/compliance selection
+3. Intelligence Products / Matchup Intelligence when verified sample depth is sufficient
 4. deferred APP-004 real-data visual QA
-5. separately approved destructive identity operations only when their safety design is complete
+5. separately approved destructive identity operations only after safety design
 
 Canonical autonomous instructions: `docs/AUTO-RUN-RUNBOOK.md`.
 
+## Deferred / External-Decision Items
+
+- first Production source selection and source-specific compliance approval
+- open/public contributor signup/onboarding policy
+- AI provider selection
+- destructive Bull identity merge/split execution
+- broad/high-risk canonical promotion
+- distinct-Bull same-name creation escalation policy
+- venue-specific uncertain terminology/rules requiring field validation
+- exact contributor reputation formula
+- Data Credit / Pro-unlock thresholds/pricing until real usage data exists
+
 ## Assignment Rule
 
-A contributor may claim only one READY Task ID at a time unless the primary maintainer coordinates non-overlapping work.
+A contributor may claim only one READY Task ID at a time unless the Primary Maintainer coordinates non-overlapping work.
 
 When a task starts:
 1. record owner
