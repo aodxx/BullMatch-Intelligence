@@ -1,9 +1,9 @@
 """Persistence-neutral transactional staging for connector output.
 
-The interfaces in this module define the atomic boundary future database
-adapters must implement: normalized source items/evidence are staged together
-with the safe connector checkpoint, then committed once. No canonical BullMatch
-history is writable through this contract.
+The interfaces in this module define the atomic boundary database adapters must
+implement: normalized source items/evidence are staged together with the safe
+connector checkpoint, then committed once. No canonical BullMatch history is
+writable through this contract.
 """
 
 from __future__ import annotations
@@ -33,6 +33,12 @@ class PersistenceResult:
     checkpoint_advanced: bool
 
 
+class CheckpointReader(Protocol):
+    """Read the last committed source cursor before a poll request is built."""
+
+    def load_cursor(self, source_id: str) -> Mapping[str, Any]: ...
+
+
 class IngestionTransaction(Protocol):
     """One atomic source/run persistence transaction."""
 
@@ -50,7 +56,7 @@ class IngestionTransaction(Protocol):
 
 
 class IngestionPersistenceAdapter(Protocol):
-    """Adapter boundary for future PostgreSQL/Supabase implementations."""
+    """Adapter boundary for PostgreSQL/Supabase and deterministic test stores."""
 
     def begin(
         self,
@@ -107,15 +113,17 @@ def persist_poll_execution(
 class InMemoryIngestionPersistence:
     """Deterministic adapter used only for conformance tests.
 
-    It models the future database transaction semantics without network or
-    Production writes. State is copied at transaction start and replaced only
-    by ``commit``.
+    It models database transaction semantics without network or Production
+    writes. State is copied at transaction start and replaced only by ``commit``.
     """
 
     def __init__(self) -> None:
         self.items: dict[tuple[str, str], JsonObject] = {}
         self.evidence: dict[str, tuple[JsonObject, ...]] = {}
         self.cursors: dict[str, JsonObject] = {}
+
+    def load_cursor(self, source_id: str) -> JsonObject:
+        return copy.deepcopy(self.cursors.get(source_id, {"strategy": "NONE", "value": None}))
 
     def begin(
         self,
