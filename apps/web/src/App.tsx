@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { type AuthSession, restoreSession, signInWithPassword, signOutLocal } from './auth'
 import DataCoverageRail from './DataCoverageRail'
 import ReviewQueuePanel from './ReviewQueuePanel'
+import ContributionPanel from './ContributionPanel'
 import {
   type BullListItem,
   type BullProfileData,
@@ -16,16 +17,17 @@ import {
   getMe,
 } from './api'
 
-type ViewId = 'dashboard'|'bulls'|'bull-profile'|'matches'|'match-detail'|'entry'|'review'|'settings'|'login'
+type ViewId = 'dashboard'|'bulls'|'bull-profile'|'matches'|'match-detail'|'contribute'|'entry'|'review'|'settings'|'login'
 type IconName = 'home'|'bull'|'match'|'plus'|'review'|'settings'|'arrow'|'search'
 
-const allViews: ViewId[] = ['dashboard','bulls','bull-profile','matches','match-detail','entry','review','settings','login']
-const mainViews: ViewId[] = ['dashboard','bulls','matches','entry','review']
-const protectedViews = new Set<ViewId>(['entry','review'])
+const allViews: ViewId[] = ['dashboard','bulls','bull-profile','matches','match-detail','contribute','entry','review','settings','login']
+const mainViews: ViewId[] = ['dashboard','bulls','matches','contribute','entry','review']
+const protectedViews = new Set<ViewId>(['contribute','entry','review'])
 const navItems: Array<{id:ViewId;label:string;icon:IconName}> = [
   {id:'dashboard',label:'ภาพรวม',icon:'home'},
   {id:'bulls',label:'วัว',icon:'bull'},
   {id:'matches',label:'คู่ชน',icon:'match'},
+  {id:'contribute',label:'เพิ่มข้อมูล',icon:'plus'},
   {id:'entry',label:'บันทึก',icon:'plus'},
   {id:'review',label:'ตรวจสอบ',icon:'review'},
 ]
@@ -69,7 +71,7 @@ function Dashboard({go}:{go:(view:ViewId)=>void}){
     <section className="hero-card"><div><span className="eyebrow light">BULLMATCH INTELLIGENCE</span><h1>ข้อมูลวัวชนที่ตรวจสอบย้อนกลับได้</h1><p>สถิติและประวัติที่แสดงต่อสาธารณะอ่านจากข้อมูล VERIFIED/PUBLISHED ผ่าน API boundary เท่านั้น</p></div><div className="hero-badge"><span className="pulse-dot"/>Production API</div></section>
     {error?<ErrorPanel message={error} retry={()=>setTick(v=>v+1)}/>:loading?<LoadingPanel/>:<div className="stat-grid">{stats.map(([l,v,n])=><article className="stat-card" key={String(l)}><span>{l}</span><strong>{v}</strong><small>{n}</small></article>)}</div>}
     <SectionTitle eyebrow="ทางลัด" title="เริ่มงาน"/><div className="quick-grid">
-      <button className="quick-card" onClick={()=>go('entry')}><span className="quick-icon"><Icon name="plus"/></span><span><strong>บันทึกคู่ชน</strong><small>เฉพาะ ACTIVE ADMIN</small></span><Icon name="arrow" size={18}/></button>
+      <button className="quick-card" onClick={()=>go('contribute')}><span className="quick-icon"><Icon name="plus"/></span><span><strong>ร่วมเพิ่มข้อมูล</strong><small>หลักฐาน → ตรวจสอบ → ข้อมูลที่ยืนยันแล้ว</small></span><Icon name="arrow" size={18}/></button>
       <button className="quick-card" onClick={()=>go('bulls')}><span className="quick-icon"><Icon name="bull"/></span><span><strong>ทะเบียนวัว</strong><small>ข้อมูลและสถิติจริง</small></span><Icon name="arrow" size={18}/></button>
       <button className="quick-card" onClick={()=>go('review')}><span className="quick-icon"><Icon name="review"/></span><span><strong>Review Queue</strong><small>ตรวจสิทธิ์จาก server</small></span><Icon name="arrow" size={18}/></button>
     </div>
@@ -91,6 +93,7 @@ function BullProfile({id,go}:{id:string|null;go:(v:ViewId)=>void}){
   useEffect(()=>{if(!id){setData(null);setLoading(false);return}let active=true;setLoading(true);setError(null);getBull(id).then(v=>{if(active)setData(v)}).catch(e=>{if(active)setError(e instanceof Error?e.message:'โหลดไม่สำเร็จ')}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[id,tick])
   return <><button className="back-button" onClick={()=>go('bulls')}>← กลับทะเบียนวัว</button>{!id?<div className="panel"><EmptyState title="ยังไม่ได้เลือกวัว" body="เลือกวัวจากทะเบียนเพื่อดูสถิติและประวัติ"/></div>:error?<ErrorPanel message={error} retry={()=>setTick(v=>v+1)}/>:loading?<LoadingPanel/>:!data?<div className="panel"><EmptyState title="ไม่พบวัวที่เผยแพร่" body="วัวอาจยังไม่ผ่านการยืนยันหรือถูกเก็บถาวร"/></div>:<>
     <div className="profile-hero panel"><VerifiedBullImage src={data.bull.primary_image_ref} name={data.bull.canonical_name} className="profile-avatar"/><div className="profile-copy"><span className="status-chip neutral">VERIFIED</span><h2>{data.bull.canonical_name}</h2><p>{[data.bull.camp?.name,data.bull.owner?.name,data.bull.home_province].filter(Boolean).join(' • ')||'ยังไม่มีข้อมูลคอก/เจ้าของ/จังหวัด'}</p></div></div>
+    <div className="contribution-entry"><div><strong>พบข้อมูลที่ควรแก้ไขหรือเพิ่มเติม?</strong><span>ส่งข้อเท็จจริงพร้อมแหล่งอ้างอิงเข้าสู่ Human Review โดยไม่เขียนทับโปรไฟล์ทันที</span></div><button className="secondary-button" onClick={()=>go('contribute')}>เสนอแก้ไขข้อมูล</button></div>
     <DataCoverageRail signals={[
       {label:'Record',value:'VERIFIED',detail:'canonical bull record',state:'verified'},
       {label:'Published history',value:`${data.stats.published_matches} MATCHES`,detail:'เฉพาะคู่ชนที่เผยแพร่แล้ว',state:data.stats.published_matches>0?'available':'missing'},
@@ -166,6 +169,7 @@ function App(){
   else if(view==='bull-profile')content=<BullProfile id={selectedBullId} go={go}/>
   else if(view==='matches')content=<Matches openMatch={openMatch} go={go} isAdmin={isAdmin}/>
   else if(view==='match-detail')content=<MatchDetail id={selectedMatchId} go={go}/>
+  else if(view==='contribute'&&session)content=<ContributionPanel session={session} bullId={selectedBullId} onChooseBull={()=>go('bulls')} onBack={()=>go(selectedBullId?'bull-profile':'dashboard')}/>
   else if(view==='entry'&&session)content=<ManualEntry session={session} me={me}/>
   else if(view==='review'&&session)content=<ReviewQueue session={session} me={me}/>
   else if(view==='login')content=session?<Settings session={session} authLoading={false} me={me} meLoading={meLoading} meError={meError} onLogin={()=>go('login')} onLogout={handleLogout}/>:<Login onSignedIn={handleSignedIn} go={go}/>
