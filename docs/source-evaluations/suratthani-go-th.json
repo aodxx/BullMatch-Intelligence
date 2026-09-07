@@ -2,22 +2,28 @@
   "schema_version": "1.0.0",
   "evaluation_id": "3f3fbc8b-9827-4293-a4ad-a093387d2a98",
   "candidate_key": "suratthani-go-th",
-  "evaluated_at": "2026-09-07T03:12:00Z",
+  "evaluated_at": "2026-09-07T03:39:00Z",
   "source_identity": {
     "name": "Surat Thani Provincial Government",
     "operator_name": "Surat Thani Provincial Government",
     "source_type": "WEBSITE",
     "base_url": "https://www.suratthani.go.th/",
     "public_purpose": "Official provincial government news and public information.",
-    "identity_evidence_refs": ["https://www.suratthani.go.th/home/news-announcement/executive-news/2569-92.html"]
+    "identity_evidence_refs": [
+      "https://suratthani.go.th/home/43-about-us.html",
+      "https://www.suratthani.go.th/home/news-announcement/executive-news/2569-92.html"
+    ]
   },
   "access_review": {
     "proposed_access_method": "PUBLIC_PAGE",
     "terms_reviewed": false,
     "robots_reviewed": false,
     "api_policy_reviewed": false,
-    "access_evidence_refs": ["https://www.suratthani.go.th/home/news-announcement/executive-news/2569-92.html"],
-    "notes": "The official site publishes relevant venue/event context, but automated-access and reuse policy have not been verified."
+    "access_evidence_refs": [
+      "https://suratthani.go.th/home/43-about-us.html",
+      "https://www.suratthani.go.th/home/news-announcement/executive-news/2569-92.html"
+    ],
+    "notes": "The official first-party About surface establishes provincial-government operator identity and the site publicly exposes government news. This improves provenance confidence but does not establish permission for recurring automated access, content normalization, media retention or republication. No automation/API/robots policy was established in this research run."
   },
   "rights_review": {
     "reference_allowed": "UNCLEAR",
@@ -25,7 +31,7 @@
     "attribution_required": "UNCLEAR",
     "derivative_normalization_allowed": "UNCLEAR",
     "rights_evidence_refs": [],
-    "notes": "Retain only public references during evaluation; do not copy media or republish article text without an established basis."
+    "notes": "Retain only public references during evaluation; do not copy media or republish article text without an established first-party reuse basis. Official provenance does not itself imply an open-content license."
   },
   "runtime_policy_proposal": {
     "polling_enabled": false,
@@ -39,14 +45,19 @@
   },
   "provenance_review": {
     "proposed_reliability_tier": "OFFICIAL",
-    "rationale": "Official provincial-government provenance supports authority for government-published event/context facts, but coverage is episodic rather than a dedicated bullfighting results feed.",
+    "rationale": "A first-party provincial-government About surface establishes official operator provenance. That supports authority for government-published event/context facts, but coverage is episodic rather than a dedicated bullfighting results feed.",
     "cross_check_expectation": "PREFERRED"
   },
   "operational_review": {
     "secret_requirements": [],
     "withdrawal_policy": "Disable any future configuration if first-party policy disallows automated access or reuse.",
     "failure_policy": "No recurring connector until access policy and a narrow BullMatch-relevant scope are documented.",
-    "source_specific_tests_required": ["terms/robots verification", "government news taxonomy stability", "narrow relevance filter validation"]
+    "source_specific_tests_required": [
+      "terms/robots verification",
+      "government news taxonomy stability",
+      "narrow relevance filter validation",
+      "article canonical-URL and publication-time stability"
+    ]
   },
   "decision": {
     "status": "REVIEW_REQUIRED",
@@ -54,7 +65,11 @@
     "decided_by": null,
     "authority": "UNASSIGNED",
     "decision_basis_refs": [],
-    "blocking_reasons": ["Automation/reuse policy has not been verified.", "The source is not a dedicated recurring bullfighting program/result feed."],
-    "notes": "Potential official corroboration source for venue/event context; not approved for polling."
+    "blocking_reasons": [
+      "Automation/reuse policy has not been verified.",
+      "The source is not a dedicated recurring bullfighting program/result feed.",
+      "A source-specific polling/rate-limit/cursor policy is not justified by current evidence."
+    ],
+    "notes": "Official operator provenance is now better evidenced, but the candidate remains suitable only as a possible corroboration source pending policy review and explicit owner/compliance approval."
   }
 }
