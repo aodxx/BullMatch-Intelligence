@@ -9,7 +9,7 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 2 — Source-Agnostic Automated Collection Pipeline Foundation**
 
-Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / BMI-P2-001 IN PROGRESS / ATOMIC PERSISTENCE SLICE IN REVIEW**
+Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / BMI-P2-001 IN PROGRESS / ATOMIC PERSISTENCE SLICE MERGED**
 
 ## Product Direction / Truth Boundary
 
@@ -82,78 +82,54 @@ Deferred:
 
 Status: **IN PROGRESS**
 Owner: Primary Maintainer
-Current branch: `agent/bmi-p2-001-persistence-contract`
-Current PR: **#66 — `[BMI-P2-001] Define atomic ingestion persistence boundary`**
+Latest merged PR: **#66 — `[BMI-P2-001] Define atomic ingestion persistence boundary`**
 Contract note: `docs/COLLECTION-PIPELINE-FOUNDATION.md`
 
 ### Merged baseline — PR #64
 
-Delivered:
-- source-agnostic `Connector` protocol + validated poll runner
-- APPROVED + ACTIVE + polling-enabled policy gates
-- connector/source/run/correlation identity enforcement
-- duplicate `dedupe_key` rejection inside a poll
-- safe checkpoint advancement only after valid output
-- deterministic connector conformance tests
+Delivered source-agnostic connector execution, APPROVED/ACTIVE/polling policy gates, source/run/correlation identity enforcement, per-poll dedupe rejection, safe checkpoint advancement, deterministic tests and shared-contract CI.
 
 ### Merged registry/run-state slice — PR #65
 
+Delivered approved runtime source registry, pollability gates, persistence-neutral `CollectionRunState`, SOURCE_MONITORING AgentRun contract reuse, source policy request caps, deterministic run metrics/terminal states and standards-resolvable AgentRun -> AgentError contract reference.
+
+Validation: shared contracts/examples and connector registry/run-state tests PASS.
+
+### Merged atomic persistence slice — PR #66
+
 Delivered:
-- validated `ApprovedSourceRegistry`
-- runtime registry excludes `REVIEW_REQUIRED`/`BLOCKED`
-- approved-but-paused/polling-disabled sources remain non-pollable
-- persistence-neutral `CollectionRunState`
-- existing AgentRun contract reused for SOURCE_MONITORING
-- source-policy caps on poll item/request limits
-- deterministic run metrics/output refs and terminal states
-- contract-valid failure path
-- AgentRun -> AgentError schema reference repair
-
-Validation: shared contract/schema/example + connector registry/run-state tests PASS.
-
-### Current atomic persistence slice — PR #66
-
-Implemented on branch:
 - persistence-neutral `IngestionPersistenceAdapter` / `IngestionTransaction` protocols
-- `persist_poll_execution()` accepts validated PollExecution only
-- source/correlation identity rechecked at persistence boundary
-- normalized source item + evidence staging before checkpoint write
-- source-item idempotency key `(source_id, dedupe_key)`
-- exact replay remains idempotent without duplicate evidence
-- same key with different normalized payload is rejected instead of overwritten
-- unsafe checkpoint may store evidence while retaining previous cursor
-- stale expected cursor is rejected before staging
-- transaction begin itself is side-effect free
-- staging/checkpoint exception rolls back entire batch
-- deterministic in-memory adapter models the future DB transaction semantics for tests only
+- `persist_poll_execution()` after validated connector output
+- source/correlation identity recheck at persistence boundary
+- normalized item + evidence staging before checkpoint commit
+- `(source_id, dedupe_key)` idempotency
+- exact replay without duplicate evidence
+- conflicting same-key payload rejection instead of overwrite
+- unsafe checkpoint evidence persistence with previous cursor retained
+- stale expected cursor rejection before staging
+- side-effect-free transaction begin and full rollback on failure
+- request-compatible persisted cursor shape (`strategy + value` only); transient `checkpoint_safe` is never persisted
+- deterministic in-memory adapter for conformance only
+
+CI initially exposed the cursor-shape mismatch during exact replay. The defect was fixed before merge and a regression assertion was added.
+
+Validation before merge:
+- shared schema/example validation — PASS
+- connector runner tests — PASS
+- registry/run-state tests — PASS
+- atomic persistence tests — PASS
 
 Required persistence invariant:
 
 `validated normalized items + evidence + safe checkpoint -> one atomic transaction`
 
-No persistence API in this slice can write canonical Bull/Match/history, verification or publication state.
-
-Validation scope:
-- shared contract/schema/example validation
-- existing connector + registry/run-state tests
-- new atomic persistence tests for safe/unsafe checkpoint, replay, conflict rollback, stage failure and stale cursor
-
-Safety preserved:
-- no real source selected or contacted
-- no network connector added
-- no Production DB adapter or migration
-- no source secret values loaded
-- no canonical write capability
-- synthetic UUIDs and `.invalid` URLs only in tests
-- no AI-provider dependency
+No connector/orchestration/persistence API can write canonical Bull/Match/history, verification or publication state.
 
 ## Exact Next Safe Slices Inside BMI-P2-001
 
-After PR #66 integration:
-
 1. persisted AgentRun/run-state adapter compatible with `CollectionRunState`
-2. PostgreSQL/Supabase ingestion adapter mapped to existing BullMatch private ingestion/runtime tables
-3. rollback-only database conformance tests proving dedupe/evidence/checkpoint atomicity
+2. PostgreSQL/Supabase ingestion adapter mapped to existing `bullmatch_private` ingestion/runtime tables
+3. rollback-only database conformance tests proving item/evidence/checkpoint atomicity
 4. reusable connector fixture helpers
 5. operational orchestration wrapper linking approved registry -> run state -> connector -> persistence without selecting a real source
 
@@ -173,4 +149,4 @@ A real source-specific connector remains outside this foundation until an explic
 
 ## Exact Next Autonomous Action
 
-Check PR #66 CI/integration. If merged, continue `BMI-P2-001` on a fresh branch from `main` with the persisted AgentRun/run-state adapter and database-adapter contract mapping. Do **not** select or poll a real external source inside BMI-P2-001.
+Continue `BMI-P2-001` on a fresh branch from `main` with the persisted AgentRun/run-state adapter and PostgreSQL/Supabase adapter contract mapping to existing BullMatch-private ingestion/runtime tables. Use rollback-only/synthetic conformance testing; do **not** select or poll a real external source.
