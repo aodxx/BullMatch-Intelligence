@@ -17,6 +17,7 @@ from .persistence import (
     persist_poll_execution,
 )
 from .postgres_adapter import PostgresCollectionRunStore, PostgresIngestionPersistence
+from .postgres_readers import PostgresCheckpointReader
 from .registry import ApprovedSourceRegistry, InMemorySourceRegistryProvider, SourceRegistryError
 from .runner import Connector, ContractError, PollExecution, run_connector_poll
 
@@ -35,6 +36,7 @@ __all__ = [
     "PersistenceError",
     "PersistenceResult",
     "PollExecution",
+    "PostgresCheckpointReader",
     "PostgresCollectionRunStore",
     "PostgresIngestionPersistence",
     "RunStateError",
