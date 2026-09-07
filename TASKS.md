@@ -25,7 +25,6 @@ BMI-P0-001 through BMI-P0-010: **DONE**.
 - BMI-P1-013 Community Contribution Intake Foundation — DONE — V1 gate — PR #59–#62
 
 Durable Phase 1 boundaries:
-
 - community/source input creates evidence + atomic claims first
 - canonical promotion is separate, controlled and auditable
 - contributors never gain ADMIN/REVIEWER authority merely by submitting data
@@ -67,7 +66,6 @@ Merged PRs: **#64–#73**
 Delivered the validated connector runner, source approval gates, SOURCE_MONITORING run state, atomic source-item/evidence/checkpoint persistence, PostgreSQL adapters, replay/stale-cursor protection, rollback-only real-schema conformance, reusable synthetic fixtures, operational orchestration and read-only PostgreSQL checkpoint retrieval.
 
 Project-wide invariants:
-
 1. normalized source output remains untrusted evidence/candidate input
 2. collection runtime cannot write canonical Bulls/Matches/history directly
 3. conflicts remain unresolved until review/verification
@@ -91,44 +89,28 @@ Merged PR: **#77**
 Contract: `source-compliance-evaluation/1.0.0`  
 Guide: `docs/SOURCE-COMPLIANCE-EVALUATION.md`
 
-Delivered:
-
-- deterministic source/operator identity dossier
-- access-method plus terms/robots/API-policy review fields
-- rights/retention/attribution review fields
-- proposed polling/rate-limit/cursor/dedupe policy
-- provenance/reliability tier rationale and cross-check expectation
-- secret requirement names only; no secret values
-- withdrawal/failure/source-specific test expectations
-- explicit `REVIEW_REQUIRED / APPROVED / BLOCKED` decision record
-- `APPROVED` requires explicit `OWNER_OR_COMPLIANCE` authority, decision actor/time, decision-basis evidence and zero blockers
-- synthetic `.invalid` fixture only; no real source or Bull/Match facts
-
-No Production source was approved, activated, scraped or polled by this task.
+Delivered deterministic source/operator, access-policy, rights, runtime-policy, provenance, withdrawal/failure and explicit decision records. `APPROVED` requires explicit `OWNER_OR_COMPLIANCE` authority, decision actor/time, decision-basis evidence and zero blockers.
 
 ### BMI-P2-004 — Candidate Source Dossier Research
 
-Status: **IN PROGRESS — FIRST-PARTY EVIDENCE FOLLOW-UP**  
-Owner: Primary Maintainer (ChatGPT autonomous run)  
-Branch: `agent/bmi-p2-004-first-party-evidence`  
-Dependencies: BMI-P2-003.  
-Initial shortlist merged: **PR #79**.
+Status: **DONE — RESEARCH GATE**  
+Initial shortlist: **PR #79**  
+First-party evidence follow-up: **PR #80**
 
-Research shortlist and contract-valid dossier set:
+Delivered three contract-valid real-source dossiers plus a dated evidence log:
+- `wuachon.co` — direct domain relevance confirmed; operator/access/rights/runtime authorization unresolved
+- Thailand Sports Almanac — official sports-reference candidate; coverage and automation/reuse policy unresolved
+- Surat Thani Provincial Government — official operator provenance strengthened; automation/reuse policy and recurring-feed suitability unresolved
 
-- `wuachon.co` — highly domain-relevant publisher/aggregator; public accessibility confirmed, but operator/access/rights/runtime policy remains unresolved
-- Thailand Sports Almanac — official government sports reference; potential provenance/context source, Bull-specific coverage and automation/reuse policy unresolved
-- Surat Thani Provincial Government — official corroboration candidate; first-party operator context strengthened, but automation/reuse policy and recurring-feed suitability remain unresolved
+All candidates remain `REVIEW_REQUIRED`, `polling_enabled=false`, `authority=UNASSIGNED`, with explicit blocking reasons. No source was activated, polled, scraped at connector scale, credentialed or used to write Bull/Match facts.
 
-Current follow-up scope:
+Validation: shared-schema/examples and connector conformance tests passed in PR #80 workflow run #43. Workflow coverage was fixed so future `docs/source-evaluations/**` changes trigger this validation automatically.
 
-- deepen first-party operator/policy/rights evidence without connector polling
-- distinguish verified evidence from absence-of-evidence explicitly
-- keep every dossier `REVIEW_REQUIRED`, `polling_enabled=false`, `authority=UNASSIGNED`
-- do not invent request rates, windows, cursor behavior or rights
-- do not ingest Bull/Match facts or create credentials
+### First Production Source Connector
 
-A first Production connector remains BLOCKED until one dossier has sufficient evidence and receives an explicit `OWNER_OR_COMPLIANCE` approval decision.
+Status: **BLOCKED — EXTERNAL OWNER/COMPLIANCE DECISION REQUIRED**
+
+No connector may target a real source until one dossier has sufficient first-party operator/access/rights/runtime evidence and an explicit `OWNER_OR_COMPLIANCE` `APPROVED` decision under `source-compliance-evaluation/1.0.0`.
 
 ## Phase 3 — Multi-Source Expansion
 
@@ -144,11 +126,12 @@ Includes Matchup Intelligence, opponent-adjusted form, shared-opponent/style ana
 
 ## Autonomous Priority Reference
 
-1. **BMI-P2-004 — Candidate Source Dossier Research** — IN PROGRESS
-2. first permitted Production source connector — BLOCKED on explicit source/compliance approval
-3. Intelligence Products / Matchup Intelligence — wait for sufficient verified data depth
-4. deferred APP-004 real-data visual QA — wait for genuine verified data
-5. destructive identity operations — separate safety approval required
+1. first permitted Production source connector — BLOCKED on explicit source/compliance approval
+2. Intelligence Products / Matchup Intelligence — BLOCKED on sufficient verified data depth
+3. deferred APP-004 real-data visual QA — BLOCKED on genuine verified data
+4. destructive identity operations — separate safety approval required
+
+There is currently no additional READY engineering task that can safely bypass these gates without fabricating data, inventing legal permission or weakening canonical-truth controls.
 
 ## Deferred / External-Decision Items
 
@@ -167,7 +150,6 @@ Includes Matchup Intelligence, opponent-adjusted form, shared-opponent/style ana
 A contributor may claim only one READY Task ID at a time unless the Primary Maintainer coordinates non-overlapping work.
 
 When a task starts:
-
 1. record owner
 2. mark IN PROGRESS
 3. create `agent/<task-id>-...` branch
