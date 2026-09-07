@@ -5,6 +5,7 @@ on:
     paths:
       - 'packages/contracts/**'
       - 'agents/connectors/**'
+      - 'docs/source-evaluations/**'
       - 'docs/AI-AGENT-SPEC.md'
       - 'scripts/validate_contracts.py'
       - '.github/workflows/contracts.yml'
@@ -13,6 +14,7 @@ on:
     paths:
       - 'packages/contracts/**'
       - 'agents/connectors/**'
+      - 'docs/source-evaluations/**'
       - 'docs/AI-AGENT-SPEC.md'
       - 'scripts/validate_contracts.py'
       - '.github/workflows/contracts.yml'
