@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "f55d281f-5277-4792-803b-7e7f2e7a7cff",
+  "candidate_key": "sports-almanac-go-th",
+  "evaluated_at": "2026-09-07T03:12:00Z",
+  "source_identity": {
+    "name": "Thailand Sports Almanac",
+    "operator_name": "Office of the Permanent Secretary, Ministry of Tourism and Sports",
+    "source_type": "WEBSITE",
+    "base_url": "https://sports-almanac.go.th/",
+    "public_purpose": "Government sports-information almanac and directory.",
+    "identity_evidence_refs": ["https://sports-almanac.go.th/"]
+  },
+  "access_review": {
+    "proposed_access_method": "PUBLIC_PAGE",
+    "terms_reviewed": false,
+    "robots_reviewed": false,
+    "api_policy_reviewed": false,
+    "access_evidence_refs": ["https://sports-almanac.go.th/"],
+    "notes": "Government operator identity is visible, but automated-access policy and any reusable data/API terms have not been established."
+  },
+  "rights_review": {
+    "reference_allowed": "UNCLEAR",
+    "retention_class": "REFERENCE_ONLY",
+    "attribution_required": "UNCLEAR",
+    "derivative_normalization_allowed": "UNCLEAR",
+    "rights_evidence_refs": [],
+    "notes": "Treat as a reference candidate only until first-party reuse/attribution terms are identified."
+  },
+  "runtime_policy_proposal": {
+    "polling_enabled": false,
+    "interval_minutes": null,
+    "timezone": null,
+    "active_windows": [],
+    "max_items_per_run": null,
+    "rate_limit": null,
+    "initial_cursor_strategy": "UNDECIDED",
+    "dedupe_basis": null
+  },
+  "provenance_review": {
+    "proposed_reliability_tier": "OFFICIAL",
+    "rationale": "The site identifies a Thai government ministry office as operator; this supports official provenance for content it actually publishes, but does not prove completeness for bullfighting records.",
+    "cross_check_expectation": "PREFERRED"
+  },
+  "operational_review": {
+    "secret_requirements": [],
+    "withdrawal_policy": "If government policy or site instructions restrict automated reuse, no connector will be enabled and existing evaluation references remain audit-only where permitted.",
+    "failure_policy": "No polling until access/reuse policy and source usefulness for BullMatch-specific entities are demonstrated.",
+    "source_specific_tests_required": ["terms/robots verification", "bullfighting coverage usefulness assessment", "stable venue/entity identifier assessment"]
+  },
+  "decision": {
+    "status": "REVIEW_REQUIRED",
+    "decided_at": null,
+    "decided_by": null,
+    "authority": "UNASSIGNED",
+    "decision_basis_refs": [],
+    "blocking_reasons": ["Automation/reuse policy has not been verified.", "Bullfighting-specific coverage depth and update cadence are not yet established."],
+    "notes": "Potentially useful official reference source for venue/sports context, not yet justified as a recurring match-program feed."
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "3f3fbc8b-9827-4293-a4ad-a093387d2a98",
+  "candidate_key": "suratthani-go-th",
+  "evaluated_at": "2026-09-07T03:12:00Z",
+  "source_identity": {
+    "name": "Surat Thani Provincial Government",
+    "operator_name": "Surat Thani Provincial Government",
+    "source_type": "WEBSITE",
+    "base_url": "https://www.suratthani.go.th/",
+    "public_purpose": "Official provincial government news and public information.",
+    "identity_evidence_refs": ["https://www.suratthani.go.th/home/news-announcement/executive-news/2569-92.html"]
+  },
+  "access_review": {
+    "proposed_access_method": "PUBLIC_PAGE",
+    "terms_reviewed": false,
+    "robots_reviewed": false,
+    "api_policy_reviewed": false,
+    "access_evidence_refs": ["https://www.suratthani.go.th/home/news-announcement/executive-news/2569-92.html"],
+    "notes": "The official site publishes relevant venue/event context, but automated-access and reuse policy have not been verified."
+  },
+  "rights_review": {
+    "reference_allowed": "UNCLEAR",
+    "retention_class": "REFERENCE_ONLY",
+    "attribution_required": "UNCLEAR",
+    "derivative_normalization_allowed": "UNCLEAR",
+    "rights_evidence_refs": [],
+    "notes": "Retain only public references during evaluation; do not copy media or republish article text without an established basis."
+  },
+  "runtime_policy_proposal": {
+    "polling_enabled": false,
+    "interval_minutes": null,
+    "timezone": null,
+    "active_windows": [],
+    "max_items_per_run": null,
+    "rate_limit": null,
+    "initial_cursor_strategy": "UNDECIDED",
+    "dedupe_basis": null
+  },
+  "provenance_review": {
+    "proposed_reliability_tier": "OFFICIAL",
+    "rationale": "Official provincial-government provenance supports authority for government-published event/context facts, but coverage is episodic rather than a dedicated bullfighting results feed.",
+    "cross_check_expectation": "PREFERRED"
+  },
+  "operational_review": {
+    "secret_requirements": [],
+    "withdrawal_policy": "Disable any future configuration if first-party policy disallows automated access or reuse.",
+    "failure_policy": "No recurring connector until access policy and a narrow BullMatch-relevant scope are documented.",
+    "source_specific_tests_required": ["terms/robots verification", "government news taxonomy stability", "narrow relevance filter validation"]
+  },
+  "decision": {
+    "status": "REVIEW_REQUIRED",
+    "decided_at": null,
+    "decided_by": null,
+    "authority": "UNASSIGNED",
+    "decision_basis_refs": [],
+    "blocking_reasons": ["Automation/reuse policy has not been verified.", "The source is not a dedicated recurring bullfighting program/result feed."],
+    "notes": "Potential official corroboration source for venue/event context; not approved for polling."
+  }
+}

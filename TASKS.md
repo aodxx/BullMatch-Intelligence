@@ -108,20 +108,20 @@ No Production source was approved, activated, scraped or polled by this task.
 
 ### BMI-P2-004 — Candidate Source Dossier Research
 
-Status: **READY**  
-Priority: highest safe next task; research only.  
+Status: **REVIEW**  
+Owner: Primary Maintainer (ChatGPT autonomous run)  
+Branch: `agent/bmi-p2-004-candidate-source-dossiers`  
 Dependencies: BMI-P2-003.
 
-Goal: identify a small shortlist of plausible Thai bullfighting information-source candidates and prepare `REVIEW_REQUIRED` dossiers using the BMI-P2-003 contract, without authorizing or polling any candidate.
+Implemented research shortlist and contract-valid dossier set for three source roles:
 
-Required boundaries:
+- `wuachon.co` — highly domain-relevant publisher/aggregator; operator/access/rights/runtime policy unresolved
+- Thailand Sports Almanac — official government sports reference; potential provenance/context source, Bull-specific coverage unresolved
+- Surat Thani Provincial Government — official corroboration candidate for venue/event context, not a dedicated program feed
 
-- browser/manual public-web research only; no automated connector polling
-- record source/operator/access/rights evidence and unresolved questions
-- do not collect Bull/Match facts as fixtures or Production records
-- do not create credentials
-- no candidate may be marked `APPROVED` autonomously
-- first Production source activation remains BLOCKED on explicit owner/compliance approval
+All dossiers remain `REVIEW_REQUIRED`, have `polling_enabled=false`, contain explicit blockers and are guarded by deterministic tests that reject an accidental APPROVED state in this research directory.
+
+No connector polling, credentials, Production source activation or Bull/Match ingestion occurred.
 
 ## Phase 3 — Multi-Source Expansion
 
@@ -137,7 +137,7 @@ Includes Matchup Intelligence, opponent-adjusted form, shared-opponent/style ana
 
 ## Autonomous Priority Reference
 
-1. **BMI-P2-004 — Candidate Source Dossier Research** — READY
+1. **BMI-P2-004 — Candidate Source Dossier Research** — REVIEW
 2. first permitted Production source connector — BLOCKED on explicit source/compliance approval
 3. Intelligence Products / Matchup Intelligence — wait for sufficient verified data depth
 4. deferred APP-004 real-data visual QA — wait for genuine verified data

@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "59f64cab-da52-4e9a-a4b1-e81a7105e35e",
+  "candidate_key": "wuachon-co",
+  "evaluated_at": "2026-09-07T03:12:00Z",
+  "source_identity": {
+    "name": "วัวชนออนไลน์ / wuachon.co",
+    "operator_name": null,
+    "source_type": "WEBSITE",
+    "base_url": "https://wuachon.co/",
+    "public_purpose": "Public website publishing Thai bullfighting program/result content and related information.",
+    "identity_evidence_refs": [
+      "https://wuachon.co/2025/03/27/%E0%B9%83%E0%B8%9A%E0%B8%A7%E0%B8%B1%E0%B8%A7-%E0%B8%AA%E0%B8%99%E0%B8%B2%E0%B8%A1%E0%B8%81%E0%B8%B5%E0%B8%AC%E0%B8%B2%E0%B8%8A%E0%B8%99%E0%B9%82%E0%B8%84%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B9%81-6/"
+    ]
+  },
+  "access_review": {
+    "proposed_access_method": "PUBLIC_PAGE",
+    "terms_reviewed": false,
+    "robots_reviewed": false,
+    "api_policy_reviewed": false,
+    "access_evidence_refs": [
+      "https://wuachon.co/2025/03/27/%E0%B9%83%E0%B8%9A%E0%B8%A7%E0%B8%B1%E0%B8%A7-%E0%B8%AA%E0%B8%99%E0%B8%B2%E0%B8%A1%E0%B8%81%E0%B8%B5%E0%B8%AC%E0%B8%B2%E0%B8%8A%E0%B8%99%E0%B9%82%E0%B8%84%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B9%81-6/"
+    ],
+    "notes": "Public pages are browser-accessible, but operator identity, terms, robots directives and any automation-specific policy have not yet been verified from first-party policy surfaces."
+  },
+  "rights_review": {
+    "reference_allowed": "UNCLEAR",
+    "retention_class": "REFERENCE_ONLY",
+    "attribution_required": "UNCLEAR",
+    "derivative_normalization_allowed": "UNCLEAR",
+    "rights_evidence_refs": [],
+    "notes": "Do not copy or retain program images/media. A public page being readable is not evidence of permission for automated reuse or media retention."
+  },
+  "runtime_policy_proposal": {
+    "polling_enabled": false,
+    "interval_minutes": null,
+    "timezone": null,
+    "active_windows": [],
+    "max_items_per_run": null,
+    "rate_limit": null,
+    "initial_cursor_strategy": "UNDECIDED",
+    "dedupe_basis": null
+  },
+  "provenance_review": {
+    "proposed_reliability_tier": "UNKNOWN",
+    "rationale": "The site is highly domain-relevant, but operator authority, source provenance and correction practices have not yet been established.",
+    "cross_check_expectation": "REQUIRED"
+  },
+  "operational_review": {
+    "secret_requirements": [],
+    "withdrawal_policy": "If permission/policy is incompatible or the operator requests cessation, keep historical decision/audit references as allowed but disable any future connector configuration.",
+    "failure_policy": "No connector may be implemented until terms/robots/operator provenance and a conservative source-specific request policy are resolved.",
+    "source_specific_tests_required": [
+      "first-party operator identity evidence",
+      "terms and robots policy verification",
+      "program-page dedupe semantics",
+      "safe request-rate and checkpoint behavior",
+      "cross-check against an independent or official source"
+    ]
+  },
+  "decision": {
+    "status": "REVIEW_REQUIRED",
+    "decided_at": null,
+    "decided_by": null,
+    "authority": "UNASSIGNED",
+    "decision_basis_refs": [],
+    "blocking_reasons": [
+      "Operator identity is not yet verified.",
+      "Terms/robots/automation policy has not been verified.",
+      "Reuse, normalization and attribution rights remain unclear.",
+      "No source-specific rate limit, cursor or dedupe policy has evidence yet."
+    ],
+    "notes": "Strong domain relevance, but no Production polling or APPROVED registry status is justified from current evidence."
+  }
+}
