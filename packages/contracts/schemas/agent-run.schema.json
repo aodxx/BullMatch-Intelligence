@@ -34,7 +34,7 @@
     "metrics": { "type": "object", "additionalProperties": true },
     "errors": {
       "type": "array",
-      "items": { "$ref": "agent-error.schema.json" }
+      "items": { "$ref": "https://bullmatch.local/contracts/agent-error/1.0.0" }
     }
   }
 }

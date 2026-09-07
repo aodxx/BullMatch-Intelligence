@@ -24,38 +24,14 @@ BMI-P0-001 through BMI-P0-010: **DONE**.
 - BMI-P1-012 Contribution & Trust Architecture — DONE — PR #40
 - BMI-P1-013 Community Contribution Intake Foundation — DONE — V1 implementation gate complete — PR #59–#62
 
-### BMI-P1-008 durable boundaries
+### Durable Phase 1 boundaries
 
-Delivered controlled review reads/actions, optimistic concurrency/idempotency, atomic claim decisions, evidence/audit/provenance, guarded duplicate/entity decisions, read-only Bull identity impact preview, narrow evidence-backed promotion, guarded UNVERIFIED Bull creation, reviewer UI and routing-metadata EDIT.
-
-Still deferred: destructive Bull MERGE/SPLIT, broad identity/name/alias promotion, owner/camp/lineage/media/match-history promotion, distinct-Bull same-name escalation.
-
-### BMI-P1-013 durable boundaries
-
-V1 supports an evidence-backed correction/observation for an existing VERIFIED Bull using a public HTTP(S) source reference.
-
-Allowlisted fields:
-- `home_province`
-- `home_district`
-- `color_description`
-- `breed_description`
-
-Delivered:
-- PR #59 community-origin/evidence/claim foundation
-- PR #60 authenticated controlled correction submission API
-- PR #61 own-record-only `MY_SUBMISSIONS` feedback projection
-- PR #62 mobile Community contribution UI + Production deployment
-
-Invariants:
-- contributor actor is server-derived
-- contributor gains no ADMIN/REVIEWER privilege
-- no browser direct write to private/canonical tables
-- submission creates REVIEW_REQUIRED atomic claims, never canonical mutation
-- idempotent replay does not duplicate intake rows
-- no AI auto-publish
-- no betting/wallet/settlement/payout flow
-
-Deferred: public self-signup/onboarding policy, direct file/photo upload, program/result/comparison-day/new-Bull contribution types. No fake canonical/community Production rows are retained for testing.
+- community/source input creates evidence + atomic claims first
+- canonical promotion is separate, controlled and auditable
+- contributors never gain ADMIN/REVIEWER authority merely by submitting data
+- uncertain Bull identity stays unresolved; name similarity is not identity proof
+- destructive Bull MERGE/SPLIT and broad/high-risk promotion remain deferred
+- no fabricated Production Bull/Match/community rows are retained for testing
 
 ---
 
@@ -87,40 +63,67 @@ Runbook: `docs/AUTO-RUN-RUNBOOK.md`.
 ### BMI-P2-001 — Source-Agnostic Collection Pipeline Foundation
 Status: **IN PROGRESS**
 Owner: Primary Maintainer (ChatGPT autonomous run)
-Branch: `agent/bmi-p2-001-collection-foundation`
+Active branch: `agent/bmi-p2-001-registry-run-state`
+Current PR: **#65 — `[BMI-P2-001] Add approved registry loader and collection run state`**
+Previous merged slice: **PR #64 — executable connector contracts + checkpoint safety**
 Priority: highest current non-blocked engineering task.
 Contract reference: `docs/COLLECTION-PIPELINE-FOUNDATION.md`
 
 Goal:
-Make the existing Phase 0 source/connector/normalized-ingestion contracts executable and testable before any real Production source is selected.
+Make the existing Phase 0 source/connector/normalized-ingestion contracts executable and persistence-ready before any real Production source is selected.
 
-Current implementation slice:
-- reuse existing `packages/contracts` schemas rather than create competing contracts
-- repair connector request/result `$ref` resolution against canonical schema `$id` values
-- add source-agnostic `Connector` protocol and validated poll runner under `agents/connectors/`
-- block polling unless source policy is APPROVED, source ACTIVE and polling enabled
-- enforce source/run/correlation/connector identity boundaries
-- reject duplicate `dedupe_key` values inside a poll result
-- advance cursor only after valid output and only when `checkpoint_safe=true`
-- add deterministic in-memory conformance tests
-- extend shared-contract CI to run connector tests
-- no network access, no Production persistence and no canonical write capability in this slice
+### Delivered baseline — PR #64
+
+- existing `packages/contracts` schemas reused instead of introducing competing contracts
+- connector request/result cross-schema `$ref` repair against canonical schema `$id`s
+- source-agnostic `Connector` protocol and validated `run_connector_poll()`
+- APPROVED + ACTIVE + polling-enabled policy gates
+- connector/source/run/correlation identity enforcement
+- duplicate `dedupe_key` rejection inside one poll result
+- checkpoint advances only after valid output and `checkpoint_safe=true`
+- deterministic in-memory conformance tests
+- shared-contract CI coverage
+- no network, Production persistence or canonical write capability
+
+### Current slice — PR #65
+
+Implemented:
+- validated `ApprovedSourceRegistry` runtime loader
+- `REVIEW_REQUIRED`/`BLOCKED` sources excluded from runtime view
+- duplicate source IDs rejected
+- approved-but-paused/polling-disabled sources blocked from polling
+- connector-key filtering returns only ACTIVE + poll-enabled approved sources
+- persistence-neutral `CollectionRunState` using existing `AgentRun` contract
+- schema-valid SOURCE_MONITORING run state
+- poll request construction bound to run/correlation/source identity
+- requested item/request limits capped by source registry policy
+- connector execution metrics/output references recorded deterministically
+- health/error terminal mapping to SUCCEEDED/PARTIAL/FAILED
+- explicit contract-valid SOURCE_MONITORING failure path
+- AgentRun -> AgentError `$ref` repaired to canonical 1.0.0 `$id`
+
+Validation:
+- shared contract schema/example validation — PASS
+- connector runner tests — PASS
+- registry/run-state integration tests — PASS
+- fixtures use synthetic UUIDs and `.invalid` URLs only in test memory
 
 Required invariants:
-1. normalized connector output remains untrusted evidence/candidate input
-2. connectors never write canonical Bulls/Matches/history directly
-3. conflicts are preserved for resolution/review rather than silently overwritten
+1. normalized source output remains untrusted evidence/candidate input
+2. connectors/orchestration never write canonical Bulls/Matches/history directly
+3. conflicts remain unresolved until the verification/review pipeline handles them
 4. invalid output cannot commit cursor progress
-5. source-specific secrets never appear in shared contracts/logs/tests
+5. source-specific secret values never enter shared contracts/logs/tests
 6. test fixtures are deterministic and never persisted to Production
 7. a real source connector requires a separate explicit source/compliance decision
 
-Safe next slices inside BMI-P2-001 after this baseline passes CI:
-1. source-registry loader for approved entries
-2. orchestration/run-state abstraction
-3. deterministic persistence adapter interfaces for source item/evidence
-4. transactional dedupe/checkpoint persistence contract
-5. reusable connector conformance fixture helpers
+### Exact next safe slices inside BMI-P2-001
+
+1. deterministic persistence adapter interfaces for source-item/evidence staging
+2. transactional dedupe + evidence + safe checkpoint persistence contract
+3. persisted run-state adapter compatible with `CollectionRunState`
+4. reusable connector conformance fixture helpers
+5. database adapter conformance tests without retained synthetic Production rows
 
 Explicitly not authorized in BMI-P2-001:
 - selecting or scraping the first real Production source
@@ -135,6 +138,7 @@ Status: PLANNED — after an approved first source proves Phase 2 contracts.
 
 ## Phase 4 — Intelligence Products
 Status: PLANNED — after sufficient verified sample depth.
+
 Includes Matchup Intelligence, opponent-adjusted form, shared-opponent/style analysis, camp/venue analysis, evidence completeness/confidence, reports and API/B2B surfaces.
 
 ---
