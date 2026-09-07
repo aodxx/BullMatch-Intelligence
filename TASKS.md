@@ -86,33 +86,42 @@ Delivered additive source policy storage, no fabricated/default backfill, a read
 
 ### BMI-P2-003 — First Source Compliance Evaluation Framework
 
-Status: **IN PROGRESS**  
-Owner: Primary Maintainer (ChatGPT autonomous run)  
-Branch: `agent/bmi-p2-003-source-compliance-framework`  
-Priority: highest safe internal task.  
-Dependencies: BMI-P2-001, BMI-P2-002.
+Status: **DONE — IMPLEMENTATION GATE**  
+Merged PR: **#77**  
+Contract: `source-compliance-evaluation/1.0.0`  
+Guide: `docs/SOURCE-COMPLIANCE-EVALUATION.md`
 
-Goal: build a deterministic evaluation contract/checklist for candidate Thai bullfighting sources before any source receives `APPROVED` policy status.
+Delivered:
 
-Required dimensions:
+- deterministic source/operator identity dossier
+- access-method plus terms/robots/API-policy review fields
+- rights/retention/attribution review fields
+- proposed polling/rate-limit/cursor/dedupe policy
+- provenance/reliability tier rationale and cross-check expectation
+- secret requirement names only; no secret values
+- withdrawal/failure/source-specific test expectations
+- explicit `REVIEW_REQUIRED / APPROVED / BLOCKED` decision record
+- `APPROVED` requires explicit `OWNER_OR_COMPLIANCE` authority, decision actor/time, decision-basis evidence and zero blockers
+- synthetic `.invalid` fixture only; no real source or Bull/Match facts
 
-- source/operator identity and purpose
-- permitted/public access method
-- terms/robots/API compatibility where applicable
-- rate-limit/poll-window basis
-- evidence storage/retention/attribution rights
-- authentication/secret requirements
-- initial cursor and dedupe semantics
-- provenance/reliability tier rationale
-- withdrawal/failure handling
-- decision state: REVIEW_REQUIRED / APPROVED / BLOCKED
+No Production source was approved, activated, scraped or polled by this task.
 
-Constraints:
+### BMI-P2-004 — Candidate Source Dossier Research
 
-- evaluation/research only; the framework must not auto-approve a real source
-- do not poll/scrape or create credentials during evaluation
-- do not ingest candidate Bull/Match facts as part of source approval research
-- first Production source activation remains an explicit owner/compliance decision
+Status: **READY**  
+Priority: highest safe next task; research only.  
+Dependencies: BMI-P2-003.
+
+Goal: identify a small shortlist of plausible Thai bullfighting information-source candidates and prepare `REVIEW_REQUIRED` dossiers using the BMI-P2-003 contract, without authorizing or polling any candidate.
+
+Required boundaries:
+
+- browser/manual public-web research only; no automated connector polling
+- record source/operator/access/rights evidence and unresolved questions
+- do not collect Bull/Match facts as fixtures or Production records
+- do not create credentials
+- no candidate may be marked `APPROVED` autonomously
+- first Production source activation remains BLOCKED on explicit owner/compliance approval
 
 ## Phase 3 — Multi-Source Expansion
 
@@ -128,7 +137,7 @@ Includes Matchup Intelligence, opponent-adjusted form, shared-opponent/style ana
 
 ## Autonomous Priority Reference
 
-1. **BMI-P2-003 — First Source Compliance Evaluation Framework** — IN PROGRESS
+1. **BMI-P2-004 — Candidate Source Dossier Research** — READY
 2. first permitted Production source connector — BLOCKED on explicit source/compliance approval
 3. Intelligence Products / Matchup Intelligence — wait for sufficient verified data depth
 4. deferred APP-004 real-data visual QA — wait for genuine verified data

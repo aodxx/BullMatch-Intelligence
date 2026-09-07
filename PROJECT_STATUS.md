@@ -9,7 +9,7 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 2 — First Source Compliance Readiness**
 
-Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / SOURCE-AGNOSTIC COLLECTION + PERSISTED POLICY REGISTRY COMPLETE / NO REAL SOURCE AUTHORIZED**
+Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / SOURCE-AGNOSTIC COLLECTION + PERSISTED POLICY REGISTRY + SOURCE COMPLIANCE FRAMEWORK COMPLETE / NO REAL SOURCE AUTHORIZED**
 
 ## Product Direction / Truth Boundary
 
@@ -42,6 +42,7 @@ Neither contributors nor automated collectors may directly overwrite canonical B
 - BMI-P1-013 Community Contribution Intake V1 — COMPLETE — PR #59–#62
 - BMI-P2-001 Source-Agnostic Collection Pipeline Foundation — COMPLETE — PR #64–#73
 - BMI-P2-002 Persisted Source Policy Registry Alignment — COMPLETE — PR #74
+- BMI-P2-003 First Source Compliance Evaluation Framework — COMPLETE — PR #77
 - BMI-APP-001 through BMI-APP-004 — COMPLETE implementation gates
 - BMI-OPS-001 through BMI-OPS-003 — COMPLETE
 
@@ -104,34 +105,50 @@ Validation:
 
 Existing advisor notices remain separate backlog/security operations concerns: private-schema RLS-with-no-policy INFO notices, unused-index INFO notices, and leaked-password-protection WARN. No access was broadened by BMI-P2-002.
 
+## BMI-P2-003 — First Source Compliance Evaluation Framework
+
+Status: **IMPLEMENTATION GATE COMPLETE**  
+Merged PR: **#77**  
+Contract: `source-compliance-evaluation/1.0.0`  
+Guide: `docs/SOURCE-COMPLIANCE-EVALUATION.md`
+
+Delivered a deterministic pre-approval dossier covering source/operator identity, access method and policy evidence, retention/attribution rights, proposed polling/rate-limit/cursor/dedupe policy, provenance/reliability rationale, secret requirement names, withdrawal/failure behavior and source-specific validation expectations.
+
+Decision safety:
+
+- every unresolved candidate remains `REVIEW_REQUIRED`
+- `APPROVED` requires an explicit `OWNER_OR_COMPLIANCE` decision actor/time, at least one decision-basis reference and zero blockers
+- `BLOCKED` requires a recorded blocking reason
+- the framework itself cannot create or activate a Production source
+- synthetic example uses `.invalid`; no real Bull/Match/source facts are retained as fixture data
+
+Validation:
+
+- shared-contract validation CI run #38 — PASS
+- deterministic source-compliance contract tests — PASS through CI
+- no migration, Production API, auth, browser grant or source-registry activation impact
+
 ## Next Engineering Task
 
-### BMI-P2-003 — First Source Compliance Evaluation Framework
+### BMI-P2-004 — Candidate Source Dossier Research
 
 Status: **READY**  
-Priority: highest safe task that does not authorize a source by itself.
+Priority: highest safe next task that advances first-source readiness without authorizing a source.
 
-Goal: create a source-evaluation dossier/template and evidence checklist so candidate Thai bullfighting sources can be assessed consistently before any connector is configured.
+Goal: identify a small shortlist of plausible Thai bullfighting information-source candidates and prepare `REVIEW_REQUIRED` dossiers using the BMI-P2-003 contract.
 
-Required evaluation dimensions:
+Research boundaries:
 
-- source identity/operator and public purpose
-- access method/API/RSS/public-page basis
-- terms/robots/API policy compatibility where applicable
-- polling/rate-limit expectations
-- evidence storage/retention and attribution rights
-- authentication/secret requirements
-- source-specific cursor/dedupe semantics
-- provenance/reliability tier rationale
-- failure/withdrawal policy
-- explicit decision state: REVIEW_REQUIRED / APPROVED / BLOCKED
+- manual/browser public-web research only; no connector polling or bulk scraping
+- record public source/operator identity, access-policy surfaces, rights/attribution evidence and unresolved questions
+- propose source-specific runtime policy only where public evidence supports it; do not invent rates/windows
+- do not collect candidate Bull/Match facts as fixtures or write Production records
+- do not create credentials
+- do not mark any candidate `APPROVED`
 
-Constraints:
+## External Decision Blocker
 
-- research/evaluation only; no automatic APPROVED decision
-- no real source polling or credential creation
-- do not ingest factual Bull/Match records during evaluation
-- owner/compliance approval remains required before first Production source is enabled
+The **first Production source connector and activation remain BLOCKED** because BullMatch currently has no explicit owner/compliance-approved real source. The minimum external action later required is an explicit `APPROVED` decision for one completed source dossier under `source-compliance-evaluation/1.0.0`. Until that exists, no connector may be enabled against a real source and no source row may be activated merely to continue development.
 
 ## Deferred / External-Decision Items
 
@@ -147,4 +164,4 @@ Constraints:
 
 ## Exact Next Autonomous Action
 
-Start `BMI-P2-003` from fresh `main` and build the source/compliance evaluation contract, checklist and deterministic decision-record format. It may research candidate source categories, but must not mark a real source APPROVED, store credentials, scrape/poll it, or create canonical Bull/Match data without an explicit source/compliance decision.
+Start `BMI-P2-004` from fresh `main`. Research a small number of plausible real source candidates using public browser-accessible policy/operator evidence, create only `REVIEW_REQUIRED` dossiers, and leave the approval decision to the owner/compliance authority. Do not poll, scrape at connector scale, create credentials, activate the private source registry, or ingest Bull/Match facts during this research task.
