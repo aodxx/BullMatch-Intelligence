@@ -17,12 +17,12 @@ BMI-P0-001 through BMI-P0-010: **DONE**.
 - BMI-P1-005 Bull/Camp/Owner/Venue CRUD — DONE — PR #22
 - BMI-P1-006 Manual Match Entry & Verification — DONE — PR #24
 - BMI-P1-007 Bull Profile & Basic Statistics — DONE — PR #29
-- BMI-P1-008 Review Backend Foundation — DONE — implementation gate complete — PR #50–#56
+- BMI-P1-008 Review Backend Foundation — DONE — PR #50–#56
 - BMI-P1-009 Thai Bullfighting Domain Rebaseline — DONE — PR #36
 - BMI-P1-010 Product Rebaseline v0.3 — DONE — PR #38
 - BMI-P1-011 Database Schema v0.2 — DONE — PR #39
 - BMI-P1-012 Contribution & Trust Architecture — DONE — PR #40
-- BMI-P1-013 Community Contribution Intake Foundation — DONE — V1 implementation gate complete — PR #59–#62
+- BMI-P1-013 Community Contribution Intake Foundation — DONE — V1 gate — PR #59–#62
 
 Durable Phase 1 boundaries:
 
@@ -30,7 +30,6 @@ Durable Phase 1 boundaries:
 - canonical promotion is separate, controlled and auditable
 - contributors never gain ADMIN/REVIEWER authority merely by submitting data
 - uncertain Bull identity stays unresolved; name similarity is not identity proof
-- destructive Bull MERGE/SPLIT and broad/high-risk promotion remain deferred
 - no fabricated Production Bull/Match/community rows are retained for testing
 
 ---
@@ -40,7 +39,7 @@ Durable Phase 1 boundaries:
 - BMI-APP-001 Frontend Foundation — DONE — PR #26
 - BMI-APP-002 Supabase Auth Login UI — DONE — PR #31
 - BMI-APP-003 Controlled API + Production Data Wiring — DONE — PR #33
-- BMI-APP-004 Visual Design Rebaseline — DONE — implementation gate complete — PR #41, #42, #46, #47, #48
+- BMI-APP-004 Visual Design Rebaseline — DONE — implementation gate — PR #41, #42, #46, #47, #48
 
 Production URL: `https://aodxx.github.io/BullMatch-Intelligence/`
 
@@ -61,93 +60,90 @@ Runbook: `docs/AUTO-RUN-RUNBOOK.md`.
 ## Phase 2 — Automated Collection Pipeline
 
 ### BMI-P2-001 — Source-Agnostic Collection Pipeline Foundation
+
 Status: **IN PROGRESS**  
 Owner: Primary Maintainer (ChatGPT autonomous run)  
-Current branch: `agent/bmi-p2-001-postgres-adapter`  
-Current PR: **#68 — PostgreSQL ingestion + persisted run-state adapters**  
+Latest merged PR: **#68 — PostgreSQL ingestion + persisted run-state adapters**  
+Current branch: `agent/bmi-p2-001-db-conformance`  
+Current slice: **rollback-only real-schema conformance harness**  
 Priority: highest current non-blocked engineering task.  
-Contract reference: `docs/COLLECTION-PIPELINE-FOUNDATION.md`
+Contract: `docs/COLLECTION-PIPELINE-FOUNDATION.md`
 
-Goal: make the existing Phase 0 source/connector/normalized-ingestion contracts executable, persistence-ready and conformance-tested before any real Production source is selected.
+Goal: make the existing source/connector/normalized-ingestion contracts executable, persistence-ready and conformance-tested before any real Production source is selected.
 
-### PR #64 — connector execution baseline — MERGED
+### Merged slices
 
-- shared schemas reused
-- source-agnostic Connector + validated poll runner
+**PR #64 — connector execution baseline**
+- shared connector schemas reused
+- source-agnostic validated poll runner
 - APPROVED + ACTIVE + polling-enabled gates
-- connector/source/run/correlation identity enforcement
-- per-poll duplicate-key rejection
-- checkpoint advances only after valid safe output
-- deterministic conformance tests + CI
+- connector/source/run/correlation identity checks
+- duplicate-key rejection and safe checkpoint advancement
 
-### PR #65 — registry/run-state — MERGED
-
-- approved-only runtime source registry
-- non-pollable approved sources remain blocked from polling
+**PR #65 — registry/run-state**
+- approved-only runtime registry
 - persistence-neutral `CollectionRunState`
 - SOURCE_MONITORING AgentRun contract reuse
-- source-policy caps on poll item/request limits
-- deterministic metrics/output refs/terminal states
-- AgentRun -> AgentError reference repair
+- source-policy poll limits
+- deterministic run metrics/terminal states
 
-### PR #66 — atomic persistence contract — MERGED
-
+**PR #66 — atomic persistence contract**
 - `IngestionPersistenceAdapter` / `IngestionTransaction`
-- normalized item + evidence + safe checkpoint atomic boundary
-- `(source_id, dedupe_key)` idempotency
-- exact replay without duplicate evidence
-- conflicting replay rejected instead of overwrite
-- unsafe checkpoint retains previous cursor
-- stale cursor rejection before staging
-- side-effect-free transaction begin + rollback on failure
-- request-compatible persisted cursor shape
+- item + evidence + checkpoint atomic boundary
+- exact replay idempotency
+- conflicting replay rejection
+- unsafe/stale checkpoint protection
 - deterministic in-memory conformance adapter
 
-### PR #68 — PostgreSQL + persisted run-state mapping — VALIDATED / IN REVIEW
-
-Implemented:
-
-- `PostgresIngestionPersistence` mapped to existing `bullmatch_private` source/runtime/item/evidence tables
-- `PostgresCollectionRunStore` mapped to existing `bullmatch_private.agent_runs`
-- persistence-time source policy recheck
-- source/runtime locking and stale-cursor rejection
-- source item + evidence + checkpoint in one transaction
-- normalized-envelope fingerprint retained under private raw metadata
-- `source_items.content_hash` preserved for real source-content hashing
+**PR #68 — PostgreSQL + persisted run-state mapping**
+- `PostgresIngestionPersistence` over existing BullMatch-private source/runtime/item/evidence tables
+- `PostgresCollectionRunStore` over existing `agent_runs`
+- persistence-time policy recheck and source/runtime locking
+- normalized-envelope fingerprint in private raw metadata
+- `content_hash` preserved for actual source-content hashing
 - evidence remains PENDING/unverified
-- CollectionRunState input/output refs round-trip through AgentRun metrics without schema migration
-- no canonical Bull/Match/history/verification/promotion/publication SQL
+- no migration and no canonical write path
+- full shared-contract + connector + PostgreSQL fake-DB CI PASS
 
-Validation on implementation head:
+### Current rollback-only DB conformance slice
 
-- shared schema/example validation — PASS
-- connector runner tests — PASS
-- registry/run-state tests — PASS
-- atomic persistence tests — PASS
-- PostgreSQL/run-store fake-DB conformance tests — PASS
+File: `supabase/tests/p2_001_collection_persistence_rollback.sql`
 
-Required project-wide invariants:
+Executed against the active BullMatch PostgreSQL schema with synthetic UUIDs and `.invalid` URLs only.
+
+Validated:
+
+- intended source/runtime/item/evidence/AgentRun storage shape matches deployed constraints
+- intentionally failed inner transaction restores item + evidence + checkpoint together
+- successful staging shape is schema-valid
+- SOURCE_MONITORING AgentRun mapping is schema-valid
+- outer transaction rolls back all fixtures
+- retained fixture counts after rollback: sources=0, source_items=0, evidence=0, agent_runs=0
+
+No schema change, Production canonical data, real source access, secret, grant or policy change occurred.
+
+### Required project-wide invariants
 
 1. normalized source output remains untrusted evidence/candidate input
-2. connectors/orchestration/persistence never write canonical Bulls/Matches/history directly
-3. conflicts remain unresolved until verification/review handles them
+2. collection runtime cannot write canonical Bulls/Matches/history directly
+3. conflicts stay unresolved until review/verification
 4. invalid output cannot commit cursor progress
-5. source-specific secret values never enter shared contracts/logs/tests
-6. test fixtures are deterministic and never persisted to Production
+5. source secrets never enter contracts/logs/tests
+6. deterministic fixtures never remain in Production
 7. a real source connector requires a separate explicit source/compliance decision
 
-### Exact next safe slices inside BMI-P2-001 after PR #68
+### Exact next safe slices after DB harness integration
 
-1. rollback-only SQL/database conformance harness against actual BullMatch-private schema with zero retained synthetic rows
-2. reusable connector conformance fixture helpers
-3. operational orchestration wrapper: approved registry -> persisted run state -> connector -> atomic persistence
-4. persisted source-registry provider when needed by orchestration
+1. reusable connector fixture/conformance helpers
+2. operational orchestration wrapper: approved registry -> checkpoint -> persisted run state -> connector -> atomic persistence
+3. persisted source-registry provider if required
+4. BMI-P2-001 foundation sign-off after deterministic end-to-end synthetic orchestration passes
 
 Explicitly not authorized in BMI-P2-001:
 
-- selecting or scraping the first real Production source
-- bypassing source policy/compliance review
-- choosing an AI provider merely to complete foundation work
+- selecting/scraping/polling the first real Production source
+- bypassing source compliance review
+- choosing an AI provider merely to finish foundation work
 - direct canonical publication
 
 Dependencies satisfied: BMI-P1-008, BMI-P1-011, BMI-P1-012, BMI-P1-013 V1.
@@ -170,19 +166,19 @@ Includes Matchup Intelligence, opponent-adjusted form, shared-opponent/style ana
 2. first permitted Production source connector after explicit source/compliance selection
 3. Intelligence Products / Matchup Intelligence when verified data depth is sufficient
 4. deferred APP-004 real-data visual QA
-5. separately approved destructive identity operations only after safety design
+5. destructive identity operations only after separate safety approval
 
 ## Deferred / External-Decision Items
 
-- first Production source selection and source-specific compliance approval
-- open/public contributor signup/onboarding policy
+- first Production source selection/compliance approval
+- public contributor signup/onboarding policy
 - AI provider selection
 - destructive Bull identity merge/split execution
 - broad/high-risk canonical promotion
-- distinct-Bull same-name creation escalation policy
-- venue-specific uncertain terminology/rules requiring field validation
+- distinct-Bull same-name escalation policy
+- venue-specific uncertain terminology/rules
 - exact contributor reputation formula
-- Data Credit / Pro-unlock thresholds/pricing until real usage data exists
+- Data Credit / Pro-unlock thresholds/pricing
 
 ## Assignment Rule
 
