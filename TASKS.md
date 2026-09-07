@@ -108,20 +108,27 @@ No Production source was approved, activated, scraped or polled by this task.
 
 ### BMI-P2-004 — Candidate Source Dossier Research
 
-Status: **REVIEW**  
+Status: **IN PROGRESS — FIRST-PARTY EVIDENCE FOLLOW-UP**  
 Owner: Primary Maintainer (ChatGPT autonomous run)  
-Branch: `agent/bmi-p2-004-candidate-source-dossiers`  
-Dependencies: BMI-P2-003.
+Branch: `agent/bmi-p2-004-first-party-evidence`  
+Dependencies: BMI-P2-003.  
+Initial shortlist merged: **PR #79**.
 
-Implemented research shortlist and contract-valid dossier set for three source roles:
+Research shortlist and contract-valid dossier set:
 
-- `wuachon.co` — highly domain-relevant publisher/aggregator; operator/access/rights/runtime policy unresolved
-- Thailand Sports Almanac — official government sports reference; potential provenance/context source, Bull-specific coverage unresolved
-- Surat Thani Provincial Government — official corroboration candidate for venue/event context, not a dedicated program feed
+- `wuachon.co` — highly domain-relevant publisher/aggregator; public accessibility confirmed, but operator/access/rights/runtime policy remains unresolved
+- Thailand Sports Almanac — official government sports reference; potential provenance/context source, Bull-specific coverage and automation/reuse policy unresolved
+- Surat Thani Provincial Government — official corroboration candidate; first-party operator context strengthened, but automation/reuse policy and recurring-feed suitability remain unresolved
 
-All dossiers remain `REVIEW_REQUIRED`, have `polling_enabled=false`, contain explicit blockers and are guarded by deterministic tests that reject an accidental APPROVED state in this research directory.
+Current follow-up scope:
 
-No connector polling, credentials, Production source activation or Bull/Match ingestion occurred.
+- deepen first-party operator/policy/rights evidence without connector polling
+- distinguish verified evidence from absence-of-evidence explicitly
+- keep every dossier `REVIEW_REQUIRED`, `polling_enabled=false`, `authority=UNASSIGNED`
+- do not invent request rates, windows, cursor behavior or rights
+- do not ingest Bull/Match facts or create credentials
+
+A first Production connector remains BLOCKED until one dossier has sufficient evidence and receives an explicit `OWNER_OR_COMPLIANCE` approval decision.
 
 ## Phase 3 — Multi-Source Expansion
 
@@ -137,7 +144,7 @@ Includes Matchup Intelligence, opponent-adjusted form, shared-opponent/style ana
 
 ## Autonomous Priority Reference
 
-1. **BMI-P2-004 — Candidate Source Dossier Research** — REVIEW
+1. **BMI-P2-004 — Candidate Source Dossier Research** — IN PROGRESS
 2. first permitted Production source connector — BLOCKED on explicit source/compliance approval
 3. Intelligence Products / Matchup Intelligence — wait for sufficient verified data depth
 4. deferred APP-004 real-data visual QA — wait for genuine verified data
