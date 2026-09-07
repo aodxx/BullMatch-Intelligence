@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "evaluation_id": "59f64cab-da52-4e9a-a4b1-e81a7105e35e",
   "candidate_key": "wuachon-co",
-  "evaluated_at": "2026-09-07T03:12:00Z",
+  "evaluated_at": "2026-09-07T03:39:00Z",
   "source_identity": {
     "name": "วัวชนออนไลน์ / wuachon.co",
     "operator_name": null,
@@ -10,6 +10,7 @@
     "base_url": "https://wuachon.co/",
     "public_purpose": "Public website publishing Thai bullfighting program/result content and related information.",
     "identity_evidence_refs": [
+      "https://wuachon.co/",
       "https://wuachon.co/2025/03/27/%E0%B9%83%E0%B8%9A%E0%B8%A7%E0%B8%B1%E0%B8%A7-%E0%B8%AA%E0%B8%99%E0%B8%B2%E0%B8%A1%E0%B8%81%E0%B8%B5%E0%B8%AC%E0%B8%B2%E0%B8%8A%E0%B8%99%E0%B9%82%E0%B8%84%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B9%81-6/"
     ]
   },
@@ -19,9 +20,10 @@
     "robots_reviewed": false,
     "api_policy_reviewed": false,
     "access_evidence_refs": [
+      "https://wuachon.co/",
       "https://wuachon.co/2025/03/27/%E0%B9%83%E0%B8%9A%E0%B8%A7%E0%B8%B1%E0%B8%A7-%E0%B8%AA%E0%B8%99%E0%B8%B2%E0%B8%A1%E0%B8%81%E0%B8%B5%E0%B8%AC%E0%B8%B2%E0%B8%8A%E0%B8%99%E0%B9%82%E0%B8%84%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B9%81-6/"
     ],
-    "notes": "Public pages are browser-accessible, but operator identity, terms, robots directives and any automation-specific policy have not yet been verified from first-party policy surfaces."
+    "notes": "A manual/browser snapshot on 2026-09-07 confirmed that the public homepage is directly browser-accessible and exposes program-oriented navigation and current publication links. The indexed homepage surface did not expose identifiable About, Contact, Terms, Privacy or Copyright text. Search did not surface a first-party policy page, and robots.txt could not be independently verified in this research run. Absence from the indexed surface is not evidence that no policy exists, so terms_reviewed/robots_reviewed/api_policy_reviewed remain false."
   },
   "rights_review": {
     "reference_allowed": "UNCLEAR",
@@ -29,7 +31,7 @@
     "attribution_required": "UNCLEAR",
     "derivative_normalization_allowed": "UNCLEAR",
     "rights_evidence_refs": [],
-    "notes": "Do not copy or retain program images/media. A public page being readable is not evidence of permission for automated reuse or media retention."
+    "notes": "Do not copy or retain program images/media. A public page being readable is not evidence of permission for automated reuse, text normalization, media retention or republication. No first-party reuse/license statement was identified in this research run."
   },
   "runtime_policy_proposal": {
     "polling_enabled": false,
@@ -43,7 +45,7 @@
   },
   "provenance_review": {
     "proposed_reliability_tier": "UNKNOWN",
-    "rationale": "The site is highly domain-relevant, but operator authority, source provenance and correction practices have not yet been established.",
+    "rationale": "The site is highly domain-relevant and visibly active, but operator authority, upstream source provenance, editorial correction practices and reuse permissions have not yet been established.",
     "cross_check_expectation": "REQUIRED"
   },
   "operational_review": {
@@ -65,11 +67,11 @@
     "authority": "UNASSIGNED",
     "decision_basis_refs": [],
     "blocking_reasons": [
-      "Operator identity is not yet verified.",
+      "Operator identity is not yet verified from a first-party operator/about/contact surface.",
       "Terms/robots/automation policy has not been verified.",
       "Reuse, normalization and attribution rights remain unclear.",
       "No source-specific rate limit, cursor or dedupe policy has evidence yet."
     ],
-    "notes": "Strong domain relevance, but no Production polling or APPROVED registry status is justified from current evidence."
+    "notes": "Strong domain relevance, but no Production polling or APPROVED registry status is justified from current evidence. Manual browser research confirmed public accessibility only; it did not resolve authorization for automation or reuse."
   }
 }
