@@ -61,80 +61,64 @@ Runbook: `docs/AUTO-RUN-RUNBOOK.md`.
 
 ### BMI-P2-001 — Source-Agnostic Collection Pipeline Foundation
 
-Status: **IN PROGRESS**  
-Owner: Primary Maintainer (ChatGPT autonomous run)  
-Latest merged PR: **#69 — rollback-only database conformance harness**  
-Priority: highest current non-blocked engineering task.  
-Contract: `docs/COLLECTION-PIPELINE-FOUNDATION.md`
+Status: **DONE — IMPLEMENTATION GATE**  
+Owner: Primary Maintainer  
+Merged PRs: **#64–#72**  
+Contracts: `docs/COLLECTION-PIPELINE-FOUNDATION.md`, `docs/COLLECTION-OPERATIONAL-ORCHESTRATION.md`
 
-Goal: make the existing source/connector/normalized-ingestion contracts executable, persistence-ready and conformance-tested before any real Production source is selected.
+Delivered:
 
-### Merged slices
-
-**PR #64 — connector execution baseline**
-- source-agnostic validated poll runner
-- APPROVED + ACTIVE + polling-enabled gates
+- source-agnostic validated connector runner
+- APPROVED + ACTIVE + polling gates
 - connector/source/run/correlation identity checks
 - duplicate-key rejection and safe checkpoint advancement
-
-**PR #65 — registry/run-state**
 - approved-only runtime registry
-- persistence-neutral `CollectionRunState`
-- SOURCE_MONITORING AgentRun contract reuse
-- source-policy poll limits and deterministic terminal state
+- persistence-neutral `CollectionRunState` using SOURCE_MONITORING AgentRun
+- atomic normalized source item + evidence + checkpoint persistence
+- replay idempotency, conflicting replay rejection and stale-cursor protection
+- PostgreSQL ingestion + persisted run-state adapters
+- rollback-only real-schema conformance with zero retained fixtures
+- reusable synthetic connector conformance fixtures
+- operational one-poll orchestration from registry/checkpoint through atomic persistence
+- read-only PostgreSQL checkpoint reader
+- shared-contract and complete connector test suite passing in CI
 
-**PR #66 — atomic persistence contract**
-- `IngestionPersistenceAdapter` / `IngestionTransaction`
-- item + evidence + checkpoint atomic boundary
-- exact replay idempotency and conflicting replay rejection
-- unsafe/stale checkpoint protection
-- deterministic in-memory conformance adapter
-
-**PR #68 — PostgreSQL + persisted run-state mapping**
-- `PostgresIngestionPersistence` over existing BullMatch-private source/runtime/item/evidence tables
-- `PostgresCollectionRunStore` over existing `agent_runs`
-- persistence-time source policy recheck and locking
-- private normalized-envelope fingerprint
-- `content_hash` preserved for actual source-content hashing
-- evidence remains PENDING/unverified
-- no migration and no canonical write path
-- shared-contract + connector + PostgreSQL fake-DB CI PASS
-
-**PR #69 — rollback-only real-schema conformance**
-- committed `supabase/tests/p2_001_collection_persistence_rollback.sql`
-- executed against active BullMatch PostgreSQL schema with synthetic UUIDs + `.invalid` URLs only
-- intentional inner failure proves item + evidence + checkpoint rollback together
-- successful adapter shape satisfies deployed constraints
-- SOURCE_MONITORING AgentRun shape satisfies deployed table
-- outer transaction always rolls back
-- retained fixtures after rollback: sources=0, source_items=0, evidence=0, agent_runs=0
-- no migration, grant, policy or Production canonical write
-
-### Required project-wide invariants
+Project-wide invariants:
 
 1. normalized source output remains untrusted evidence/candidate input
 2. collection runtime cannot write canonical Bulls/Matches/history directly
-3. conflicts stay unresolved until review/verification
+3. conflicts remain unresolved until review/verification
 4. invalid output cannot commit cursor progress
 5. source secrets never enter contracts/logs/tests
 6. deterministic fixtures never remain in Production
 7. a real source connector requires a separate explicit source/compliance decision
 
-### Exact next safe slices
+No real source was selected, scraped or polled under BMI-P2-001.
 
-1. reusable connector fixture/conformance helpers
-2. operational orchestration wrapper: approved registry -> checkpoint -> persisted run state -> connector -> atomic persistence
-3. persisted source-registry provider if required by the wrapper
-4. BMI-P2-001 foundation sign-off after deterministic end-to-end synthetic orchestration passes
+### BMI-P2-002 — Persisted Source Policy Registry Alignment
 
-Explicitly not authorized in BMI-P2-001:
+Status: **READY**  
+Priority: highest current non-blocked internal engineering task.  
+Dependencies: BMI-P2-001.
 
-- selecting/scraping/polling the first real Production source
-- bypassing source compliance review
-- choosing an AI provider merely to finish foundation work
-- direct canonical publication
+Problem:
 
-Dependencies satisfied: BMI-P1-008, BMI-P1-011, BMI-P1-012, BMI-P1-013 V1.
+`bullmatch_private.sources` does not currently contain every value required to reconstruct `source-registry-entry/1.0.0` deterministically. Dedicated storage is missing for at least polling timezone, active windows, max-items-per-run and the complete rate-limit policy object.
+
+Goal:
+
+- compare the shared source registry contract to the deployed private source table
+- design the smallest additive/reversible storage alignment
+- avoid undocumented defaults or hidden `connector_config` conventions
+- implement a read-only PostgreSQL `SourceRegistryProvider`
+- validate full contract reconstruction with deterministic fake-DB and schema tests
+- preserve service-role/private-schema boundary
+- do not select/contact a real source
+- do not add canonical Bull/Match/history writes
+
+Expected branch: `agent/bmi-p2-002-source-policy-registry`.
+
+A first Production source connector remains blocked until an explicit source/compliance decision defines permitted access method, rights/retention, rate limits, authentication/secret handling and source-specific tests.
 
 ## Phase 3 — Multi-Source Expansion
 
@@ -150,11 +134,11 @@ Includes Matchup Intelligence, opponent-adjusted form, shared-opponent/style ana
 
 ## Autonomous Priority Reference
 
-1. **BMI-P2-001 — Source-Agnostic Collection Pipeline Foundation** — IN PROGRESS
-2. first permitted Production source connector after explicit source/compliance selection
-3. Intelligence Products / Matchup Intelligence when verified data depth is sufficient
-4. deferred APP-004 real-data visual QA
-5. destructive identity operations only after separate safety approval
+1. **BMI-P2-002 — Persisted Source Policy Registry Alignment** — READY
+2. first permitted Production source connector — BLOCKED on explicit source/compliance selection
+3. Intelligence Products / Matchup Intelligence — wait for sufficient verified data depth
+4. deferred APP-004 real-data visual QA — wait for genuine verified data
+5. destructive identity operations — separate safety approval required
 
 ## Deferred / External-Decision Items
 
