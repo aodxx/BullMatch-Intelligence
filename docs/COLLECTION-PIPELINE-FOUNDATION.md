@@ -1,7 +1,7 @@
 # Source-Agnostic Collection Pipeline Foundation
 
 Task: `BMI-P2-001`
-Status: **IMPLEMENTATION BASELINE — REGISTRY + RUN STATE ADDED**
+Status: **IMPLEMENTATION BASELINE — REGISTRY + RUN STATE + ATOMIC PERSISTENCE CONTRACT**
 Contract family: `bullmatch.contracts/1.x`
 
 ## Purpose
@@ -39,6 +39,8 @@ The runner owns the shared safety checks around that connector.
 `agents/connectors/registry.py` adds a persistence-neutral runtime registry boundary. It validates every provider entry against the shared source-registry contract and exposes only sources whose `policy_status` is `APPROVED`.
 
 `agents/connectors/orchestration.py` adds a persistence-neutral `CollectionRunState`. It uses the existing `AgentRun` contract with `agent_type=SOURCE_MONITORING`, creates bounded `ConnectorPollRequest` objects, records validated connector execution metrics, and produces terminal run state without writing Production data.
+
+`agents/connectors/persistence.py` adds the database-independent transaction contract that future adapters must implement for normalized source items/evidence and safe connector checkpoint state.
 
 ## Approved runtime source registry
 
@@ -129,7 +131,7 @@ These checks prevent a connector bug from silently crossing source/run boundarie
 
 ## Cursor safety
 
-A later orchestration/persistence layer may store only the returned `committed_cursor`.
+A persistence layer may store only the returned `committed_cursor` from a valid `PollExecution`.
 
 Rules:
 
@@ -137,13 +139,41 @@ Rules:
 - `next_cursor.checkpoint_safe = true` -> cursor may advance
 - `checkpoint_safe = false` -> runner returns the original request cursor
 
-This implements the existing contract rule that invalid/unconfirmed connector output must not commit progress and skip evidence.
-
 The run-state object counts a checkpoint as advanced only after `run_connector_poll()` has returned a valid `PollExecution` with `checkpoint_advanced=true`.
+
+## Atomic ingestion persistence contract
+
+The persistence boundary is intentionally narrower than a general database repository. It can stage only normalized source items/evidence and connector checkpoint state.
+
+`IngestionPersistenceAdapter.begin()` receives:
+
+- `source_id`
+- `run_id`
+- `correlation_id`
+- the caller's expected current cursor
+
+It returns one `IngestionTransaction` that must stage all normalized envelopes/evidence first, then set the safe checkpoint, then commit once.
+
+Required transaction invariants:
+
+1. transaction begin itself must not mutate persisted state
+2. every envelope must match the transaction source/correlation identity
+3. `(source_id, dedupe_key)` is the idempotency key for a normalized source item
+4. exact replay of the same normalized payload is idempotent and must not duplicate evidence
+5. reuse of the same dedupe key with a different normalized payload is a conflict/error; it must never overwrite the stored evidence silently
+6. when `checkpoint_advanced=false`, the committed cursor must equal the expected cursor
+7. stale expected checkpoint is rejected before staging
+8. any staging/checkpoint exception rolls back the full transaction
+9. source items/evidence and checkpoint become visible together only after commit
+10. this interface has no canonical Bull/Match/history write operation
+
+The deterministic `InMemoryIngestionPersistence` adapter exists only to prove these semantics in conformance tests. It is not a Production persistence implementation.
+
+Future PostgreSQL/Supabase mapping should target the already-deployed private ingestion layer rather than inventing a parallel datastore. The database adapter must map the contract onto BullMatch-owned private objects such as source items, evidence, runtime cursor state and agent-run records while preserving the same atomicity and policy boundaries.
 
 ## Canonical truth boundary
 
-The connector runner, runtime registry and collection run state cannot write:
+The connector runner, runtime registry, run state and ingestion persistence contract cannot write:
 
 - canonical Bulls
 - canonical Match history/results
@@ -177,6 +207,11 @@ Coverage includes:
 - connector health maps to deterministic terminal run state
 - explicit failure emits a contract-valid AgentError
 - cross-source run/request composition is rejected
+- item + evidence + safe checkpoint commit atomically
+- unsafe checkpoint can preserve evidence while keeping the previous cursor
+- exact replay does not duplicate item/evidence
+- conflicting same-key payload rolls back the full batch
+- stale expected cursor is rejected before staging
 
 Fixtures are contract examples only and are never inserted into Production.
 
@@ -186,23 +221,23 @@ Fixtures are contract examples only and are never inserted into Production.
 
 ## Contract repairs
 
-Phase 0 contained cross-schema `$ref` strings that were meaningful to humans but not resolvable against the sibling schemas' canonical `$id` values when loaded through a standards-compliant registry.
+Phase 0 contained cross-schema `$ref` strings that were meaningful to humans but not resolvable against sibling canonical `$id` values through a standards-compliant registry.
 
 BMI-P2-001 repairs these references to the already-existing absolute contract `$id` values:
 
 - connector poll request/result references repaired in PR #64
-- `agent-run` -> `agent-error` reference repaired in the registry/run-state slice
+- `agent-run` -> `agent-error` reference repaired in PR #65
 
-These repairs do not change payload meaning or the 1.0.0 data shapes; they make the declared contract family executable by standards-compliant validators.
+These repairs do not change payload meaning or the 1.0.0 data shapes.
 
 ## Next implementation slices
 
 Within BMI-P2-001, safe next work can add:
 
-1. deterministic persistence adapter interfaces for source item/evidence staging
-2. explicit transaction boundary for source-item dedupe + evidence persistence + safe checkpoint commit
-3. persisted run-state adapter compatible with the current in-memory `CollectionRunState`
-4. reusable connector conformance fixture helpers
-5. database adapter conformance tests without retaining synthetic Production rows
+1. persisted AgentRun/run-state adapter compatible with `CollectionRunState`
+2. PostgreSQL/Supabase adapter mapping to the existing private ingestion tables
+3. rollback-only/database conformance tests proving dedupe + evidence + checkpoint atomicity
+4. reusable connector fixture helpers
+5. operational orchestration wrapper combining approved registry -> run state -> connector -> persistence adapter without selecting a real source
 
 A real source-specific connector must wait for a separate source/compliance decision. That future task should identify the source, permitted access method, rate limits, rights/retention constraints and connector-specific tests before enabling Production polling.

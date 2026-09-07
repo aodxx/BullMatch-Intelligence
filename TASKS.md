@@ -63,9 +63,11 @@ Runbook: `docs/AUTO-RUN-RUNBOOK.md`.
 ### BMI-P2-001 — Source-Agnostic Collection Pipeline Foundation
 Status: **IN PROGRESS**
 Owner: Primary Maintainer (ChatGPT autonomous run)
-Active branch: `agent/bmi-p2-001-registry-run-state`
-Current PR: **#65 — `[BMI-P2-001] Add approved registry loader and collection run state`**
-Previous merged slice: **PR #64 — executable connector contracts + checkpoint safety**
+Active branch: `agent/bmi-p2-001-persistence-contract`
+Current PR: **#66 — `[BMI-P2-001] Define atomic ingestion persistence boundary`**
+Previous merged slices:
+- PR #64 — executable connector contracts + checkpoint safety
+- PR #65 — approved source registry loader + SOURCE_MONITORING run state
 Priority: highest current non-blocked engineering task.
 Contract reference: `docs/COLLECTION-PIPELINE-FOUNDATION.md`
 
@@ -85,9 +87,8 @@ Make the existing Phase 0 source/connector/normalized-ingestion contracts execut
 - shared-contract CI coverage
 - no network, Production persistence or canonical write capability
 
-### Current slice — PR #65
+### Delivered registry/run-state slice — PR #65
 
-Implemented:
 - validated `ApprovedSourceRegistry` runtime loader
 - `REVIEW_REQUIRED`/`BLOCKED` sources excluded from runtime view
 - duplicate source IDs rejected
@@ -102,28 +103,50 @@ Implemented:
 - explicit contract-valid SOURCE_MONITORING failure path
 - AgentRun -> AgentError `$ref` repaired to canonical 1.0.0 `$id`
 
-Validation:
+Validation for PR #65:
 - shared contract schema/example validation — PASS
 - connector runner tests — PASS
 - registry/run-state integration tests — PASS
-- fixtures use synthetic UUIDs and `.invalid` URLs only in test memory
 
-Required invariants:
+### Current persistence slice — PR #66
+
+Implemented:
+- `IngestionPersistenceAdapter` and `IngestionTransaction` protocols
+- `persist_poll_execution()` transaction boundary after validated connector output
+- source/correlation identity rechecked at persistence boundary
+- normalized item/evidence staging before checkpoint commit
+- `(source_id, dedupe_key)` idempotency key
+- exact replay does not duplicate stored item/evidence
+- same dedupe key with different normalized payload is rejected instead of overwritten
+- unsafe checkpoint may persist evidence while retaining the previous cursor
+- stale expected cursor rejected before staging
+- transaction begin is side-effect free
+- any staging/checkpoint exception rolls back the full batch
+- deterministic in-memory adapter models atomic semantics only for tests
+
+Persistence invariants:
+1. source item + evidence + checkpoint visibility is atomic
+2. invalid/conflicting data never advances checkpoint
+3. replay is idempotent only when normalized payload is identical
+4. persistence layer has no canonical Bull/Match/history write operation
+5. no Production adapter or migration is introduced in this slice
+
+Required project-wide invariants:
 1. normalized source output remains untrusted evidence/candidate input
-2. connectors/orchestration never write canonical Bulls/Matches/history directly
-3. conflicts remain unresolved until the verification/review pipeline handles them
+2. connectors/orchestration/persistence never write canonical Bulls/Matches/history directly
+3. conflicts remain unresolved until verification/review handles them
 4. invalid output cannot commit cursor progress
 5. source-specific secret values never enter shared contracts/logs/tests
 6. test fixtures are deterministic and never persisted to Production
 7. a real source connector requires a separate explicit source/compliance decision
 
-### Exact next safe slices inside BMI-P2-001
+### Exact next safe slices inside BMI-P2-001 after PR #66
 
-1. deterministic persistence adapter interfaces for source-item/evidence staging
-2. transactional dedupe + evidence + safe checkpoint persistence contract
-3. persisted run-state adapter compatible with `CollectionRunState`
+1. persisted AgentRun/run-state adapter compatible with `CollectionRunState`
+2. PostgreSQL/Supabase adapter mapping to existing private ingestion tables
+3. rollback-only database conformance tests for source item/evidence/checkpoint atomicity
 4. reusable connector conformance fixture helpers
-5. database adapter conformance tests without retained synthetic Production rows
+5. orchestration wrapper connecting registry -> run state -> connector -> persistence without selecting a real source
 
 Explicitly not authorized in BMI-P2-001:
 - selecting or scraping the first real Production source

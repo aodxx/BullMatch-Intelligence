@@ -73,6 +73,10 @@ def run_connector_poll(connector: Connector, request: Mapping[str, Any]) -> Poll
     A caller may persist ``committed_cursor`` only after this function succeeds.
     Invalid output, cross-source output, duplicate item keys, or unsafe checkpoints
     never advance the cursor.
+
+    ``checkpoint_safe`` is decision metadata from the connector result. It is not
+    part of the persisted/request cursor shape, so ``committed_cursor`` always
+    contains only ``strategy`` + ``value``.
     """
 
     schemas, registry = _load_schemas()
@@ -111,5 +115,6 @@ def run_connector_poll(connector: Connector, request: Mapping[str, Any]) -> Poll
 
     next_cursor = dict(result["next_cursor"])
     checkpoint_safe = bool(next_cursor["checkpoint_safe"])
-    committed_cursor = next_cursor if checkpoint_safe else dict(request_obj["cursor"])
+    persisted_next_cursor = {"strategy": next_cursor["strategy"], "value": next_cursor["value"]}
+    committed_cursor = persisted_next_cursor if checkpoint_safe else dict(request_obj["cursor"])
     return PollExecution(result=result, committed_cursor=committed_cursor, checkpoint_advanced=checkpoint_safe)

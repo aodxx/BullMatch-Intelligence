@@ -103,7 +103,8 @@ class ConnectorRunnerTests(unittest.TestCase):
     def test_valid_result_advances_safe_checkpoint(self):
         execution = run_connector_poll(FixtureConnector(result()), request())
         self.assertTrue(execution.checkpoint_advanced)
-        self.assertEqual(execution.committed_cursor["value"], "after")
+        self.assertEqual(execution.committed_cursor, {"strategy": "EXTERNAL_ID", "value": "after"})
+        self.assertNotIn("checkpoint_safe", execution.committed_cursor)
 
     def test_unsafe_checkpoint_keeps_previous_cursor(self):
         execution = run_connector_poll(FixtureConnector(result(checkpoint_safe=False)), request())
