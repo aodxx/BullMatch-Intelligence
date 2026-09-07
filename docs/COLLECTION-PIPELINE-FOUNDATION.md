@@ -1,7 +1,7 @@
 # Source-Agnostic Collection Pipeline Foundation
 
 Task: `BMI-P2-001`
-Status: **IMPLEMENTATION BASELINE**
+Status: **IMPLEMENTATION BASELINE — REGISTRY + RUN STATE ADDED**
 Contract family: `bullmatch.contracts/1.x`
 
 ## Purpose
@@ -18,6 +18,7 @@ The implementation reuses the existing JSON Schema 1.0.0 contracts under `packag
 - `connector-poll-request.schema.json`
 - `connector-poll-result.schema.json`
 - `normalized-ingestion-envelope.schema.json`
+- `agent-run.schema.json`
 - `agent-error.schema.json`
 
 No competing source contract is introduced.
@@ -34,6 +35,71 @@ A connector implementation supplies only:
 - `poll(request)`
 
 The runner owns the shared safety checks around that connector.
+
+`agents/connectors/registry.py` adds a persistence-neutral runtime registry boundary. It validates every provider entry against the shared source-registry contract and exposes only sources whose `policy_status` is `APPROVED`.
+
+`agents/connectors/orchestration.py` adds a persistence-neutral `CollectionRunState`. It uses the existing `AgentRun` contract with `agent_type=SOURCE_MONITORING`, creates bounded `ConnectorPollRequest` objects, records validated connector execution metrics, and produces terminal run state without writing Production data.
+
+## Approved runtime source registry
+
+The runtime registry is intentionally narrower than the administrative source registry.
+
+Rules:
+
+- every provider object must validate against `source-registry-entry/1.0.0`
+- duplicate `source_id` values are rejected
+- `REVIEW_REQUIRED` and `BLOCKED` entries are not exposed to runtime orchestration
+- policy-approved but `PAUSED`, `ERROR`, `RETIRED`, or polling-disabled entries cannot be returned as pollable
+- connector filtering returns only policy-approved + ACTIVE + poll-enabled sources
+- secret requirements describe expected secret names/purpose only; secret values are not part of the registry contract or loader
+
+A future Production adapter may read the persisted source registry, but it must provide the same contract objects to this boundary and must not weaken the policy gate.
+
+## Run-state / orchestration contract
+
+`CollectionRunState` provides a deterministic orchestration object without a database dependency.
+
+At start it records:
+
+- stable `run_id`
+- stable `correlation_id`
+- `source_id`
+- `agent_type = SOURCE_MONITORING`
+- agent version
+- started time
+- RUNNING state
+- source input reference
+- zeroed collection metrics
+
+Poll request construction:
+
+- requires the run to remain RUNNING
+- requires the same source ID as the run
+- re-checks APPROVED + ACTIVE + polling-enabled policy
+- binds the same run/correlation IDs into the request
+- caps requested `max_items` by `polling.max_items_per_run`
+- caps requested `max_requests` by `rate_limit.max_requests_per_run`
+- schema-validates the resulting request before returning it
+
+After a validated `PollExecution`, run state records:
+
+- polls completed
+- items emitted
+- requests used
+- checkpoints advanced
+- latest connector health
+- `has_more`
+- deterministic source-item output references based on source ID + dedupe key
+- connector-reported contract-valid errors
+
+Terminal mapping:
+
+- healthy, error-free run -> `SUCCEEDED`
+- degraded/rate-limited/paused or error-bearing run -> `PARTIAL`
+- error/auth-required/policy-blocked health -> `FAILED`
+- explicit orchestration failure -> `FAILED` plus a contract-valid SOURCE_MONITORING AgentError
+
+No terminal state promotes source output into canonical BullMatch history.
 
 ## Preconditions before polling
 
@@ -73,16 +139,18 @@ Rules:
 
 This implements the existing contract rule that invalid/unconfirmed connector output must not commit progress and skip evidence.
 
+The run-state object counts a checkpoint as advanced only after `run_connector_poll()` has returned a valid `PollExecution` with `checkpoint_advanced=true`.
+
 ## Canonical truth boundary
 
-The connector runner cannot write:
+The connector runner, runtime registry and collection run state cannot write:
 
 - canonical Bulls
 - canonical Match history/results
 - verification state
 - publication state
 
-Its output remains a `NormalizedIngestionEnvelope`: untrusted source evidence that must proceed through ingestion/evidence, extraction/atomic claims, entity resolution, review/verification and controlled promotion.
+Their output remains an untrusted normalized source/evidence input that must proceed through ingestion/evidence, extraction/atomic claims, entity resolution, review/verification and controlled promotion.
 
 The conceptual path remains:
 
@@ -90,7 +158,7 @@ The conceptual path remains:
 
 ## Deterministic tests
 
-`agents/connectors/tests/test_runner.py` uses `.invalid` test URLs and synthetic identifiers only inside test process memory.
+Connector tests use `.invalid` test URLs and synthetic identifiers only inside test process memory.
 
 Coverage includes:
 
@@ -100,6 +168,15 @@ Coverage includes:
 - cross-source item is rejected
 - duplicate dedupe key in one batch is rejected
 - mismatched connector identity is rejected
+- runtime registry exposes only APPROVED sources
+- duplicate source IDs are rejected
+- approved-but-paused source cannot be polled
+- SOURCE_MONITORING AgentRun state validates against the shared schema
+- poll limits cannot exceed source policy caps
+- validated PollExecution updates run metrics/output refs
+- connector health maps to deterministic terminal run state
+- explicit failure emits a contract-valid AgentError
+- cross-source run/request composition is rejected
 
 Fixtures are contract examples only and are never inserted into Production.
 
@@ -107,20 +184,25 @@ Fixtures are contract examples only and are never inserted into Production.
 
 `.github/workflows/contracts.yml` validates shared schemas/examples and runs connector conformance tests whenever connector runtime or contract files change.
 
-## Contract repair
+## Contract repairs
 
-The Phase 0 connector request/result schemas used relative `$ref` strings that did not resolve to the sibling schemas' canonical `$id` values when loaded as a registry.
+Phase 0 contained cross-schema `$ref` strings that were meaningful to humans but not resolvable against the sibling schemas' canonical `$id` values when loaded through a standards-compliant registry.
 
-BMI-P2-001 changes those references to the already-existing absolute contract `$id` values. It does not change payload meaning or the 1.0.0 data shape; it makes the declared cross-schema contract executable by standards-compliant validators.
+BMI-P2-001 repairs these references to the already-existing absolute contract `$id` values:
+
+- connector poll request/result references repaired in PR #64
+- `agent-run` -> `agent-error` reference repaired in the registry/run-state slice
+
+These repairs do not change payload meaning or the 1.0.0 data shapes; they make the declared contract family executable by standards-compliant validators.
 
 ## Next implementation slices
 
 Within BMI-P2-001, safe next work can add:
 
-1. a source registry loader that accepts only approved registry entries
-2. an orchestration object that records run state without source-specific assumptions
-3. deterministic persistence adapter interfaces for source items/evidence, without Production writes in unit tests
-4. explicit dedupe/checkpoint persistence transaction contract
-5. conformance fixture helpers for future connectors
+1. deterministic persistence adapter interfaces for source item/evidence staging
+2. explicit transaction boundary for source-item dedupe + evidence persistence + safe checkpoint commit
+3. persisted run-state adapter compatible with the current in-memory `CollectionRunState`
+4. reusable connector conformance fixture helpers
+5. database adapter conformance tests without retaining synthetic Production rows
 
 A real source-specific connector must wait for a separate source/compliance decision. That future task should identify the source, permitted access method, rate limits, rights/retention constraints and connector-specific tests before enabling Production polling.
