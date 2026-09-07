@@ -9,7 +9,7 @@ Repository: `aodxx/BullMatch-Intelligence`
 
 Current phase: **Phase 2 — Source-Agnostic Automated Collection Pipeline Foundation**
 
-Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / BMI-P2-001 IN PROGRESS / POSTGRES ADAPTER MERGED / ROLLBACK-ONLY DB CONFORMANCE VALIDATED**
+Overall status: **PRODUCTION API ACTIVE / VERIFIED+REVIEW FOUNDATION COMPLETE / COMMUNITY CONTRIBUTION V1 COMPLETE / BMI-P2-001 IN PROGRESS / POSTGRES ADAPTER + ROLLBACK-ONLY DB CONFORMANCE MERGED**
 
 ## Product Direction / Truth Boundary
 
@@ -62,8 +62,7 @@ Deferred: public self-signup/onboarding policy, direct image/file evidence uploa
 
 Status: **IN PROGRESS**  
 Owner: Primary Maintainer  
-Latest merged PR: **#68 — PostgreSQL ingestion + persisted run-state adapters**  
-Current branch: `agent/bmi-p2-001-db-conformance`  
+Latest merged PR: **#69 — rollback-only database conformance harness**  
 Contract note: `docs/COLLECTION-PIPELINE-FOUNDATION.md`
 
 ### Merged connector foundation — PR #64–#66
@@ -101,37 +100,35 @@ Implemented and CI-validated:
 - CollectionRunState input/output refs preserved in AgentRun metrics without migration
 - no canonical Bull/Match/history, review, verification, promotion or publication write path
 
-PR #68 head validation:
+PR #68 validation:
 
 - shared schema/example validation — PASS
 - connector conformance suite — PASS
 - PostgreSQL/run-store fake-DB tests — PASS
 
-### Rollback-only real-schema conformance — CURRENT SLICE
+### Rollback-only real-schema conformance — PR #69 — MERGED
 
 File: `supabase/tests/p2_001_collection_persistence_rollback.sql`
 
 The harness was executed against the active BullMatch Supabase PostgreSQL schema using only fixed synthetic UUIDs and `.invalid` URLs.
 
-It verifies:
+Validated:
 
-- deployed `sources`, `source_runtime_state`, `source_items`, `evidence`, and `agent_runs` accept the intended adapter storage shape
-- source item + evidence + checkpoint mutations inside an intentionally failed PostgreSQL subtransaction are all restored together
-- the successful staging shape satisfies deployed constraints
+- deployed `sources`, `source_runtime_state`, `source_items`, `evidence`, and `agent_runs` accept the adapter storage shape
+- source item + evidence + checkpoint mutations inside an intentionally failed PostgreSQL subtransaction are restored together
+- successful staging shape satisfies deployed constraints
 - SOURCE_MONITORING AgentRun mapping satisfies the deployed table
-- the outer transaction always rolls back
-- after rollback, fixture counts in `sources`, `source_items`, `evidence`, and `agent_runs` are all **0**
+- outer transaction rolls back every fixture
+- retained fixture counts after rollback: **sources=0, source_items=0, evidence=0, agent_runs=0**
 
 No Production Bull/Match/canonical record, migration, grant, policy or persistent fixture was created.
 
 ## Exact Next Safe Slices Inside BMI-P2-001
 
-After the rollback-only harness is integrated:
-
 1. reusable connector fixture/conformance helpers
 2. operational orchestration wrapper: approved registry -> checkpoint -> persisted run state -> connector -> atomic persistence
 3. persisted source-registry provider if required by the wrapper
-4. task sign-off for the source-agnostic foundation once the end-to-end synthetic orchestration path is deterministic
+4. task sign-off for the source-agnostic foundation once deterministic end-to-end synthetic orchestration passes
 
 A real source-specific connector remains outside BMI-P2-001 until an explicit source/compliance decision identifies permitted access method, rate limits, retention/rights constraints and source-specific tests.
 
@@ -149,4 +146,4 @@ A real source-specific connector remains outside BMI-P2-001 until an explicit so
 
 ## Exact Next Autonomous Action
 
-Integrate the rollback-only conformance harness, then continue `BMI-P2-001` on a fresh branch from `main` with reusable connector fixture helpers and the source-agnostic operational orchestration wrapper. Do **not** select, scrape or poll a real external source.
+Continue `BMI-P2-001` from fresh `main` with reusable connector fixture/conformance helpers and the source-agnostic operational orchestration wrapper. The wrapper must remain synthetic/source-agnostic and must not select, scrape or poll a real external source.
