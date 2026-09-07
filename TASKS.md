@@ -63,9 +63,7 @@ Runbook: `docs/AUTO-RUN-RUNBOOK.md`.
 
 Status: **IN PROGRESS**  
 Owner: Primary Maintainer (ChatGPT autonomous run)  
-Latest merged PR: **#68 — PostgreSQL ingestion + persisted run-state adapters**  
-Current branch: `agent/bmi-p2-001-db-conformance`  
-Current slice: **rollback-only real-schema conformance harness**  
+Latest merged PR: **#69 — rollback-only database conformance harness**  
 Priority: highest current non-blocked engineering task.  
 Contract: `docs/COLLECTION-PIPELINE-FOUNDATION.md`
 
@@ -74,7 +72,6 @@ Goal: make the existing source/connector/normalized-ingestion contracts executab
 ### Merged slices
 
 **PR #64 — connector execution baseline**
-- shared connector schemas reused
 - source-agnostic validated poll runner
 - APPROVED + ACTIVE + polling-enabled gates
 - connector/source/run/correlation identity checks
@@ -84,43 +81,34 @@ Goal: make the existing source/connector/normalized-ingestion contracts executab
 - approved-only runtime registry
 - persistence-neutral `CollectionRunState`
 - SOURCE_MONITORING AgentRun contract reuse
-- source-policy poll limits
-- deterministic run metrics/terminal states
+- source-policy poll limits and deterministic terminal state
 
 **PR #66 — atomic persistence contract**
 - `IngestionPersistenceAdapter` / `IngestionTransaction`
 - item + evidence + checkpoint atomic boundary
-- exact replay idempotency
-- conflicting replay rejection
+- exact replay idempotency and conflicting replay rejection
 - unsafe/stale checkpoint protection
 - deterministic in-memory conformance adapter
 
 **PR #68 — PostgreSQL + persisted run-state mapping**
 - `PostgresIngestionPersistence` over existing BullMatch-private source/runtime/item/evidence tables
 - `PostgresCollectionRunStore` over existing `agent_runs`
-- persistence-time policy recheck and source/runtime locking
-- normalized-envelope fingerprint in private raw metadata
+- persistence-time source policy recheck and locking
+- private normalized-envelope fingerprint
 - `content_hash` preserved for actual source-content hashing
 - evidence remains PENDING/unverified
 - no migration and no canonical write path
-- full shared-contract + connector + PostgreSQL fake-DB CI PASS
+- shared-contract + connector + PostgreSQL fake-DB CI PASS
 
-### Current rollback-only DB conformance slice
-
-File: `supabase/tests/p2_001_collection_persistence_rollback.sql`
-
-Executed against the active BullMatch PostgreSQL schema with synthetic UUIDs and `.invalid` URLs only.
-
-Validated:
-
-- intended source/runtime/item/evidence/AgentRun storage shape matches deployed constraints
-- intentionally failed inner transaction restores item + evidence + checkpoint together
-- successful staging shape is schema-valid
-- SOURCE_MONITORING AgentRun mapping is schema-valid
-- outer transaction rolls back all fixtures
-- retained fixture counts after rollback: sources=0, source_items=0, evidence=0, agent_runs=0
-
-No schema change, Production canonical data, real source access, secret, grant or policy change occurred.
+**PR #69 — rollback-only real-schema conformance**
+- committed `supabase/tests/p2_001_collection_persistence_rollback.sql`
+- executed against active BullMatch PostgreSQL schema with synthetic UUIDs + `.invalid` URLs only
+- intentional inner failure proves item + evidence + checkpoint rollback together
+- successful adapter shape satisfies deployed constraints
+- SOURCE_MONITORING AgentRun shape satisfies deployed table
+- outer transaction always rolls back
+- retained fixtures after rollback: sources=0, source_items=0, evidence=0, agent_runs=0
+- no migration, grant, policy or Production canonical write
 
 ### Required project-wide invariants
 
@@ -132,11 +120,11 @@ No schema change, Production canonical data, real source access, secret, grant o
 6. deterministic fixtures never remain in Production
 7. a real source connector requires a separate explicit source/compliance decision
 
-### Exact next safe slices after DB harness integration
+### Exact next safe slices
 
 1. reusable connector fixture/conformance helpers
 2. operational orchestration wrapper: approved registry -> checkpoint -> persisted run state -> connector -> atomic persistence
-3. persisted source-registry provider if required
+3. persisted source-registry provider if required by the wrapper
 4. BMI-P2-001 foundation sign-off after deterministic end-to-end synthetic orchestration passes
 
 Explicitly not authorized in BMI-P2-001:
