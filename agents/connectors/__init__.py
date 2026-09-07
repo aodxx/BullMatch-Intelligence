@@ -10,6 +10,7 @@ from .persistence import (
     StagedItem,
     persist_poll_execution,
 )
+from .postgres_adapter import PostgresCollectionRunStore, PostgresIngestionPersistence
 from .registry import ApprovedSourceRegistry, InMemorySourceRegistryProvider, SourceRegistryError
 from .runner import Connector, ContractError, PollExecution, run_connector_poll
 
@@ -25,6 +26,8 @@ __all__ = [
     "PersistenceError",
     "PersistenceResult",
     "PollExecution",
+    "PostgresCollectionRunStore",
+    "PostgresIngestionPersistence",
     "RunStateError",
     "SourceRegistryError",
     "StagedItem",
