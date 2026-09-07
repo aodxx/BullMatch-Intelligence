@@ -126,16 +126,16 @@ class InMemoryIngestionPersistence:
         expected_cursor: Mapping[str, Any],
     ) -> "InMemoryIngestionTransaction":
         current = self.cursors.get(source_id)
-        if current is not None and current != dict(expected_cursor):
+        expected = copy.deepcopy(dict(expected_cursor))
+        if current is not None and current != expected:
             raise PersistenceError("stored checkpoint does not match expected cursor")
-        if current is None:
-            self.cursors[source_id] = copy.deepcopy(dict(expected_cursor))
         return InMemoryIngestionTransaction(
             adapter=self,
             source_id=source_id,
             run_id=run_id,
             correlation_id=correlation_id,
-            expected_cursor=dict(expected_cursor),
+            expected_cursor=expected,
+            initial_cursor=copy.deepcopy(current) if current is not None else expected,
         )
 
 
@@ -148,6 +148,7 @@ class InMemoryIngestionTransaction:
         run_id: str,
         correlation_id: str,
         expected_cursor: JsonObject,
+        initial_cursor: JsonObject,
     ) -> None:
         self.adapter = adapter
         self.source_id = source_id
@@ -156,7 +157,7 @@ class InMemoryIngestionTransaction:
         self.expected_cursor = copy.deepcopy(expected_cursor)
         self._items = copy.deepcopy(adapter.items)
         self._evidence = copy.deepcopy(adapter.evidence)
-        self._cursor = copy.deepcopy(adapter.cursors[source_id])
+        self._cursor = copy.deepcopy(initial_cursor)
         self._finished = False
 
     def _require_open(self) -> None:
