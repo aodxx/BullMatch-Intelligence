@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { type AuthSession } from './auth'
 import {
   type BullProfileData,
@@ -94,7 +94,7 @@ export default function ContributionPanel({session,bullId,onChooseBull,onBack}:{
 
   return <div className="contribution-page">
     <div className="contribution-topline">
-      <button className="back-button" onClick={onBack}>← กลับโปรไฟล์วัว</button>
+      <button className="back-button" onClick={onBack}>← กลับ</button>
       <span className="contribution-policy">COMMUNITY EVIDENCE • REVIEW FIRST</span>
     </div>
 
